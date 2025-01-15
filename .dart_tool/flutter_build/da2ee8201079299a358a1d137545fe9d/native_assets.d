@@ -1,1 +1,0 @@
- /Users/jaysteele/Programming/App_Development/Apps/flutter/moods_on_display/.dart_tool/flutter_build/da2ee8201079299a358a1d137545fe9d/native_assets.yaml: 
