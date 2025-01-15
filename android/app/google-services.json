@@ -12,7 +12,12 @@
           "package_name": "com.example.moods_on_display"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "913741145281-npc9mu3jpdal4ic9pmvjvh3kg8jt27du.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCVBgkmFaaTlECtVUeOSfn4HCXLhDUHzB4"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "913741145281-npc9mu3jpdal4ic9pmvjvh3kg8jt27du.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "913741145281-7it97nsvp4g9ce6lcm130m95dn7ot40g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.moodsOnDisplay"
+              }
+            }
+          ]
         }
       }
     }
