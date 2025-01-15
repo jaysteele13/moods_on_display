@@ -1,48 +1,36 @@
 import 'package:flutter/material.dart';
-// import firebase
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:moods_on_display/authentication/auth.dart';
+import 'package:moods_on_display/widgets/navbar/widdy.dart';
+import 'package:moods_on_display/widgets/home/text_model.dart';
+import 'package:moods_on_display/widgets/home/widdy.dart';
 
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
-class HomePage extends StatelessWidget {
-  HomePage({Key? key}) : super(key: key);
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
-  final User? user = Auth().currentUser; // Current firebase object user
+class _HomePageState extends State<HomePage> {
+  List<HomeTextModel> features = [];
 
-
-  // Widgets for home page
-
-  Widget _title() {
-    return const Text('Home');
-  }
-
-  Widget _userEmail() {
-    return Text(user?.email ?? 'Users email');
-  }
-
-  Widget _signOutButton() {
-    return ElevatedButton(onPressed: Auth().SignOut, child: const Text('Sign Out.'));
+  void getInitialInfo() {
+    features = HomeTextModel.getCategories();
   }
 
   @override
   Widget build(BuildContext context) {
+    getInitialInfo();
     return Scaffold(
-      appBar: AppBar(
-        title: _title(),
-      ),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _userEmail(),
-            _signOutButton()
+        appBar: appBar(),
+        backgroundColor: Colors.white,
+        body: ListView(
+          // necessary to scroll app
+          children: [
+            HomeFeatures(features: features),
+            SizedBox(
+              height: 40,
+            )
           ],
-        )
-      )
-    );
+        ));
   }
 }

@@ -2,15 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moods_on_display/widgets/home/text_model.dart'; 
 import 'package:moods_on_display/widgets/home/styles.dart'; // Import styles
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moods_on_display/authentication/auth.dart';
 
 
 class HomeFeatures extends StatelessWidget {
-  const HomeFeatures({
+  HomeFeatures({
     super.key,
     required this.features,
   });
 
   final List<HomeTextModel> features;
+
+  // Login button widgets
+    // Sign out and user logic
+  final User? user = Auth().currentUser; // Current firebase object user
+
+   Widget _userEmail() {
+    return Text(user?.email ?? 'Users email');
+  }
+
+  Widget _signOutButton() {
+    return ElevatedButton(onPressed: Auth().SignOut, child: const Text('Sign Out.'));
+  }
 
   // Screen to build
   @override
@@ -19,6 +33,9 @@ class HomeFeatures extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildFeatureList(), // Generate features
+        // Experiement sign out
+        _userEmail(),
+        _signOutButton()
       ],
     );
   }
@@ -44,6 +61,7 @@ class FeatureItem extends StatelessWidget {
   final HomeTextModel feature;
 
   @override
+  // Builds each layer of each feature
   Widget build(BuildContext context) {
     return Container(
       decoration: _buildBoxDecoration(feature.boxIsSelected),
@@ -60,6 +78,7 @@ class FeatureItem extends StatelessWidget {
     );
   }
 
+  // controls which feature is selected
   BoxDecoration _buildBoxDecoration(bool isSelected) {
     return BoxDecoration(
       color: isSelected ? Colors.white : Colors.transparent,
@@ -76,6 +95,7 @@ class FeatureItem extends StatelessWidget {
     );
   }
 
+  // returns chosen icon path
   Widget _buildIcon() {
     return Padding(
       padding: AppStyles.defaultPadding,
@@ -83,6 +103,7 @@ class FeatureItem extends StatelessWidget {
     );
   }
 
+  // returns text model per feature
   Widget _buildFeatureDetails() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -97,6 +118,7 @@ class FeatureItem extends StatelessWidget {
     );
   }
 
+  // Action when feature button is selected
   Widget _buildActionButton() {
     return GestureDetector(
       onTap: () {
