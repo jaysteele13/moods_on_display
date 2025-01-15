@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/authentication/auth.dart';
 import 'package:moods_on_display/pages/home.dart';
-import 'package:moods_on_display/pages/google_login.dart';
+import 'package:moods_on_display/pages/login.dart';
 
 class FlowTree  extends StatefulWidget {
   const FlowTree({Key? key}) : super(key: key);
