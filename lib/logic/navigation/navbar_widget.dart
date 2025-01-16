@@ -18,45 +18,45 @@ class _NavigationMenuState extends State<NavigationMenu> {
         return BottomNavigationBar(
           currentIndex: navigationProvider.currentIndex,
           onTap: (index) {
+          if (index != navigationProvider.currentIndex) {
             navigationProvider.setIndex(index);
-            
 
-            // based on index determine what happens next, have page manager
-            // Custom actions based on the index
             switch (index) {
               case 0:
-                // Navigate to Home Screen or perform a Home action
                 Navigator.pushReplacementNamed(context, '/home');
-                // print('index: ${navigationProvider.currentIndex}');
                 break;
               case 1:
-                // Navigate to Albums Screen or perform an Albums action
-                // Navigator.pushNamed(context, '/albums');
-                print('index: ${navigationProvider.currentIndex}');
+                // Navigator.pushReplacementNamed(context, '/albums');
                 break;
               case 2:
-                // Navigate to Add Images Screen or perform an Add Images action
-                // Navigator.pushNamed(context, '/add_images');
-                print('index: ${navigationProvider.currentIndex}');
+                // Navigator.pushReplacementNamed(context, '/add_images');
                 break;
               case 3:
-                // Navigate to Slideshows Screen or perform a Slideshows action
-                // Navigator.pushNamed(context, '/slideshows');
-                print('index: ${navigationProvider.currentIndex}');
+                // Navigator.pushReplacementNamed(context, '/slideshows');
                 break;
               case 4:
-                // Navigate to Profile Screen or perform a Profile action
                 Navigator.pushReplacementNamed(context, '/profile');
                 break;
               default:
                 break;
             }
-          },
+          }
+        },
           fixedColor: Colors.black,
           showSelectedLabels: true,
           showUnselectedLabels: true,
-          unselectedItemColor: Colors.pink,
-          unselectedFontSize: 5,
+          unselectedItemColor: Colors.black,
+          unselectedFontSize: 10, // Slightly increased font size
+          selectedLabelStyle: TextStyle(
+            overflow: TextOverflow.visible,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+          unselectedLabelStyle: TextStyle(
+            overflow: TextOverflow.visible,
+            fontSize: 12,
+            color: Colors.black54,
+          ),
 
           items: [
             BottomNavigationBarItem(
@@ -81,7 +81,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
                 height: 20,
                 width: 20,
               ),
-              label: 'Add Images',
+              label: 'Add',
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(
