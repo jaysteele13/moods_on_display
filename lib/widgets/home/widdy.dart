@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moods_on_display/widgets/home/text_model.dart'; 
 import 'package:moods_on_display/widgets/home/styles.dart'; // Import styles
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:moods_on_display/authentication/auth.dart';
+
 
 
 class HomeFeatures extends StatelessWidget {
@@ -14,18 +13,6 @@ class HomeFeatures extends StatelessWidget {
 
   final List<HomeTextModel> features;
 
-  // Login button widgets
-    // Sign out and user logic
-  final User? user = Auth().currentUser; // Current firebase object user
-
-   Widget _userEmail() {
-    return Text(user?.email ?? 'Users email');
-  }
-
-  Widget _signOutButton() {
-    return ElevatedButton(onPressed: Auth().SignOut, child: const Text('Sign Out.'));
-  }
-
   // Screen to build
   @override
   Widget build(BuildContext context) {
@@ -33,9 +20,6 @@ class HomeFeatures extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildFeatureList(), // Generate features
-        // Experiement sign out
-        _userEmail(),
-        _signOutButton()
       ],
     );
   }
