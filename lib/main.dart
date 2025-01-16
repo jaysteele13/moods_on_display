@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 // import firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:moods_on_display/app_flow/flow.dart';
+import 'package:provider/provider.dart';
+
+
+// import 'package:moods_on_display/widgets/navbar/actual1.dart';
+import 'package:moods_on_display/widgets/navbar/navigation_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
+      ],
+    child: const MyApp()),);
 }
 
 

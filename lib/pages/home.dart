@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moods_on_display/widgets/navbar/actual1.dart';
 import 'package:moods_on_display/widgets/navbar/widdy.dart';
 import 'package:moods_on_display/widgets/home/text_model.dart';
 import 'package:moods_on_display/widgets/home/widdy.dart';
@@ -31,6 +32,8 @@ class _HomePageState extends State<HomePage> {
               height: 40,
             )
           ],
-        ));
+        
+        ),
+        bottomNavigationBar: NavigationMenu());
   }
 }
