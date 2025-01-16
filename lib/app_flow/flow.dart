@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moods_on_display/authentication/auth.dart';
+import 'package:moods_on_display/logic/authentication/auth.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/login.dart';
 
@@ -19,7 +19,7 @@ class _FlowState extends State<FlowTree> {
         if(snapshot.hasData) {
           return HomePage();
         } else {
-          return const GoogleSignInScreen();
+          return const LoginScreen();
         }
       });
   }

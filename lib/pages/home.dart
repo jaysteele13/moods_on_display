@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moods_on_display/widgets/navbar/actual1.dart';
-import 'package:moods_on_display/widgets/navbar/widdy.dart';
+import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
 import 'package:moods_on_display/widgets/home/text_model.dart';
 import 'package:moods_on_display/widgets/home/widdy.dart';
 
@@ -21,9 +20,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     getInitialInfo();
-    return Scaffold(
-        appBar: appBar(),
-        backgroundColor: Colors.white,
+    return BaseScaffold(
+        appBar: AppBar(title: Text('Home')),
         body: ListView(
           // necessary to scroll app
           children: [
@@ -34,6 +32,6 @@ class _HomePageState extends State<HomePage> {
           ],
         
         ),
-        bottomNavigationBar: NavigationMenu());
+        backgroundColor: Colors.white);
   }
 }

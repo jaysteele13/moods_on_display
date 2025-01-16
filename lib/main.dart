@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 // import firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:moods_on_display/app_flow/flow.dart';
+import 'package:moods_on_display/pages/home.dart';
+import 'package:moods_on_display/pages/login.dart';
+import 'package:moods_on_display/pages/profile.dart';
 import 'package:provider/provider.dart';
 
 
 // import 'package:moods_on_display/widgets/navbar/actual1.dart';
-import 'package:moods_on_display/widgets/navbar/navigation_provider.dart';
+import 'package:moods_on_display/logic/navigation/navigation_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +28,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      //initialRoute: '/home',
+      // routes in app
+      routes: {
+        '/home': (context) => HomePage(),
+        '/profile': (context) => GoogleSignInScreen(), // temp profile screen
+        '/login': (context) => LoginScreen()
+      },
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.orange

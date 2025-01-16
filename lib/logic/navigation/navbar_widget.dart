@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:moods_on_display/widgets/navbar/navigation_provider.dart';
+import 'package:moods_on_display/logic/navigation/navigation_provider.dart';
 import 'package:provider/provider.dart';
 
 class NavigationMenu extends StatefulWidget {
@@ -19,8 +19,45 @@ class _NavigationMenuState extends State<NavigationMenu> {
           currentIndex: navigationProvider.currentIndex,
           onTap: (index) {
             navigationProvider.setIndex(index);
-            print('index: ${navigationProvider.currentIndex}');
+            
+
+            // based on index determine what happens next, have page manager
+            // Custom actions based on the index
+            switch (index) {
+              case 0:
+                // Navigate to Home Screen or perform a Home action
+                Navigator.pushNamed(context, '/home');
+                // print('index: ${navigationProvider.currentIndex}');
+                break;
+              case 1:
+                // Navigate to Albums Screen or perform an Albums action
+                // Navigator.pushNamed(context, '/albums');
+                print('index: ${navigationProvider.currentIndex}');
+                break;
+              case 2:
+                // Navigate to Add Images Screen or perform an Add Images action
+                // Navigator.pushNamed(context, '/add_images');
+                print('index: ${navigationProvider.currentIndex}');
+                break;
+              case 3:
+                // Navigate to Slideshows Screen or perform a Slideshows action
+                // Navigator.pushNamed(context, '/slideshows');
+                print('index: ${navigationProvider.currentIndex}');
+                break;
+              case 4:
+                // Navigate to Profile Screen or perform a Profile action
+                Navigator.pushNamed(context, '/profile');
+                break;
+              default:
+                break;
+            }
           },
+          fixedColor: Colors.black,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          unselectedItemColor: Colors.pink,
+          unselectedFontSize: 5,
+
           items: [
             BottomNavigationBarItem(
               icon: SvgPicture.asset(
