@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 // import firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:moods_on_display/app_flow/flow.dart';
+import 'package:moods_on_display/logic/authentication/auth_bloc.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/login.dart';
 import 'package:moods_on_display/pages/profile.dart';
+import 'package:moods_on_display/widgets/profile/profile_widget.dart';
+// import 'package:moods_on_display/widgets/profile/profile_widget.dart';
 import 'package:provider/provider.dart';
 
 
@@ -27,19 +30,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      //initialRoute: '/home',
-      // routes in app
-      routes: {
-        '/home': (context) => HomePage(),
-        '/profile': (context) => GoogleSignInScreen(), // temp profile screen
-        '/login': (context) => LoginScreen()
-      },
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange
+    return Provider(
+      create: (context) => AuthBloc(),
+      child: MaterialApp(
+        //initialRoute: '/home',
+        // routes in app
+        routes: {
+          '/home': (context) => HomePage(),
+          '/profile': (context) => ProfileScreen(), // temp profile screen
+          '/login': (context) => LoginScreen()
+        },
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.orange
+        ),
+        home: const LoginScreen()
       ),
-      home: const FlowTree()
     );
   }
 

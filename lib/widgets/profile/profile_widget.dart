@@ -1,46 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:moods_on_display/logic/authentication/auth.dart';
 import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
+import 'package:moods_on_display/pages/login.dart';
+import 'package:provider/provider.dart';
+import 'package:moods_on_display/logic/authentication/auth_bloc.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
     // Login button widgets
     // Sign out and user logic
-  final User? user = Auth().currentUser; // Current firebase object user
+  // final User? user = Auth().currentUser; // Current firebase object user
 
-   Widget _userEmail() {
-    return Text(user?.email ?? 'Users email');
+  //  Widget _userEmail() {
+  //   return Text(user?.email ?? 'Users email');
+  // }
+
+  // // Widget to sign out
+  
+  class _ProfileScreenState extends State<ProfileScreen> {
+      @override
+  void initState() {
+    var authBloc = Provider.of<AuthBloc>(context, listen: false);
+    authBloc.currentUser.listen((fbUser) {
+      if(fbUser !=null) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute (builder: (context) => LoginScreen()));
+      }
+    });
+    super.initState();
   }
 
-  // Widget to sign out
-  Widget _signOutButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () async {
-        print('Trying to log out...');
-        await Auth().SignOut(); // Ensure sign out is awaited
-        //Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen after sign-out
-      },
-      child: const Text('Sign Out'),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    // get context
+    final authBloc = Provider.of<AuthBloc>(context);
     return BaseScaffold(
       appBar: AppBar(
         title: const Text('Profile Screen'),
       ),
-      body: user == null // Check if the user is null
-          ? Center(child: const Text('No user is logged in.'))
-          : Column(
+      body: Column(
               children: [
                 const SizedBox(height: 20),
                 const Text('Your Profile!'),
                 const SizedBox(height: 20),
-                _userEmail(), // Display user email
-                _signOutButton(context), // Sign out button
+                ElevatedButton(
+                  onPressed: () async {
+                    authBloc.logOutGoogle();
+                  },
+                  child: const Text('Sign Out'),
+                )
               ],
             ),
     );
   }
 }
+

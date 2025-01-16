@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../logic/authentication/auth.dart';
-import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
+import 'package:moods_on_display/pages/home.dart';
+import 'package:provider/provider.dart';
+import '../logic/authentication/auth_bloc.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -13,14 +14,24 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   ValueNotifier userCredential = ValueNotifier('');
 
+
+  @override
+  void initState() {
+    var authBloc = Provider.of<AuthBloc>(context, listen: false);
+    authBloc.currentUser.listen((fbUser) {
+      if(fbUser !=null) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute (builder: (context) => HomePage()));
+      }
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BaseScaffold(
-        appBar: AppBar(title: const Text('Profile Screen')),
-        body: ValueListenableBuilder(
-            valueListenable: userCredential,
-            builder: (context, value, child) {
-              return Center(
+    final authBloc = Provider.of<AuthBloc>(context);
+    return Scaffold(
+        appBar: AppBar(title: const Text('Login Screen')),
+        body: Center(
                       child: Card(
                         elevation: 5,
                         shape: RoundedRectangleBorder(
@@ -30,14 +41,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Image.asset(
                             'assets/images/google.png',
                           ),
-                          onPressed: () async {
-                            userCredential.value = await Auth().signInWithGoogle();
-                            if (userCredential.value != null)
-                              print(userCredential.value.user!.email);
-                          },
+                          onPressed: () => authBloc.loginGoogle())
                         ),
                       ),
                     );
-            }));
   }
 }

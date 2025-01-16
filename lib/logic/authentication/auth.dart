@@ -4,63 +4,69 @@ import 'package:google_sign_in/google_sign_in.dart';
 class Auth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // instance for auth functions
 
-  User? get currentUser => _firebaseAuth.currentUser; // gets user
+  //User? get currentUser => _firebaseAuth.currentUser; // gets user
 
-  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges(); // constant stream of changes
+  //Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges(); // constant stream of changes
 
-  // -------------------- Google Login -----------------------
-  Future<dynamic> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-
-      return await _firebaseAuth.signInWithCredential(credential);
-    } on Exception catch (e) {
-        print('exception->$e');
-    }
-  }
-
-  Future<bool> signOutFromGoogle() async {
-    try {
-      await _firebaseAuth.signOut();
-      return true;
-    } on Exception catch (_) {
-      return false;
-    }
-  }
+  Future<UserCredential> signInWithCredential(AuthCredential credential) => 
+    _firebaseAuth.signInWithCredential(credential);
+    Future<void> logout() => _firebaseAuth.signOut();
+    Stream<User?> get currentUser => _firebaseAuth.authStateChanges();
 
 
+  // // -------------------- Google Login -----------------------
+  // Future<dynamic> signInWithGoogle() async {
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  //     if (googleUser == null) return null;
+
+  //     final GoogleSignInAuthentication? googleAuth =
+  //         await googleUser.authentication;
+
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth?.accessToken,
+  //       idToken: googleAuth?.idToken,
+  //     );
+
+  //     return await _firebaseAuth.signInWithCredential(credential);
+  //   } on Exception catch (e) {
+  //       print('exception->$e');
+  //   }
+  // }
+
+  // Future<bool> signOutFromGoogle() async {
+  //   try {
+  //     await _firebaseAuth.signOut();
+  //     return true;
+  //   } on Exception catch (_) {
+  //     return false;
+  //   }
+  // }
 
 
-  // ------------------ Native ---------------------------
-  // Native Sign In
-  Future<void> SignIn({
-    required String email,
-    required String password,
-  }) async {
-    await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-  }
 
 
-  Future<void> SignOut() async {
-    await _firebaseAuth.signOut();
-  }
+  // // ------------------ Native ---------------------------
+  // // Native Sign In
+  // Future<void> SignIn({
+  //   required String email,
+  //   required String password,
+  // }) async {
+  //   await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+  // }
 
-  // Create Account
-  Future<void> CreateUser({
-    required String email,
-    required String password
-  }) async {
-    await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-  }
+
+  // Future<void> SignOut() async {
+  //   await _firebaseAuth.signOut();
+  // }
+
+  // // Create Account
+  // Future<void> CreateUser({
+  //   required String email,
+  //   required String password
+  // }) async {
+  //   await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+  // }
   // ------------------- End ----------------------
 }
 

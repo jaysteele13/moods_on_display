@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
 import 'package:moods_on_display/widgets/home/text_model.dart';
 import 'package:moods_on_display/widgets/home/widdy.dart';
+import 'package:moods_on_display/pages/login.dart';
+import 'package:provider/provider.dart';
+import 'package:moods_on_display/logic/authentication/auth_bloc.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
