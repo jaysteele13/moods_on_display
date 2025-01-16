@@ -18,7 +18,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
-    child: const MyApp()),);
+    child: const MyApp()));
 }
 
 
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       // routes in app
       routes: {
         '/home': (context) => HomePage(),
-        '/profile': (context) => GoogleSignInScreen(), // temp profile screen
+        '/profile': (context) => ProfileScreen(), // temp profile screen
         '/login': (context) => LoginScreen()
       },
       debugShowCheckedModeBanner: false,
@@ -42,7 +42,6 @@ class MyApp extends StatelessWidget {
       home: const FlowTree()
     );
   }
-
 }
 
 

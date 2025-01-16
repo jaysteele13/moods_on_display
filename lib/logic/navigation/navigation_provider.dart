@@ -5,8 +5,10 @@ class NavigationProvider with ChangeNotifier {
 
   int get currentIndex => _currentIndex;
 
-  void setIndex(int index) {
-    _currentIndex = index;
-    notifyListeners();
+   void setIndex(int index) {
+    if (index != _currentIndex) {
+      _currentIndex = index;
+      notifyListeners();
+    }
   }
 }

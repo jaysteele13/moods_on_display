@@ -1,80 +1,64 @@
 import 'package:flutter/material.dart';
-import '../logic/authentication/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moods_on_display/logic/authentication/auth.dart';
 import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
 
+class ProfileScreen extends StatelessWidget {
+    // Login button widgets
+    // Sign out and user logic
+  final User? user = Auth().currentUser; // Current firebase object user
 
-class GoogleSignInScreen extends StatefulWidget {
-  const GoogleSignInScreen({Key? key}) : super(key: key);
+   Widget _userEmail() {
+    return Text(user?.email ?? 'Users email');
+  }
 
-  @override
-  State<GoogleSignInScreen> createState() => _GoogleSignInScreenState();
-}
+  Widget _userName() {
+    return Text(user?.displayName ?? 'Users name');
+  }
 
-class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
-  ValueNotifier userCredential = ValueNotifier('');
-
-  @override
-  Widget build(BuildContext context) {
-    return BaseScaffold(
-        appBar: AppBar(title: const Text('Profile Screen')),
-        body: ValueListenableBuilder(
-            valueListenable: userCredential,
-            builder: (context, value, child) {
-              return (userCredential.value == '' ||
-                      userCredential.value == null)
-                  ? Center(
-                      child: Card(
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: IconButton(
-                          iconSize: 40,
-                          icon: Image.asset(
-                            'assets/images/google.png',
-                          ),
-                          onPressed: () async {
-                            userCredential.value = await Auth().signInWithGoogle();
-                            if (userCredential.value != null)
-                              print(userCredential.value.user!.email);
-                          },
-                        ),
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
+  Widget _profilePicture() {
+    return Container(
                             clipBehavior: Clip.antiAlias,
                             decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                     width: 1.5, color: Colors.black54)),
                             child: Image.network(
-                                userCredential.value.user!.photoURL.toString()),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Text(userCredential.value.user!.displayName
-                              .toString()),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Text(userCredential.value.user!.email.toString()),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          ElevatedButton(
-                              onPressed: () async {
-                                bool result = await Auth().signOutFromGoogle();
-                                if (result) userCredential.value = '';
-                              },
-                              child: const Text('Logout'))
-                        ],
-                      ),
-                    );
-            }));
+                                user!.photoURL.toString()),
+                          );
+  }
+
+  // Widget to sign out
+  Widget _signOutButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () async {
+        print('Trying to log out...');
+        await Auth().SignOut(); // Ensure sign out is awaited
+        Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen after sign-out
+      },
+      child: const Text('Sign Out'),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseScaffold(
+      appBar: AppBar(
+        title: const Text('Profile Screen'),
+      ),
+      body: user == null // Check if the user is null
+          ? Center(child: const Text('No user is logged in.'))
+          : Column(
+              children: [
+                const SizedBox(height: 20),
+                const Text('Your Profile!'),
+                const SizedBox(height: 20),
+                _userEmail(), // Display user email
+                _userName(),
+                _signOutButton(context), // Sign out button
+                _profilePicture()
+              ],
+            ),
+    );
   }
 }

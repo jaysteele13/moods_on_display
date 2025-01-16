@@ -26,7 +26,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
             switch (index) {
               case 0:
                 // Navigate to Home Screen or perform a Home action
-                Navigator.pushNamed(context, '/home');
+                Navigator.pushReplacementNamed(context, '/home');
                 // print('index: ${navigationProvider.currentIndex}');
                 break;
               case 1:
@@ -46,7 +46,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
                 break;
               case 4:
                 // Navigate to Profile Screen or perform a Profile action
-                Navigator.pushNamed(context, '/profile');
+                Navigator.pushReplacementNamed(context, '/profile');
                 break;
               default:
                 break;
