@@ -30,7 +30,7 @@ class ImageManager {
     List<int> bytes = data.buffer.asUint8List();
     img.Image? image = img.decodeImage(Uint8List.fromList(bytes));
     if (image != null) {
-      return img.copyResize(image, width: 224, height: 224);
+      return image;
     }
     return null;
   }
