@@ -5,6 +5,7 @@ import 'package:moods_on_display/app_flow/flow.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/login.dart';
 import 'package:moods_on_display/pages/profile.dart';
+import 'package:moods_on_display/pages/add_images.dart';
 import 'package:provider/provider.dart';
 
 
@@ -32,7 +33,8 @@ class MyApp extends StatelessWidget {
       // routes in app
       routes: {
         '/home': (context) => HomePage(),
-        '/profile': (context) => ProfileScreen(), // temp profile screen
+        '/profile': (context) => ProfileScreen(),
+        '/add_images': (context) => AddImageScreen(),
         '/login': (context) => LoginScreen()
       },
       debugShowCheckedModeBanner: false,

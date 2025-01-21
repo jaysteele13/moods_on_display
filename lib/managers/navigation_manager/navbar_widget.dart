@@ -21,6 +21,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
           if (index != navigationProvider.currentIndex) {
             navigationProvider.setIndex(index);
 
+            // to ammend this go to main.dart
             switch (index) {
               case 0:
                 Navigator.pushReplacementNamed(context, '/home');
@@ -29,7 +30,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
                 // Navigator.pushReplacementNamed(context, '/albums');
                 break;
               case 2:
-                // Navigator.pushReplacementNamed(context, '/add_images');
+                Navigator.pushReplacementNamed(context, '/add_images');
                 break;
               case 3:
                 // Navigator.pushReplacementNamed(context, '/slideshows');
