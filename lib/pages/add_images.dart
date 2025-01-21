@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/model_manager.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -13,16 +14,22 @@ class AddImageScreen extends StatefulWidget {
 class AddImageScreenState extends State<AddImageScreen> {
   final ImageManager _imageManager = ImageManager();
   final ModelManager _modelManager = ModelManager();
+  bool _isGalleryLoading = false;
 
   // have functions to call other functions - dart common standard
   void _pickImageFromGallery() async {
+    setState(() { _isGalleryLoading = true;});
     await _imageManager.pickImageFromGallery();
-    setState(() {});
+    setState(() { _isGalleryLoading = false;});
+    
+     
   }
 
   void _pickImageFromCamera() async {
     await _imageManager.pickImageFromCamera();
-    setState(() {});
+    setState(() {
+      _isGalleryLoading = false;
+    });
   }
 
   // shows predictions baed on mbnv2 model currently, return list of emotions per image
@@ -63,13 +70,15 @@ class AddImageScreenState extends State<AddImageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BaseScaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('Scanning for Emotion'),
       ),
       body: Center(
-        child: Column(
+        // based on gllery loading show this until this...
+        child: _isGalleryLoading ? const CircularProgressIndicator() 
+        : Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             MaterialButton(
@@ -94,13 +103,6 @@ class AddImageScreenState extends State<AddImageScreen> {
   
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add performDetection logic or connect it with ImageManager
-        },
-        tooltip: 'Detect',
-        child: const Icon(Icons.add),
       ),
     );
   }
