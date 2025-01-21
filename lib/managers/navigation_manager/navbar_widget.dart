@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:moods_on_display/logic/navigation/navigation_provider.dart';
+import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 import 'package:provider/provider.dart';
 
 class NavigationMenu extends StatefulWidget {

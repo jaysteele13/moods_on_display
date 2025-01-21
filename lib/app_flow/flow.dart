@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moods_on_display/logic/authentication/auth.dart';
+import 'package:moods_on_display/managers/authentication_manager/auth.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/login.dart';
 

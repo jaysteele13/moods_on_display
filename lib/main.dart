@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 
 // import 'package:moods_on_display/widgets/navbar/actual1.dart';
-import 'package:moods_on_display/logic/navigation/navigation_provider.dart';
+import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

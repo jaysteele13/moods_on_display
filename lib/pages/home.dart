@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/widgets/home/text_model.dart';
 import 'package:moods_on_display/widgets/home/widdy.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:moods_on_display/logic/authentication/auth.dart';
-import 'package:moods_on_display/logic/navigation/base_scaffold.dart';
+import 'package:moods_on_display/managers/authentication_manager/auth.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 
 class ProfileScreen extends StatelessWidget {
     // Login button widgets
