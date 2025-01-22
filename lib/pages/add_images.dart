@@ -38,7 +38,7 @@ Widget showFaceDetection() {
     return const Text('Please select an image first.');
   } else {
     return FutureBuilder<void>(
-      future: _modelManager.performFaceDetection(_imageManager.selectedImage!),
+      future: _modelManager.performFaceDetection1(_imageManager.selectedImage!),
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
