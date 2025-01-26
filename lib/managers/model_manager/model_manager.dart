@@ -7,6 +7,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
 
 
+
 class ModelManager {
   // this is to load and run the model using tflite_flutter
   late Interpreter interpreter;
@@ -27,19 +28,32 @@ class ModelManager {
   }
 
 
-Future<File> DisplayFaceDetectedImage(File selectedImage) async {
-  img.Image image =  await performFaceDetection(selectedImage);
-  File jpgImage = await getFaceDetectionJPEG(image);
-  return jpgImage;
+Future<List<File>> displayFaceDetectedImage(File selectedImage) async {
+  List<img.Image> images =  await performFaceDetection(selectedImage);
+  List<File> jpgImages = (await getFaceDetectionJPEG(images));
+  return jpgImages;
 }
 
 
-Future<img.Image> performFaceDetection(File selectedImage) async {
+// return image array of faces
+Future<List<img.Image>> performFaceDetection(File selectedImage) async {
   // Load the input image
     InputImage inputImage = InputImage.fromFile(selectedImage);
 
+    final List<img.Image> facesList = [];
   // Detect faces in the image
     final List<Face> faces = await faceDetector.processImage(inputImage);
+
+    // vars for face cropping
+    Rect boundingBox;
+
+  // Crop the face region from the image
+    int x;
+    int y;
+    int width;
+    int height;
+    img.Image croppedFace;
+
 
   if (faces.isEmpty) {
     throw Exception("No faces detected in the image.");
@@ -56,57 +70,61 @@ Future<img.Image> performFaceDetection(File selectedImage) async {
   // have confidence system, make more accurate, then include more faces
 
   // Get the first detected face's bounding box
+  double highestConfidence = 0.0005;
   Face bestFace = faces.first;
-  double highestConfidence = 0.0;
+  print("lenth of faces ${faces.length}");
 
    for (Face face in faces) {
-    if (face.trackingId != null && face.headEulerAngleY != null) {
       double confidenceScore = face.smilingProbability ?? 0.1; // Example confidence metric
-      if (confidenceScore > highestConfidence) {
-        highestConfidence = confidenceScore;
+      print("here is confidence score initially: ${confidenceScore}");
+    if (confidenceScore > highestConfidence) {
+        print(confidenceScore);
         bestFace = face;
-      }
+
+        boundingBox = bestFace.boundingBox;
+
+      // Crop the face region from the image
+        x = boundingBox.left.clamp(0, originalImage.width).toInt();
+        y = boundingBox.top.clamp(0, originalImage.height).toInt();
+        width = boundingBox.width.clamp(0, originalImage.width - x).toInt();
+        height = boundingBox.height.clamp(0, originalImage.height - y).toInt();
+
+        croppedFace = img.copyCrop(originalImage, x: x, y: y, width: width, height: height);
+
+        facesList.add(croppedFace);
     }
   }
 
-  final Rect boundingBox = bestFace.boundingBox;
-
-  // Crop the face region from the image
-  final int x = boundingBox.left.clamp(0, originalImage.width).toInt();
-  final int y = boundingBox.top.clamp(0, originalImage.height).toInt();
-  final int width = boundingBox.width.clamp(0, originalImage.width - x).toInt();
-  final int height = boundingBox.height.clamp(0, originalImage.height - y).toInt();
-  // final int x = boundingBox.left.toInt();
-  // final int y = boundingBox.top.toInt();
-  // final int width = boundingBox.width.toInt();
-  // final int height = boundingBox.height.toInt();
-
-  final img.Image croppedFace = img.copyCrop(originalImage, x: x, y: y, width: width, height: height);
-  
-
-  // Close the face detector
   faceDetector.close();
-  print("Highest confidence face detected with score: $highestConfidence");
+  // print("Highest confidence face detected with score: $highestConfidence");
   // Return the cropped image file
-  return croppedFace;
+  print("facesList length: ${facesList.length}");
+  return facesList;
 }
 
-Future<File> getFaceDetectionJPEG(img.Image selectedImage) async {
+Future<List<File>> getFaceDetectionJPEG(List<img.Image> selectedImages) async {
   // Encode the cropped face image back to a file
-  final croppedImageBytes = img.encodeJpg(selectedImage);
+  List<File> files = [];
+  int uniqueCounter = 0;
+  if(selectedImages.isEmpty) print('no faces found');
+  for (img.Image selectedImage in selectedImages) {
+    Uint8List croppedImageBytes = img.encodeJpg(selectedImage);
   // final croppedFilePath = "${selectedImage.parent.path}/cropped_face.jpg";
   // final croppedFile = File(croppedFilePath);
   // await croppedFile.writeAsBytes(croppedImageBytes);
-  Directory tempDir = await getTemporaryDirectory();
+    Directory tempDir = await getTemporaryDirectory();
 
-  // Create a temporary file in the directory
-  final timestamp = DateTime.now().millisecondsSinceEpoch; 
-  File tempFile = File('${tempDir.path}/temp_image_$timestamp.jpg');
+    // Create a temporary file in the directory
+    File tempFile = File('${tempDir.path}/temp_image_${DateTime.now().millisecondsSinceEpoch}_$uniqueCounter.jpg');
+    uniqueCounter++;
+    // Write the JPG data to the temporary file
+    await tempFile.writeAsBytes(croppedImageBytes);
 
-  // Write the JPG data to the temporary file
-  await tempFile.writeAsBytes(croppedImageBytes);
+    files.add(tempFile);
 
-  return tempFile;
+  }
+  return files;
+
 }
 
 Future<void> deleteTempFile(File file) async {

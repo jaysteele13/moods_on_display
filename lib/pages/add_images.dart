@@ -49,28 +49,60 @@ Widget showPredictions() {
           return const Text('No selected image');
         }
 
-        return FutureBuilder<File>(
-          future: _modelManager.DisplayFaceDetectedImage(_imageManager.selectedImage!),
+        return FutureBuilder<List<File>>(
+          future: _modelManager.displayFaceDetectedImage(_imageManager.selectedImage!),
           builder: (context, snapshot) {
+            try {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator(); // Show loading indicator
             } else if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}'); // Show error message
             } else if (snapshot.hasData) {
               print(snapshot.data);
+              List<File> predictions = snapshot.data!;
+              
+             List<Widget> imageWidgets = [];
 
-              File predictions = snapshot.data!;
-              print('Reassign predictions');
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    await _modelManager.deleteTempFile(predictions); // Delete temp file after it's displayed
-                  });
-              return Image.file(
-                predictions,
-                width: 150,
-                height: 150,
-              );
+              for (File images in predictions) {
+                print('Reassign predictions');
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  await _modelManager.deleteTempFile(images); // Delete temp file after it's displayed
+                });
+                imageWidgets.add(
+                  Image.file(
+                    images,
+                    width: 150,
+                    height: 150,
+                  ),
+                );
+              }
+
+             return imageWidgets.isNotEmpty
+              ? GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Number of columns
+                    mainAxisSpacing: 10, // Spacing between rows
+                    crossAxisSpacing: 10, // Spacing between columns
+                  ),
+                  shrinkWrap: true, // Ensures the grid takes up only as much space as needed
+                  physics: NeverScrollableScrollPhysics(), // Disable scrolling if inside another scrollable widget
+                  itemCount: imageWidgets.length,
+                  itemBuilder: (context, index) {
+                    return imageWidgets[index];
+                  },
+                )
+              : Text('No Predictions');
+
+              
+              
+             
             } else {
               return const Text('No predictions available.');
+            }
+            }
+            catch (e) {
+              print(e);
+              return const Text('Issue with Face detection!');
             }
           },
         );
