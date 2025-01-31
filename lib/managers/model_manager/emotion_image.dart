@@ -1,14 +1,16 @@
 import 'dart:io';
 
 class EmotionImage {
-  final File? selectedImage;
+  File? selectedImage;
   final Map<String, double> emotions;
   final bool valid;
+  String? mostCommonEmotion;
 
   EmotionImage({
     this.selectedImage,
     required this.emotions,
     required this.valid,
+    this.mostCommonEmotion
   });
 
   /// Determines the highest emotion based on values
