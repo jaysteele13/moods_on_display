@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
+import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
 import 'package:moods_on_display/managers/model_manager/model_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'dart:io';
@@ -38,6 +39,27 @@ class AddImageScreenState extends State<AddImageScreen> {
     });
   }
 
+  Color getEmotionColor(String emotion) {
+  switch (emotion) {
+    case "happy":
+      return Colors.yellow;
+    case "sad":
+      return Colors.blue;
+    case "angry":
+      return Colors.red;
+    case "fear":
+      return Colors.purple;
+    case "disgust":
+      return Colors.green;
+    case "neutral":
+      return Colors.grey;
+    case "surprise":
+      return Colors.orange;
+    default:
+      return Colors.black;
+  }
+}
+
 
 
 Widget showPredictions() {
@@ -49,61 +71,65 @@ Widget showPredictions() {
           return const Text('No selected image');
         }
 
-        return FutureBuilder<List<File>>(
-          future: _modelManager.displayFaceDetectedImage(_imageManager.selectedImage!),
+        return FutureBuilder<EmotionImage>(
+          future: _modelManager.modelArchitecture(_imageManager.selectedImage!),
           builder: (context, snapshot) {
             try {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator(); // Show loading indicator
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}'); // Show error message
-            } else if (snapshot.hasData) {
-              print(snapshot.data);
-              List<File> predictions = snapshot.data!;
-              
-             List<Widget> imageWidgets = [];
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CircularProgressIndicator(); // Show loading indicator
+    } else if (snapshot.hasError) {
+      return Text('Error: ${snapshot.error}'); // Show error message
+    } else if (snapshot.hasData) {
+      print(snapshot.data);
+      EmotionImage emotionImage = snapshot.data!; // Retrieve EmotionImage data
 
-              for (File images in predictions) {
-                print('Reassign predictions');
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  await _modelManager.deleteTempFile(images); // Delete temp file after it's displayed
-                });
-                imageWidgets.add(
-                  Image.file(
-                    images,
-                    width: 150,
-                    height: 150,
+      // Display emotion percentages
+      List<Widget> emotionWidgets = [];
+
+      if (emotionImage.emotions.isNotEmpty) {
+        emotionImage.emotions.forEach((emotion, percentage) {
+          emotionWidgets.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.mood, // You can use different icons per emotion
+                    color: getEmotionColor(emotion),
                   ),
-                );
-              }
-
-             return imageWidgets.isNotEmpty
-              ? GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Number of columns
-                    mainAxisSpacing: 10, // Spacing between rows
-                    crossAxisSpacing: 10, // Spacing between columns
+                  SizedBox(width: 8),
+                  Text(
+                    "$emotion: ${percentage.toStringAsFixed(2)}%",
+                    style: TextStyle(fontSize: 16),
                   ),
-                  shrinkWrap: true, // Ensures the grid takes up only as much space as needed
-                  physics: NeverScrollableScrollPhysics(), // Disable scrolling if inside another scrollable widget
-                  itemCount: imageWidgets.length,
-                  itemBuilder: (context, index) {
-                    return imageWidgets[index];
-                  },
-                )
-              : Text('No Predictions');
+                ],
+              ),
+            ),
+          );
+        });
+      } else {
+        emotionWidgets.add(const Text('No emotions detected.'));
+      }
 
-              
-              
-             
-            } else {
-              return const Text('No predictions available.');
-            }
-            }
-            catch (e) {
-              print(e);
-              return const Text('Issue with Face detection!');
-            }
+      return Column(
+        children: [
+          Text("highest emotion: ${emotionImage.highestEmotion}"),
+          Image.file(
+            emotionImage.selectedImage!,
+            width: 150,
+            height: 150,
+          ),
+          const SizedBox(height: 10),
+          ...emotionWidgets,
+        ],
+      );
+    } else {
+      return const Text('No predictions found.');
+    }
+  } catch (e) {
+    return Text('Error: $e');
+  }
           },
         );
       },
@@ -113,6 +139,79 @@ Widget showPredictions() {
     return const Text('An error occurred while loading predictions.'); // Return a fallback widget
   }
 }
+// Widget showPredictions() {
+//   try {
+//     return ValueListenableBuilder<File?>(
+//       valueListenable: _imageManager.selectedImageNotifier,
+//       builder: (context, selectedImage, child) {
+//         if (_imageManager.selectedImage == null) {
+//           return const Text('No selected image');
+//         }
+
+//         return FutureBuilder<List<File>>(
+//           future: _modelManager.displayFaceDetectedImage(_imageManager.selectedImage!),
+//           builder: (context, snapshot) {
+//             try {
+//             if (snapshot.connectionState == ConnectionState.waiting) {
+//               return const CircularProgressIndicator(); // Show loading indicator
+//             } else if (snapshot.hasError) {
+//               return Text('Error: ${snapshot.error}'); // Show error message
+//             } else if (snapshot.hasData) {
+//               print(snapshot.data);
+//               List<File> predictions = snapshot.data!;
+              
+//              List<Widget> imageWidgets = [];
+
+//               for (File images in predictions) {
+//                 print('Reassign predictions');
+//                 // WidgetsBinding.instance.addPostFrameCallback((_) async {
+//                 //   await _modelManager.deleteTempFile(images); // Delete temp file after it's displayed
+//                 // });
+//                 imageWidgets.add(
+//                   Image.file(
+//                     images,
+//                     width: 150,
+//                     height: 150,
+//                   ),
+//                 );
+//               }
+
+//              return imageWidgets.isNotEmpty
+//               ? GridView.builder(
+//                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                     crossAxisCount: 2, // Number of columns
+//                     mainAxisSpacing: 10, // Spacing between rows
+//                     crossAxisSpacing: 10, // Spacing between columns
+//                   ),
+//                   shrinkWrap: true, // Ensures the grid takes up only as much space as needed
+//                   physics: NeverScrollableScrollPhysics(), // Disable scrolling if inside another scrollable widget
+//                   itemCount: imageWidgets.length,
+//                   itemBuilder: (context, index) {
+//                     return imageWidgets[index];
+//                   },
+//                 )
+//               : Text('No Predictions');
+
+              
+              
+             
+//             } else {
+//               return const Text('No predictions available.');
+//             }
+//             }
+//             catch (e) {
+//               print(e);
+//               return const Text('Issue with Face detection!');
+//             }
+//           },
+//         );
+//       },
+//     );
+//   } catch (e) {
+//     print('Error in showPredictions: $e');
+//     return const Text('An error occurred while loading predictions.'); // Return a fallback widget
+//   }
+// }
 
 
 
