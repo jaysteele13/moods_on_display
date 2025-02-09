@@ -41,6 +41,13 @@ class AddImageScreenState extends State<AddImageScreen> {
     });
   }
 
+  void _pickMultipleImagesFromCamera() async {
+    await _imageManager.pickMultipleImagesFromGallery();
+    setState(() {
+      _isGalleryLoading = false;
+    });
+  }
+
   Color getEmotionColor(String emotion) {
   switch (emotion) {
     case "happy":
@@ -75,8 +82,8 @@ class AddImageScreenState extends State<AddImageScreen> {
           if (emotion.selectedImage != null)
             Image.file(
               emotion.selectedImage!,
-              width: isPerFace.value ? 75: 300,
-              height:isPerFace.value ? 75: 300,
+              width: isPerFace.value ? 75: 200,
+              height:isPerFace.value ? 75: 200,
             ),
           Icon(
             Icons.mood,
@@ -84,7 +91,7 @@ class AddImageScreenState extends State<AddImageScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            "Emotion: ${emotion.mostCommonEmotion ?? 'Unknown'}",
+            emotion.mostCommonEmotion ?? 'Unknown',
             style: const TextStyle(fontSize: 16),
           ),
         ],
@@ -95,33 +102,47 @@ class AddImageScreenState extends State<AddImageScreen> {
 
 
 Widget showAverageEmotion() {
-  return ValueListenableBuilder<File?>(
-    valueListenable: _imageManager.selectedImageNotifier,
-    builder: (context, selectedImage, child) {
-      if (selectedImage == null) return const Text('No selected image');
+  return ValueListenableBuilder<List<File>?>(
+    valueListenable: _imageManager.selectedMultipleImagesNotifier,
+    builder: (context, selectedImages, child) {
+      if (selectedImages == null || selectedImages.isEmpty) return const Text('No selected image');
 
-      return FutureBuilder<EmotionImage>(
-        future: _modelManager.modelArchitecture(selectedImage),
+      return FutureBuilder<List<EmotionImage>>(
+        future: _modelManager.modelArchitecture(selectedImages),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           }
           if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
+            return Text('Error: \${snapshot.error}');
           }
-          if (!snapshot.hasData || snapshot.data!.emotions.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Text('No predictions found.');
           }
 
-          final emotionImage = snapshot.data!;
-          final emotionWidgets = emotionImage.emotions.entries.map((entry) {
+          final emotionImages = snapshot.data!;
+          final averageEmotions = <String, double>{};
+          final emotionCounts = <String, int>{};
+
+          for (var emotionImage in emotionImages) {
+            for (var entry in emotionImage.emotions.entries) {
+              averageEmotions[entry.key] = (averageEmotions[entry.key] ?? 0) + entry.value;
+              emotionCounts[entry.key] = (emotionCounts[entry.key] ?? 0) + 1;
+            }
+          }
+
+          averageEmotions.forEach((key, value) {
+            averageEmotions[key] = value / (emotionCounts[key] ?? 1);
+          });
+
+          final emotionWidgets = averageEmotions.entries.map((entry) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Row(
                 children: [
                   Icon(Icons.mood, color: getEmotionColor(entry.key)),
                   const SizedBox(width: 8),
-                  Text("${entry.key}: ${entry.value.toStringAsFixed(2)}%", style: const TextStyle(fontSize: 16)),
+                  Text("\${entry.key}: \${entry.value.toStringAsFixed(2)}%", style: const TextStyle(fontSize: 16)),
                 ],
               ),
             );
@@ -129,10 +150,7 @@ Widget showAverageEmotion() {
 
           return Column(
             children: [
-              Text("Highest average emotion: ${emotionImage.highestEmotion}"),
-              Text("Most common emotion in faces: ${emotionImage.mostCommonEmotion}"),
-              if (emotionImage.selectedImage != null)
-                Image.file(emotionImage.selectedImage!, width: 150, height: 150),
+              Text("Average emotions across images:"),
               const SizedBox(height: 10),
               ...emotionWidgets,
             ],
@@ -142,6 +160,7 @@ Widget showAverageEmotion() {
     },
   );
 }
+
 
 
 Widget showEmotionPerFace() {
@@ -190,7 +209,7 @@ Widget showEmotionPerFace() {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "Emotion: ${emotion.mostCommonEmotion ?? 'Unknown'}",
+                      emotion.mostCommonEmotion ?? 'Unknown',
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
@@ -206,33 +225,34 @@ Widget showEmotionPerFace() {
 
 
 Widget showEmotionsOnToggle() {
-  return ValueListenableBuilder<File?>(
-    valueListenable: _imageManager.selectedImageNotifier,
-    builder: (context, selectedImage, child) {
-      if (selectedImage == null) {
-        return const Text('No selected image');
+  return ValueListenableBuilder<List<File>?>(
+    valueListenable: _imageManager.selectedMultipleImagesNotifier,
+    builder: (context, selectedImages, child) {
+      if (selectedImages == null || selectedImages.isEmpty) {
+        return const Text('No selected images');
       }
 
-      return FutureBuilder<dynamic>(
-        future: _modelManager.modelArchitectureV2(selectedImage, perFace: isPerFace.value),
+      return FutureBuilder<List<dynamic>>(
+        future: Future.wait(selectedImages.map((image) => _modelManager.modelArchitectureV2(image, perFace: isPerFace.value))),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           }
           if (snapshot.hasError) {
-            return Text('Error - emotion detection: ${snapshot.error}');
+            return Text('Error - emotion detection: \${snapshot.error}');
           }
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Text('No predictions found.');
           }
 
-          final isList = snapshot.data is List<EmotionImage>;
+          final emotionWidgets = snapshot.data!.expand((data) {
+            final isList = data is List<EmotionImage>;
+            return isList ? (data).map(_buildEmotionWidget) : [_buildEmotionWidget(data as EmotionImage)];
+          }).toList();
 
-          return isList
-              ? Column(
-                  children: (snapshot.data as List<EmotionImage>).map(_buildEmotionWidget).toList(),
-                )
-              : _buildEmotionWidget(snapshot.data as EmotionImage);
+          return Column(
+            children: emotionWidgets,
+          );
         },
       );
     },
@@ -254,7 +274,11 @@ Widget showEmotionsOnToggle() {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('Scanning for Emotion'),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+    physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
         // based on gllery loading show this until this...
         child: _isGalleryLoading ? const CircularProgressIndicator() 
         : Column(
@@ -270,6 +294,11 @@ Widget showEmotionsOnToggle() {
               color: Colors.red,
               child: const Text('Camera'),
             ),
+            MaterialButton(
+              onPressed: _pickMultipleImagesFromCamera,
+              color: Colors.deepPurple,
+              child: const Text('Muliple Images or one'),
+            ),
             const SizedBox(height: 20),
             Switch(
               value: isPerFace.value,
@@ -284,6 +313,7 @@ Widget showEmotionsOnToggle() {
           ],
         ),
       ),
-    );
+    )));
   }
+  
 }

@@ -28,42 +28,68 @@ class ModelManager {
   }
   // -------------------------- Architecture --------------------------------
 
-   Future<EmotionImage> modelArchitecture(File selectedImage) async {
-    // Load image through Face Detection
-    List<img.Image> faceDetect = await performFaceDetection(selectedImage);
+  // amend thi function so it takes in list<File>
 
-    // Check if there are faces, if yes proceed to next step... if not return an empty object
-    if(faceDetect.isEmpty) {
-        return EmotionImage(
-        selectedImage: selectedImage,
-        // this is Map<String, double> 
-        emotions: {
-        },
-        valid: false
-      );
-    } else {
+  //  Future<EmotionImage> modelArchitecture(File selectedImage) async {
+  //   // Load image through Face Detection
+  //   List<img.Image> faceDetect = await performFaceDetection(selectedImage);
 
-    List<EmotionImage> emotionData = [];
-    // predict emotions per face
-    for (img.Image faces in faceDetect) {
-      EmotionImage emotion =  await performEmotionDetection(faces);
-      emotionData.add(emotion);
+  //   // Check if there are faces, if yes proceed to next step... if not return an empty object
+  //   if(faceDetect.isEmpty) {
+  //       return EmotionImage(
+  //       selectedImage: selectedImage,
+  //       // this is Map<String, double> 
+  //       emotions: {
+  //       },
+  //       valid: false
+  //     );
+  //   } else {
+
+  //   List<EmotionImage> emotionData = [];
+  //   // predict emotions per face
+  //   for (img.Image faces in faceDetect) {
+  //     EmotionImage emotion =  await performEmotionDetection(faces);
+  //     emotionData.add(emotion);
+  //   }
+
+  //   /*
+  //   if showEmotionPerFace = true
+  //     List<EmotionImage>
+  //    */
+
+  //   // We now iterate through this list and compare the highest emotions, whichever emotion appears the most, select that emotion
+  //   EmotionImage finalDetection = formatEmotionImages(emotionData, selectedImage);
+  //   // face_detect is a list of img.Images
+
+  //   return finalDetection;
+
+  //   }
+
+  // } 
+
+   Future<List<EmotionImage>> modelArchitecture(List<File> selectedImages) async {
+    List<EmotionImage> results = [];
+
+    for (File image in selectedImages) {
+      List<img.Image> faceDetect = await performFaceDetection(image);
+      if (faceDetect.isEmpty) {
+        results.add(EmotionImage(selectedImage: image, emotions: {}, valid: false));
+        continue;
+      }
+
+      List<EmotionImage> emotionData = [];
+      for (img.Image face in faceDetect) {
+        EmotionImage emotion = await performEmotionDetection(face);
+        emotionData.add(emotion);
+      }
+
+      EmotionImage finalDetection = formatEmotionImages(emotionData, image);
+      results.add(finalDetection);
     }
 
-    /*
-    if showEmotionPerFace = true
-      List<EmotionImage>
-     */
+    return results;
+  }
 
-    // We now iterate through this list and compare the highest emotions, whichever emotion appears the most, select that emotion
-    EmotionImage finalDetection = formatEmotionImages(emotionData, selectedImage);
-    // face_detect is a list of img.Images
-
-    return finalDetection;
-
-    }
-
-  } 
 
    Future<List<EmotionImage>?> modelArchitectureEmotionPerFace(File selectedImage) async {
     // Load image through Face Detection
