@@ -34,8 +34,15 @@ class AddImageScreenState extends State<AddImageScreen> {
      
   }
 
-  void _pickImageFromCamera() async {
-    await _imageManager.pickImageFromCamera();
+  // void _pickImageFromCamera() async {
+  //   await _imageManager.pickImageFromCamera();
+  //   setState(() {
+  //     _isGalleryLoading = false;
+  //   });
+  // }
+
+  void _clearFiles() async {
+    await _imageManager.listAndDeleteFiles();
     setState(() {
       _isGalleryLoading = false;
     });
@@ -114,7 +121,7 @@ Widget showAverageEmotion() {
             return const CircularProgressIndicator();
           }
           if (snapshot.hasError) {
-            return Text('Error: \${snapshot.error}');
+            return Text('Error: ${snapshot.error}', );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Text('No predictions found.');
@@ -189,7 +196,16 @@ Widget showEmotionPerFace() {
           return Column(
             children: emotionImages.map((emotion) {
               if (emotion.emotions.isEmpty) {
-                return const Text('No emotions detected.');
+                return Column( // Wrap both widgets in a Column
+                  children: [
+                    Image.file(
+                      emotion.selectedImage!,
+                      width: 75,
+                      height: 75,
+                    ),
+                    const Text('No emotions detected.'),
+                  ],
+                );
               }
 
               return Padding(
@@ -239,11 +255,13 @@ Widget showEmotionsOnToggle() {
             return const CircularProgressIndicator();
           }
           if (snapshot.hasError) {
-            return Text('Error - emotion detection: \${snapshot.error}');
+            return Text('Error - emotion detection: ${snapshot.error}');
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Text('No predictions found.');
           }
+
+
 
           final emotionWidgets = snapshot.data!.expand((data) {
             final isList = data is List<EmotionImage>;
@@ -264,7 +282,7 @@ Widget showEmotionsOnToggle() {
   @override
   void initState() {
     super.initState();
-    _pickImageFromGallery();
+    _pickMultipleImagesFromCamera();
   }
 
   @override
@@ -290,9 +308,9 @@ Widget showEmotionsOnToggle() {
               child: const Text('Gallery'),
             ),
             MaterialButton(
-              onPressed: _pickImageFromCamera,
+              onPressed: _clearFiles,
               color: Colors.red,
-              child: const Text('Camera'),
+              child: const Text('Clear Files'),
             ),
             MaterialButton(
               onPressed: _pickMultipleImagesFromCamera,
