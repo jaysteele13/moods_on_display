@@ -6,6 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
 import 'emotion_image.dart';
+import 'dart:math';
 
 
 class ModelManager {
@@ -28,42 +29,30 @@ class ModelManager {
   }
   // -------------------------- Architecture --------------------------------
 
-   Future<EmotionImage> modelArchitecture(File selectedImage) async {
-    // Load image through Face Detection
-    List<img.Image> faceDetect = await performFaceDetection(selectedImage);
+   // takes array of images (could be one) // amend valid if no faces are found
+   Future<List<EmotionImage>> modelArchitecture(List<File> selectedImages) async {
+    List<EmotionImage> results = [];
 
-    // Check if there are faces, if yes proceed to next step... if not return an empty object
-    if(faceDetect.isEmpty) {
-        return EmotionImage(
-        selectedImage: selectedImage,
-        // this is Map<String, double> 
-        emotions: {
-        },
-        valid: false
-      );
-    } else {
+    for (File image in selectedImages) {
+      List<img.Image> faceDetect = await performFaceDetection(image);
+      if (faceDetect.isEmpty) {
+        // results.add(EmotionImage(selectedImage: image, emotions: {}, valid: false));
+        continue;
+      }
 
-    List<EmotionImage> emotionData = [];
-    // predict emotions per face
-    for (img.Image faces in faceDetect) {
-      EmotionImage emotion =  await performEmotionDetection(faces);
-      emotionData.add(emotion);
+      List<EmotionImage> emotionData = [];
+      for (img.Image face in faceDetect) {
+        EmotionImage emotion = await performEmotionDetection(face);
+        emotionData.add(emotion);
+      }
+
+      EmotionImage finalDetection = formatEmotionImages(emotionData, image);
+      results.add(finalDetection);
     }
 
-    /*
-    if showEmotionPerFace = true
-      List<EmotionImage>
-     */
+    return results;
+  }
 
-    // We now iterate through this list and compare the highest emotions, whichever emotion appears the most, select that emotion
-    EmotionImage finalDetection = formatEmotionImages(emotionData, selectedImage);
-    // face_detect is a list of img.Images
-
-    return finalDetection;
-
-    }
-
-  } 
 
    Future<List<EmotionImage>?> modelArchitectureEmotionPerFace(File selectedImage) async {
     // Load image through Face Detection
@@ -100,21 +89,22 @@ class ModelManager {
   Future<dynamic> modelArchitectureV2(File selectedImage, {bool perFace = false}) async {
   // Load image through Face Detection
   List<img.Image> faceDetect = await performFaceDetection(selectedImage);
+  List<EmotionImage> emotionData = [];
+  // If no faces are found, return an empty result ->
 
-  // If no faces are found, return an empty result
   if (faceDetect.isEmpty) {
-    return perFace ? <EmotionImage>[] : EmotionImage(selectedImage: selectedImage, emotions: {}, valid: false);
+    return perFace ? emotionData : <EmotionImage>[];
   }
 
-  List<EmotionImage> emotionData = [];
 
   for (img.Image face in faceDetect) {
-    // Get face-specific image file (used only for per-face results)
-    File faceDetectionJPEG = await getFaceDetectionJPEG(face);
+    
     
     // Detect emotions for the face
     EmotionImage emotion = await performEmotionDetection(face);
-    emotion.selectedImage = faceDetectionJPEG;
+    // Get face-specific image file (used only for per-face results)
+    emotion.selectedImage = await getFaceDetectionJPEG(face);
+    print('emotion file');
 
     // Find most common highest emotion
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
@@ -149,7 +139,7 @@ class ModelManager {
 
 
     if (faces.isEmpty) {
-      throw Exception("No faces detected in the image.");
+      return facesList;
     }
 
     // Load the image using the image package
@@ -206,7 +196,6 @@ class ModelManager {
 
   Future<File> getFaceDetectionJPEG(img.Image selectedImage) async {
     // Encode the cropped face image back to a file
-    int uniqueCounter = 0;
     if(selectedImage.isEmpty) print('no faces found');
     
       Uint8List croppedImageBytes = img.encodeJpg(selectedImage);
@@ -216,8 +205,13 @@ class ModelManager {
       Directory tempDir = await getTemporaryDirectory();
 
       // Create a temporary file in the directory
-      File tempFile = File('${tempDir.path}/temp_image_${DateTime.now().millisecondsSinceEpoch}_$uniqueCounter.jpg');
-      uniqueCounter++;
+      Random random = Random();
+      int randomNumber = random.nextInt(10000); // Generates a random number between 0 and 999999
+
+      // Create a temporary file with a unique name, including a random number and timestamp
+      String fileName = 'temp_image_${DateTime.now().millisecondsSinceEpoch}_$randomNumber.jpg';
+      File tempFile = File('${tempDir.path}/$fileName');
+      print(tempFile);
       // Write the JPG data to the temporary file
       await tempFile.writeAsBytes(croppedImageBytes);
 
