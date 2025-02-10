@@ -53,6 +53,30 @@ class ImageManager {
     }
   }
 
+  // Here this could be ammended to create a new object, that creates a file, then the object holds the [file path and the pointer path]!
+  // this way the pointer image can be referenced and added to the DB
+  Future<void> setPointersToFiles(List<String> pointers) async {
+  // sets fileImages based off of selected images for model detection
+  List<File> result = [];
+
+  for (String point in pointers) {
+    // Get the asset by pointer
+    AssetEntity? asset = await AssetEntity.fromId(point);
+
+    // Retrieve the file from the asset
+    File? assetFile = await asset?.file;
+
+    if (assetFile != null && await assetFile.exists()) {
+      result.add(assetFile);
+    } else {
+      throw Exception("Can't retrieve the file or file does not exist");
+    }
+  }
+
+  // Update the selectedMultipleImagesNotifier with the list of File objects
+  selectedMultipleImagesNotifier.value = result;
+}
+
   Future<void> setPointersToBytesNotifier(List<String> pointers) async {
     // sets byteImages based off of selected images for model detection
     List<Uint8List> result = [];

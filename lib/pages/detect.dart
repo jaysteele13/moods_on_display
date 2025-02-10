@@ -1,5 +1,5 @@
 
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
@@ -66,11 +66,11 @@ class AddImageScreenState extends State<AddImageScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           if (emotion.selectedImage != null)
-           ExtendedImage.memory(
+           ExtendedImage.file(
               emotion.selectedImage!,
               fit: BoxFit.cover,
-              width: isPerFace.value ? 75: 200,
-              height:isPerFace.value ? 75: 200,
+              width: isPerFace.value ? 75: 150,
+              height:isPerFace.value ? 75: 150,
               clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
             ),
           
@@ -88,71 +88,9 @@ class AddImageScreenState extends State<AddImageScreen> {
     );
   }
 
-
-
-Widget showAverageEmotion() {
-  return ValueListenableBuilder<List<Uint8List>?>(
-    valueListenable: _imageManager.selectedByteImagesNotifier,
-    builder: (context, selectedImages, child) {
-      if (selectedImages == null || selectedImages.isEmpty) return const Text('No selected image');
-
-      return FutureBuilder<List<EmotionImage>>(
-        future: _modelManager.modelArchitecture(selectedImages),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          }
-          if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}', );
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Text('No predictions found.');
-          }
-
-          final emotionImages = snapshot.data!;
-          final averageEmotions = <String, double>{};
-          final emotionCounts = <String, int>{};
-
-          for (var emotionImage in emotionImages) {
-            for (var entry in emotionImage.emotions.entries) {
-              averageEmotions[entry.key] = (averageEmotions[entry.key] ?? 0) + entry.value;
-              emotionCounts[entry.key] = (emotionCounts[entry.key] ?? 0) + 1;
-            }
-          }
-
-          averageEmotions.forEach((key, value) {
-            averageEmotions[key] = value / (emotionCounts[key] ?? 1);
-          });
-
-          final emotionWidgets = averageEmotions.entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              child: Row(
-                children: [
-                  Icon(Icons.mood, color: getEmotionColor(entry.key)),
-                  const SizedBox(width: 8),
-                  Text("\${entry.key}: \${entry.value.toStringAsFixed(2)}%", style: const TextStyle(fontSize: 16)),
-                ],
-              ),
-            );
-          }).toList();
-
-          return Column(
-            children: [
-              Text("Average emotions across images:"),
-              const SizedBox(height: 10),
-              ...emotionWidgets,
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
 Widget showEmotionsOnToggle() {
-  return ValueListenableBuilder<List<Uint8List>?>(
-    valueListenable: _imageManager.selectedByteImagesNotifier,
+  return ValueListenableBuilder<List<File>?>(
+    valueListenable: _imageManager.selectedMultipleImagesNotifier,
     builder: (context, selectedImages, child) {
       if (selectedImages == null || selectedImages.isEmpty) {
         return const Text('No selected images');
@@ -196,8 +134,9 @@ Future<void> _openGallery() async {
   if (pointers != null) {
       setState(() {
         _isGalleryLoading = false;
-        // set imageManager Function to set pointerImages into UInt8List
-        _imageManager.setPointersToBytesNotifier(pointers);
+         _imageManager.setPointersToFiles(pointers);
+        // set imageManager Function to set pointerImages into UInt8List this won't work so pointers must be set to files
+        // _imageManager.setPointersToBytesNotifier(pointers);
       });
   }
   print('here are pointers: $pointers');
@@ -214,86 +153,44 @@ Future<void> _openGallery() async {
     albumManager.releaseCache(); // ✅ Clears cache on initialization
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return BaseScaffold(
-  //     appBar: AppBar(
-  //       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-  //       title: Text('Scanning for Emotion'),
-  //     ),
-  //     body: SingleChildScrollView(
-  //   physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
-  //   child: Padding(
-  //     padding: const EdgeInsets.all(16.0),
-  //     child: Center(
-  //       // based on gllery loading show this until this...
-  //       child: _isGalleryLoading ? const CircularProgressIndicator() 
-  //       : Column(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: <Widget>[
-  //           MaterialButton(
-  //             onPressed: _openGallery,
-  //             color: Colors.deepPurple,
-  //             child: const Text('Muliple Images or one'),
-  //           ),
-  //           const SizedBox(height: 20),
-  //           Switch(
-  //             value: isPerFace.value,
-  //             onChanged: (newValue) {
-  //               isPerFace.value = newValue;
-  //               setState(() {}); // Update UI when toggle changes
-  //             }),
-  //          Column(
-  //         children: [ showEmotionsOnToggle() ],
-  //       )
+@override
+  Widget build(BuildContext context) {
+    return BaseScaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text('Scanning for Emotion'),
+      ),
+      body: SingleChildScrollView(
+    physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        // based on gllery loading show this until this...
+        child: _isGalleryLoading ? const CircularProgressIndicator() 
+        : Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            MaterialButton(
+              onPressed: _openGallery,
+              color: Colors.deepPurple,
+              child: const Text('Muliple Images or one'),
+            ),
+            const SizedBox(height: 20),
+            Switch(
+              value: isPerFace.value,
+              onChanged: (newValue) { // this causes the function to run twice
+                isPerFace.value = newValue;
+                setState(() {}); // Update UI when toggle changes
+              }),
+           Column(
+          children: [ showEmotionsOnToggle() ],
+        )
   
-  //         ],
-  //       ),
-  //     ),
-  //   )));
-  // }
-
-
-  @override
-Widget build(BuildContext context) {
-  return BaseScaffold(
-    appBar: AppBar(
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      title: const Text('Scanning for Emotion'),
-    ),
-    body: SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: _isGalleryLoading
-              ? const CircularProgressIndicator()
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    MaterialButton(
-                      onPressed: _openGallery,
-                      color: Colors.deepPurple,
-                      child: const Text('Multiple Images or One'),
-                    ),
-                    const SizedBox(height: 20),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: isPerFace,
-                      builder: (context, value, child) {
-                        return Switch(
-                          value: value,
-                          onChanged: (newValue) => isPerFace.value = newValue,
-                        );
-                      },
-                    ),
-                    showEmotionsOnToggle(),
-                  ],
-                ),
+          ],
         ),
       ),
-    ),
-  );
-}
+    )));
+  }
 
   
 }
