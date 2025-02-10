@@ -4,9 +4,7 @@ import 'dart:ui';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:path_provider/path_provider.dart';
 import 'emotion_image.dart';
-import 'dart:math';
 
 
 class ModelManager {
@@ -30,10 +28,10 @@ class ModelManager {
   // -------------------------- Architecture --------------------------------
 
    // takes array of images (could be one) // amend valid if no faces are found
-   Future<List<EmotionImage>> modelArchitecture(List<File> selectedImages) async {
+   Future<List<EmotionImage>> modelArchitecture(List<Uint8List> selectedImages) async {
     List<EmotionImage> results = [];
 
-    for (File image in selectedImages) {
+    for (Uint8List image in selectedImages) {
       List<img.Image> faceDetect = await performFaceDetection(image);
       if (faceDetect.isEmpty) {
         // results.add(EmotionImage(selectedImage: image, emotions: {}, valid: false));
@@ -54,7 +52,7 @@ class ModelManager {
   }
 
 
-   Future<List<EmotionImage>?> modelArchitectureEmotionPerFace(File selectedImage) async {
+   Future<List<EmotionImage>?> modelArchitectureEmotionPerFace(Uint8List selectedImage) async {
     // Load image through Face Detection
     List<img.Image> faceDetect = await performFaceDetection(selectedImage);
 
@@ -67,7 +65,7 @@ class ModelManager {
     // predict emotions per face
     for (img.Image faces in faceDetect) {
     // get file for face
-      File faceDetectionJPEG = await getFaceDetectionJPEG(faces);
+      Uint8List faceDetectionJPEG = await getFaceDetectionJPEG(faces);
       EmotionImage emotion =  await performEmotionDetection(faces);
 
       emotion.selectedImage = faceDetectionJPEG;
@@ -86,8 +84,9 @@ class ModelManager {
 
   } 
 
-  Future<dynamic> modelArchitectureV2(File selectedImage, {bool perFace = false}) async {
+  Future<dynamic> modelArchitectureV2(Uint8List selectedImage, {bool perFace = false}) async {
   // Load image through Face Detection
+  print('starting google face dtection');
   List<img.Image> faceDetect = await performFaceDetection(selectedImage);
   List<EmotionImage> emotionData = [];
   // If no faces are found, return an empty result ->
@@ -101,10 +100,12 @@ class ModelManager {
     
     
     // Detect emotions for the face
+    print('starting emotion dtection');
     EmotionImage emotion = await performEmotionDetection(face);
     // Get face-specific image file (used only for per-face results)
+    print('starting isolated jpeg faces');
     emotion.selectedImage = await getFaceDetectionJPEG(face);
-    print('emotion file');
+    
 
     // Find most common highest emotion
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
@@ -112,6 +113,7 @@ class ModelManager {
     emotionData.add(emotion);
   }
 
+  print('returning data');
   // Return either a list of per-face emotions or a single formatted EmotionImage
   return perFace ? emotionData : formatEmotionImages(emotionData, selectedImage);
 }
@@ -119,9 +121,27 @@ class ModelManager {
 
   // -------------------------- Face Detection --------------------------------
 
-   Future<List<img.Image>> performFaceDetection(File selectedImage) async {
+   Future<List<img.Image>> performFaceDetection(Uint8List selectedImage) async {
     // Load the input image
-      InputImage inputImage = InputImage.fromFile(selectedImage);
+
+      // Load the image using the image package
+    print('decoding image length is: ${selectedImage.length}');
+    img.Image? originalImage = img.decodeImage(selectedImage);
+
+    if (originalImage == null) {
+      throw Exception("Failed to load the image. It is null.");
+    }
+
+      // metadata for google image to work
+      InputImageMetadata metadata = InputImageMetadata(
+        rotation: InputImageRotation.rotation0deg, // Set appropriate rotation here // Optionally, specify the image size if available
+        format: InputImageFormat.bgra8888, // Adjust the format based on your image
+        bytesPerRow: originalImage.bitsPerChannel,
+        size: Size(originalImage.width as double, originalImage.height as double)
+      );
+
+      print('input image process');
+      InputImage inputImage = InputImage.fromBytes(bytes: selectedImage, metadata: metadata);
 
       final List<img.Image> facesList = [];
     // Detect faces in the image
@@ -141,15 +161,6 @@ class ModelManager {
     if (faces.isEmpty) {
       return facesList;
     }
-
-    // Load the image using the image package
-    final imageBytes = await selectedImage.readAsBytes();
-    img.Image? originalImage = img.decodeImage(imageBytes);
-
-    if (originalImage == null) {
-      throw Exception("Failed to load the image.");
-    }
-
     // have confidence system, make more accurate, then include more faces
 
     // Get the first detected face's bounding box
@@ -185,39 +196,19 @@ class ModelManager {
     return facesList;
   }
 
-  Future<File> displayFaceDetectedImage(img.Image images) async {
-    File jpgImage = (await getFaceDetectionJPEG(images));
-    return jpgImage;
+  Future<Uint8List> displayFaceDetectedImage(img.Image images) async {
+    Uint8List byteImage = (await getFaceDetectionJPEG(images));
+    return byteImage;
   }
 
 
   // return image array of faces
  
 
-  Future<File> getFaceDetectionJPEG(img.Image selectedImage) async {
+  Future<Uint8List> getFaceDetectionJPEG(img.Image selectedImage) async {
     // Encode the cropped face image back to a file
     if(selectedImage.isEmpty) print('no faces found');
-    
-      Uint8List croppedImageBytes = img.encodeJpg(selectedImage);
-    // final croppedFilePath = "${selectedImage.parent.path}/cropped_face.jpg";
-    // final croppedFile = File(croppedFilePath);
-    // await croppedFile.writeAsBytes(croppedImageBytes);
-      Directory tempDir = await getTemporaryDirectory();
-
-      // Create a temporary file in the directory
-      Random random = Random();
-      int randomNumber = random.nextInt(10000); // Generates a random number between 0 and 999999
-
-      // Create a temporary file with a unique name, including a random number and timestamp
-      String fileName = 'temp_image_${DateTime.now().millisecondsSinceEpoch}_$randomNumber.jpg';
-      File tempFile = File('${tempDir.path}/$fileName');
-      print(tempFile);
-      // Write the JPG data to the temporary file
-      await tempFile.writeAsBytes(croppedImageBytes);
-
-    
-    return tempFile;
-
+      return img.encodeJpg(selectedImage);
   }
 
   Future<void> deleteTempFile(File file) async {
@@ -304,7 +295,7 @@ EmotionImage parseIntoEmotionImage(List<dynamic> data) {
 }
 
 
-EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, File selectedImage,) {
+EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, Uint8List selectedImage,) {
   if (emotionImages.isEmpty) {
     throw Exception("Emotion image list is empty.");
   }

@@ -5,12 +5,12 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:ui';
 
-class PaginatedPhotoPickerScreen extends StatefulWidget {
+class GalleryScreen extends StatefulWidget {
   @override
-  _PaginatedPhotoPickerScreenState createState() => _PaginatedPhotoPickerScreenState();
+  _GalleryScreenState createState() => _GalleryScreenState();
 }
 
-class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen> {
+class _GalleryScreenState extends State<GalleryScreen> {
   List<AssetPathEntity> albums = [];
   List<AssetEntity> images = [];
   List<String> selectedPointers = [];
@@ -84,10 +84,9 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
     selectedPointers.clear();
   });
   PhotoManager.releaseCache(); // 🔹 Force cache release
-
-  Future.delayed(Duration(milliseconds: 300), () {
-    Navigator.pop(context, result); // Ensure memory is cleared before pop
-  });
+  if (mounted) {
+    Navigator.pop(context, result); // Ensure the widget is still mounted before popping
+  }
 
   }
 

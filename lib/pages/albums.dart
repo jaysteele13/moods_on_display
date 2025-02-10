@@ -2,7 +2,7 @@ import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart'
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
-import 'package:moods_on_display/pages/native_add_images.dart';
+import 'package:moods_on_display/managers/album_manager/album_view.dart';
 import 'package:extended_image/extended_image.dart';
 
 class AlbumScreen extends StatefulWidget {
@@ -29,7 +29,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Future<void> openImagePickerForPointers() async {
     List<String>? pointers = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PaginatedPhotoPickerScreen()),
+      MaterialPageRoute(builder: (context) => AlbumViewScreen()),
     );
 
     if (pointers != null) {

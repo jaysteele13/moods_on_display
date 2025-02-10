@@ -1,7 +1,7 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 class EmotionImage {
-  File? selectedImage;
+  Uint8List? selectedImage;
   final Map<String, double> emotions;
   final bool valid;
   String? mostCommonEmotion;
