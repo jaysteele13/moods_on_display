@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // import firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:moods_on_display/app_flow/flow.dart';
+import 'package:moods_on_display/pages/album.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/login.dart';
 import 'package:moods_on_display/pages/profile.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/profile': (context) => ProfileScreen(),
         '/add_images': (context) => AddImageScreen(),
+        '/album': (context) => PaginatedPhotoPickerScreen(),
         '/login': (context) => LoginScreen()
       },
       debugShowCheckedModeBanner: false,

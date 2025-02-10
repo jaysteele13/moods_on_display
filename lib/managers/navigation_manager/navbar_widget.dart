@@ -27,7 +27,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
                 Navigator.pushReplacementNamed(context, '/home');
                 break;
               case 1:
-                // Navigator.pushReplacementNamed(context, '/albums');
+                Navigator.pushReplacementNamed(context, '/album');
                 break;
               case 2:
                 Navigator.pushReplacementNamed(context, '/add_images');
