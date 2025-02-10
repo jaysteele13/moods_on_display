@@ -83,6 +83,8 @@ Future<void> listAndDeleteFiles() async {
   // Ensure uniqueness (optional, to prevent duplicates)
   newSelectedImages = newSelectedImages.toSet().toList();
 
+   
+
   // Update the ValueNotifier with the new list of selected images
   selectedMultipleImagesNotifier.value = newSelectedImages;
 }
@@ -93,7 +95,9 @@ Future<void> listAndDeleteFiles() async {
     //clearImage(); // clear cache
     selectedImage = null;
     final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+   
     if (pickedImage == null) return null;
+    print('here is image path: ${pickedImage.name}');
     selectedImage = File(pickedImage.path);
     
   }
