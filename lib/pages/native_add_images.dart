@@ -1,9 +1,9 @@
-
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';              
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:extended_image/extended_image.dart';
+import 'dart:ui';
 
 class PaginatedPhotoPickerScreen extends StatefulWidget {
   @override
@@ -13,16 +13,11 @@ class PaginatedPhotoPickerScreen extends StatefulWidget {
 class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen> {
   List<AssetPathEntity> albums = [];
   List<AssetEntity> images = [];
-  List<AssetEntity> selectedImages = [];
-  Map<String, AssetEntity> selectedImagesMap = {}; // Persist selections
+  List<String> selectedPointers = [];
   AssetPathEntity? selectedAlbum;
   int currentPage = 0;
   bool isLoading = false;
   static const int pageSize = 50;
-
-  /// List to store final selected images as File objects
-  List<File> selectedImageFiles = [];
-  List<String> selectedImagePointers = [];
 
   @override
   void initState() {
@@ -34,9 +29,7 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
     final PermissionState result = await PhotoManager.requestPermissionExtend();
     if (result.isAuth) {
       List<AssetPathEntity> fetchedAlbums = await PhotoManager.getAssetPathList(type: RequestType.image);
-      setState(() {
-        albums = fetchedAlbums;
-      });
+      setState(() => albums = fetchedAlbums);
     } else {
       PhotoManager.openSetting();
     }
@@ -69,38 +62,36 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
     }
   }
 
+  /// ✅ **Efficiently stores only asset ID in memory**
   void toggleSelection(AssetEntity asset) {
     setState(() {
-      if (selectedImagesMap.containsKey(asset.id)) {
-        selectedImagesMap.remove(asset.id);
+      if (selectedPointers.contains(asset.id)) {
+        selectedPointers.remove(asset.id);
       } else {
-        selectedImagesMap[asset.id] = asset;
+        selectedPointers.add(asset.id);
       }
-      selectedImages = selectedImagesMap.values.toList();
     });
   }
 
-  Future<void> saveSelectedImages() async {
-    List<File> files = [];
-    List<String> pointers = [];
-    for (AssetEntity asset in selectedImages) {
-      String pointerId = asset.id;
-      print('here is pointer id: $pointerId');
-      pointers.add(pointerId);
-      File? file = await asset.file;
-      if (file != null) {
-        files.add(file);
-      }
-    }
-    setState(() {
-      selectedImageFiles = files;
-      selectedImagePointers = pointers;
-    });
 
-    /// ✅ Return selected images to previous screen
-    // Navigator.pop(context, selectedImageFiles);
-    Navigator.pop(context, selectedImagePointers);
+  /// ✅ **Returns selected image IDs instead of loading files into memory**
+  void saveSelectedImages() {
+    List<String> result = List.from(selectedPointers); // Copy pointers before clearing
+
+  // ✅ Clear memory before closing the page
+  setState(() {
+    images.clear();
+    selectedPointers.clear();
+  });
+  PhotoManager.releaseCache(); // 🔹 Force cache release
+
+  Future.delayed(Duration(milliseconds: 300), () {
+    Navigator.pop(context, result); // Ensure memory is cleared before pop
+  });
+
   }
+
+  
 
   void resetAlbumSelection() {
     setState(() {
@@ -108,6 +99,22 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
       images.clear();
     });
   }
+
+void triggerGC() {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    PlatformDispatcher.instance.onBeginFrame; 
+  });
+}
+
+@override
+void dispose() {
+  images.clear(); // Clear the loaded images
+  selectedPointers.clear(); // Clear selected image pointers
+  PhotoManager.releaseCache(); // 🔹 Release asset cache
+  triggerGC();
+  super.dispose();
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +127,7 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
               icon: Icon(Icons.folder_open),
               onPressed: resetAlbumSelection,
             ),
-          if (selectedImages.isNotEmpty)
+          if (selectedPointers.isNotEmpty)
             IconButton(
               icon: Icon(Icons.check),
               onPressed: saveSelectedImages,
@@ -158,12 +165,18 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
                           future: images[index].thumbnailDataWithSize(ThumbnailSize(200, 200)),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-                              bool isSelected = selectedImagesMap.containsKey(images[index].id);
+                              bool isSelected = selectedPointers.contains(images[index].id);
                               return GestureDetector(
                                 onTap: () => toggleSelection(images[index]),
                                 child: Stack(
                                   children: [
-                                    Image.memory(snapshot.data!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+                               ExtendedImage.memory(
+                                  snapshot.data!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+                                ),
                                     if (isSelected)
                                       Positioned(
                                         top: 8,
@@ -181,13 +194,13 @@ class _PaginatedPhotoPickerScreenState extends State<PaginatedPhotoPickerScreen>
                     ),
                   ),
           ),
-          if (selectedImages.isNotEmpty)
+          if (selectedPointers.isNotEmpty)
             Container(
               padding: EdgeInsets.all(16),
               color: Colors.blue,
               width: double.infinity,
               child: Text(
-                "Selected Images: ${selectedImages.length}",
+                "Selected Images: ${selectedPointers.length}",
                 style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),

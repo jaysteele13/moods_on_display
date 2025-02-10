@@ -1,13 +1,9 @@
-/*
-View the selected images by a function which gets the images byte code
-
-*/
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';   
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
-import 'package:moods_on_display/pages/native_add_images.dart'; // Import the photo picker screen
+import 'package:moods_on_display/pages/native_add_images.dart';
+import 'package:extended_image/extended_image.dart';
 
 class AlbumScreen extends StatefulWidget {
   @override
@@ -15,21 +11,19 @@ class AlbumScreen extends StatefulWidget {
 }
 
 class _AlbumScreenState extends State<AlbumScreen> {
-  List<File> selectedImages = [];
   List<String> selectedPointers = [];
   final AlbumManager albumManager = AlbumManager();
 
-  Future<void> openImagePicker() async {
-    List<File>? images = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PaginatedPhotoPickerScreen()),
-    );
+  @override
+  void initState() {
+    super.initState();
+    albumManager.releaseCache(); // ✅ Clears cache on initialization
+  }
 
-    if (images != null) {
-      setState(() {
-        selectedImages = images;
-      });
-    }
+  @override
+  void dispose() {
+    albumManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed
+    super.dispose();
   }
 
   Future<void> openImagePickerForPointers() async {
@@ -48,35 +42,62 @@ class _AlbumScreenState extends State<AlbumScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
-      appBar: AppBar(title: Text("Main Screen")),
+      appBar: AppBar(title: const Text("Main Screen")),
       body: Column(
         children: [
           ElevatedButton(
             onPressed: openImagePickerForPointers,
-            child: Text("Select Images"),
+            child: const Text("Select Images"),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text("Selected Images: ${selectedPointers.length}"),
           Expanded(
-            child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
-            itemCount: selectedPointers.length,
-            itemBuilder: (context, index) {
-            return FutureBuilder<Uint8List?>(
-              future: albumManager.getImageByPointer(selectedPointers[index]),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator()); // Show loading while fetching
-                }
-                if (snapshot.hasData && snapshot.data != null) {
-                  return Image.memory(snapshot.data!, fit: BoxFit.cover);
-                } else {
-                  return Center(child: Text('Skip', textAlign: TextAlign.center));
-                }
-              },
+            child: ListView.builder(
+  itemCount: (selectedPointers.length / 5).ceil(), // ✅ Groups images into rows of 4
+  itemBuilder: (context, rowIndex) {
+    int startIndex = rowIndex * 4;
+    int endIndex = (startIndex + 4).clamp(0, selectedPointers.length);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: selectedPointers.sublist(startIndex, endIndex).map((pointer) {
+        return FutureBuilder<Uint8List?>(
+          future: albumManager.getImageByPointer(pointer, false), // ✅ Low-res mode
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                width: 70,
+                height: 70,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (snapshot.hasError) {
+              return const SizedBox(
+                width: 100,
+                height: 100,
+                child: Center(child: Text('Error', textAlign: TextAlign.center)),
+              );
+            }
+            if (snapshot.hasData && snapshot.data != null) {
+               return ExtendedImage.memory(
+                snapshot.data!,
+                fit: BoxFit.cover,
+                width: 70,
+                height: 70,
+                clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+              );
+            }
+            return const SizedBox(
+              width: 100,
+              height: 100,
+              child: Center(child: Text('Skip', textAlign: TextAlign.center)),
             );
-            },
-            ),
+          },
+        );
+      }).toList(),
+    );
+  },
+),
           ),
         ],
       ),
