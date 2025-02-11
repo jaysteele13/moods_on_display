@@ -46,6 +46,10 @@ dependencies:
   google_mlkit_face_detection: ^0.12.0
   google_mlkit_commons: ^0.9.0
   path_provider: ^2.1.5
+  photo_manager: ^3.6.4
+  extended_image: ^9.1.0
+  collection: ^1.19.0
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:

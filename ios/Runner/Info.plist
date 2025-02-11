@@ -64,5 +64,7 @@
 	<string>For AI</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>For AI</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save images.</string>
 </dict>
 </plist>

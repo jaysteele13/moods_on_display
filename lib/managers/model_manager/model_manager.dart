@@ -79,11 +79,8 @@ class ModelManager {
 
       emotionData.add(emotion);
     }
-
     return emotionData;
-
     }
-
   } 
 
   Future<dynamic> modelArchitectureV2(File selectedImage, {bool perFace = false}) async {
@@ -104,7 +101,6 @@ class ModelManager {
     EmotionImage emotion = await performEmotionDetection(face);
     // Get face-specific image file (used only for per-face results)
     emotion.selectedImage = await getFaceDetectionJPEG(face);
-    print('emotion file');
 
     // Find most common highest emotion
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
@@ -115,8 +111,6 @@ class ModelManager {
   // Return either a list of per-face emotions or a single formatted EmotionImage
   return perFace ? emotionData : formatEmotionImages(emotionData, selectedImage);
 }
-
-
   // -------------------------- Face Detection --------------------------------
 
    Future<List<img.Image>> performFaceDetection(File selectedImage) async {
@@ -153,7 +147,7 @@ class ModelManager {
     // have confidence system, make more accurate, then include more faces
 
     // Get the first detected face's bounding box
-    double highestConfidence = 0.0005;
+    double highestConfidence = 0.01;
     Face bestFace = faces.first;
     print("lenth of faces ${faces.length}");
 
@@ -199,9 +193,6 @@ class ModelManager {
     if(selectedImage.isEmpty) print('no faces found');
     
       Uint8List croppedImageBytes = img.encodeJpg(selectedImage);
-    // final croppedFilePath = "${selectedImage.parent.path}/cropped_face.jpg";
-    // final croppedFile = File(croppedFilePath);
-    // await croppedFile.writeAsBytes(croppedImageBytes);
       Directory tempDir = await getTemporaryDirectory();
 
       // Create a temporary file in the directory
@@ -215,11 +206,11 @@ class ModelManager {
       // Write the JPG data to the temporary file
       await tempFile.writeAsBytes(croppedImageBytes);
 
-    
     return tempFile;
 
   }
 
+  // way to clear files after add to db, include pointer in emotionImage
   Future<void> deleteTempFile(File file) async {
   if (await file.exists()) {
     await file.delete();
@@ -230,7 +221,6 @@ class ModelManager {
   // -------------------------- Emotion Detection --------------------------------
 
    Future<EmotionImage> performEmotionDetection(img.Image image) async {
-
     // Resize the image to 224 for MobileNetv2
     img.Image resizedImage = img.copyResize(image, width: 224, height: 224);
 
@@ -245,7 +235,6 @@ class ModelManager {
         },
       ),
     );
-
     final input = [imageMatrix];
     var output = List.filled(7, 0).reshape([1, 7]);
 
@@ -339,18 +328,12 @@ EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, File selected
 
 
 String findMostCommonHighestEmotion(EmotionImage emotionImage) {
-  
-
   Map<String, int> emotionCount = {};
-
   // Count occurrences of each highest emotion
     String highest = emotionImage.highestEmotion;
     emotionCount[highest] = (emotionCount[highest] ?? 0) + 1;
-
-
   // Find the emotion with the highest count
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-
   return mostCommonEmotion;
 }
 
