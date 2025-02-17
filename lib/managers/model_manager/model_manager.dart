@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
@@ -63,12 +64,14 @@ class ModelManager {
 
     // Find most common highest emotion
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
+
+    // Add emotion to dataset here - need check to ensure assetId isn't the same
     
     emotionData.add(emotion);
   }
 
   // Return either a list of per-face emotions or a single formatted EmotionImage
-  return perFace ? emotionData : formatEmotionImages(emotionData, selectedFilePathPointer);
+  return perFace ? emotionData : await formatEmotionImagesWithDB(emotionData, selectedFilePathPointer);
 }
   // -------------------------- Face Detection --------------------------------
 
@@ -263,7 +266,7 @@ EmotionImage parseIntoEmotionImage(List<dynamic> data) {
 }
 
 
-EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, FilePathPointer selectedImage,) {
+Future<EmotionImage> formatEmotionImagesWithDB(List<EmotionImage> emotionImages, FilePathPointer selectedFilePathPointer,) async{
   if (emotionImages.isEmpty) {
     throw Exception("Emotion image list is empty.");
   }
@@ -288,8 +291,12 @@ EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, FilePathPoint
 
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
+  // DATABASE
+  await DatabaseManager.instance.insertImage(selectedFilePathPointer.imagePointer, mostCommonEmotion);
+  
+
   return EmotionImage(
-    selectedFilePathPointer: selectedImage,
+    selectedFilePathPointer: selectedFilePathPointer,
     emotions: totalEmotions,
     valid: true,
     mostCommonEmotion: mostCommonEmotion

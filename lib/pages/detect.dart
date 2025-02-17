@@ -10,6 +10,9 @@ import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart'
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
+import 'dart:io';
+
+
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -68,6 +71,7 @@ class AddImageScreenState extends State<AddImageScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           FutureBuilder<Uint8List?>(
+            // here the emotions pointer is being used -> we could use filePath to get temporary face
         future: _imageManager.getImageByPointer(
           emotion.selectedFilePathPointer!.imagePointer,
           true,
@@ -80,14 +84,26 @@ class AddImageScreenState extends State<AddImageScreen> {
           } else if (!snapshot.hasData || snapshot.data == null) {
             return const SizedBox(); // Handle null image
           }
-
-          return ExtendedImage.memory(
-            snapshot.data!,
+          if (isPerFace.value) {
+          // If isPerFace is true, return the ExtendedImage.memory widget
+          return ExtendedImage.file(
+            File(emotion.selectedFilePathPointer!.filePath),
             fit: BoxFit.cover,
-            width: isPerFace.value ? 75 : 150,
-            height: isPerFace.value ? 75 : 150,
+            width: 75,
+            height: 75,
             clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
           );
+         
+        } else {
+          // If isPerFace is false, return the ExtendedImage.file widget
+           return ExtendedImage.memory(
+            snapshot.data!,
+            fit: BoxFit.cover,
+            width: 150,
+            height: 150,
+            clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+          );
+        }
         },
       ),
          Icon(
@@ -151,7 +167,7 @@ Future<void> _openGallery() async {
       setState(() {
         _isGalleryLoading = false;
         // we then turn pointers into temporary files
-         _imageManager.setPointersToFilePointer(pointers);
+         _imageManager.setPointersToFilePathPointer(pointers);
         // set imageManager Function to set pointerImages into UInt8List this won't work so pointers must be set to files
         // _imageManager.setPointersToBytesNotifier(pointers);
       });

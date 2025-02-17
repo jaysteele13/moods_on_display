@@ -98,7 +98,7 @@ class ImageManager {
   selectedMultipleImagesNotifier.value = result;
 }
 
-Future<void> setPointersToFilePointer(List<String> pointers) async {
+Future<void> setPointersToFilePathPointer(List<String> pointers) async {
   // sets fileImages based off of selected images for model detection
   List<FilePathPointer> result = [];
 
