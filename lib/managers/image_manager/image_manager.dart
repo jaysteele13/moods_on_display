@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,13 @@ import 'package:collection/collection.dart';
 
 class ImageManager {
  
+  // file object array
   final ValueNotifier<List<File>?> selectedMultipleImagesNotifier = ValueNotifier<List<File>?>(null);
   List<File>? get selectedImages => selectedMultipleImagesNotifier.value;
+
+  // file path object array
+  final ValueNotifier<List<FilePathPointer>?> selectedMultiplePathsNotifier = ValueNotifier<List<FilePathPointer>?>(null);
+  List<FilePathPointer>? get selectedPaths => selectedMultiplePathsNotifier.value;
 
   final ValueNotifier<List<Uint8List>?> selectedByteImagesNotifier = ValueNotifier<List<Uint8List>?>(null);
   List<Uint8List>? get selectedByteImages => selectedByteImagesNotifier.value;
@@ -31,6 +37,22 @@ class ImageManager {
       selectedMultipleImagesNotifier.value = uniqueImages; // Set the unique list of images
     } else {
       selectedMultipleImagesNotifier.value = null; // If null, clear the selected images
+    }
+  }
+
+  // setting unique objects
+   set selectedPaths(List<FilePathPointer>? newPaths) {
+    if (newPaths != null) {
+      // Remove duplicates by comparing file paths or other criteria (e.g., if file already exists)
+      List<FilePathPointer> uniquePaths = [];
+      for (var path in newPaths) {
+        if (!uniquePaths.any((existingPath) => existingPath.filePath == path.filePath)) {
+          uniquePaths.add(FilePathPointer(filePath: path.filePath, imagePointer: path.imagePointer)); // Add the image if it's not already in the list
+        }
+      }
+      selectedMultiplePathsNotifier.value = uniquePaths; // Set the unique list of images
+    } else {
+      selectedMultiplePathsNotifier.value = null; // If null, clear the selected images
     }
   }
 
@@ -54,7 +76,6 @@ class ImageManager {
   }
 
   // Here this could be ammended to create a new object, that creates a file, then the object holds the [file path and the pointer path]!
-  // this way the pointer image can be referenced and added to the DB
   Future<void> setPointersToFiles(List<String> pointers) async {
   // sets fileImages based off of selected images for model detection
   List<File> result = [];
@@ -77,6 +98,31 @@ class ImageManager {
   selectedMultipleImagesNotifier.value = result;
 }
 
+Future<void> setPointersToFilePointer(List<String> pointers) async {
+  // sets fileImages based off of selected images for model detection
+  List<FilePathPointer> result = [];
+
+  for (String point in pointers) {
+    // Get the asset by pointer
+    AssetEntity? asset = await AssetEntity.fromId(point);
+
+    // Retrieve the file from the asset
+    File? assetFile = await asset?.file;
+
+    // Grab file path
+    String? assetFilePath = assetFile?.path;
+
+    if (assetFile != null && await assetFile.exists()) {
+      result.add(FilePathPointer(filePath: assetFilePath!, imagePointer: point));
+    } else {
+      throw Exception("Can't retrieve the file or file does not exist");
+    }
+  }
+
+  // Update the selectedMultipleImagesNotifier with the list of File objects
+  selectedMultiplePathsNotifier.value = result;
+}
+
   Future<void> setPointersToBytesNotifier(List<String> pointers) async {
     // sets byteImages based off of selected images for model detection
     List<Uint8List> result = [];
@@ -95,6 +141,8 @@ class ImageManager {
     }
 
   }
+
+  
 
   
   List<AssetEntity> images = []; // grab albums from db
