@@ -19,7 +19,7 @@ class AddImageScreen extends StatefulWidget {
 class AddImageScreenState extends State<AddImageScreen> {
   final ImageManager _imageManager = ImageManager();
   final ModelManager _modelManager = ModelManager();
-  final ValueNotifier<bool> isPerFace = ValueNotifier<bool>(false); // Toggle state
+  final ValueNotifier<bool> isPerFace = ValueNotifier<bool>(true); // Toggle state
 
   bool _isGalleryLoading = false;
   List faceDetections = [];

@@ -22,7 +22,13 @@ class ModelManager {
   }
 
   Future<void> loadModel() async {
-    interpreter = await Interpreter.fromAsset('assets/models/model.tflite');
+    // fer
+    //interpreter = await Interpreter.fromAsset('assets/models/model.tflite');
+    interpreter = await Interpreter.fromAsset('assets/models/model_jay_m1.tflite');
+
+    // affwild
+    // interpreter = await Interpreter.fromAsset('assets/models/model_aff.tflite');
+
     // google face detector
     final options = FaceDetectorOptions(performanceMode: FaceDetectorMode.accurate, enableClassification: true);
     faceDetector = FaceDetector(options: options);
@@ -222,7 +228,10 @@ class ModelManager {
 
    Future<EmotionImage> performEmotionDetection(img.Image image) async {
     // Resize the image to 224 for MobileNetv2
-    img.Image resizedImage = img.copyResize(image, width: 224, height: 224);
+
+    // Resize for some fer plus models FERPLUS 48
+    int img_size = 224;
+    img.Image resizedImage = img.copyResize(image, width: img_size, height: img_size);
 
     // Prepare input
     final imageMatrix = List.generate(
@@ -251,6 +260,19 @@ class ModelManager {
 
 
 EmotionImage parseIntoEmotionImage(List<dynamic> data) {
+
+  // // Affwild labels
+  //   List<String> emotionLabels = [
+  //   'neutral',
+  //   'angry',
+  //   'disgust',
+  //   'fear',
+  //   'happy',
+  //   'sad',
+  //   'surprise'
+  // ];
+
+
   // FER labels (should match the data length)
   List<String> emotionLabels = [
     'angry',
