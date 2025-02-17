@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -35,63 +36,12 @@ class ModelManager {
   }
   // -------------------------- Architecture --------------------------------
 
-   // takes array of images (could be one) // amend valid if no faces are found
-   Future<List<EmotionImage>> modelArchitecture(List<File> selectedImages) async {
-    List<EmotionImage> results = [];
-
-    for (File image in selectedImages) {
-      List<img.Image> faceDetect = await performFaceDetection(image);
-      if (faceDetect.isEmpty) {
-        // results.add(EmotionImage(selectedImage: image, emotions: {}, valid: false));
-        continue;
-      }
-
-      List<EmotionImage> emotionData = [];
-      for (img.Image face in faceDetect) {
-        EmotionImage emotion = await performEmotionDetection(face);
-        emotionData.add(emotion);
-      }
-
-      EmotionImage finalDetection = formatEmotionImages(emotionData, image);
-      results.add(finalDetection);
-    }
-
-    return results;
-  }
-
-
-   Future<List<EmotionImage>?> modelArchitectureEmotionPerFace(File selectedImage) async {
-    // Load image through Face Detection
-    List<img.Image> faceDetect = await performFaceDetection(selectedImage);
-
-    // Check if there are faces, if yes proceed to next step... if not return an empty object
-    if(faceDetect.isEmpty) {
-        return null;
-    } else {
-
-    List<EmotionImage> emotionData = [];
-    // predict emotions per face
-    for (img.Image faces in faceDetect) {
-    // get file for face
-      File faceDetectionJPEG = await getFaceDetectionJPEG(faces);
-      EmotionImage emotion =  await performEmotionDetection(faces);
-
-      emotion.selectedImage = faceDetectionJPEG;
-
-      // function to get most common emotion
-      String commonEmotion = findMostCommonHighestEmotion(emotion);
-
-      emotion.mostCommonEmotion = commonEmotion;
-
-      emotionData.add(emotion);
-    }
-    return emotionData;
-    }
-  } 
-
-  Future<dynamic> modelArchitectureV2(File selectedImage, {bool perFace = false}) async {
+  Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer, {bool perFace = false}) async {
   // Load image through Face Detection
-  List<img.Image> faceDetect = await performFaceDetection(selectedImage);
+  // get file from path
+  FilePointer filePointer = FilePointer(file: File(selectedFilePathPointer.filePath), imagePointer: selectedFilePathPointer.imagePointer);
+
+  List<img.Image> faceDetect = await performFaceDetection(filePointer);
   List<EmotionImage> emotionData = [];
   // If no faces are found, return an empty result ->
 
@@ -106,7 +56,10 @@ class ModelManager {
     // Detect emotions for the face
     EmotionImage emotion = await performEmotionDetection(face);
     // Get face-specific image file (used only for per-face results)
-    emotion.selectedImage = await getFaceDetectionJPEG(face);
+    String filePath = await getFaceDetectionJPEGPath(face);
+
+    // adds electedFilePath here
+    emotion.selectedFilePathPointer = FilePathPointer(filePath: filePath, imagePointer: selectedFilePathPointer.imagePointer); // find way to pass down pointer
 
     // Find most common highest emotion
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
@@ -115,13 +68,13 @@ class ModelManager {
   }
 
   // Return either a list of per-face emotions or a single formatted EmotionImage
-  return perFace ? emotionData : formatEmotionImages(emotionData, selectedImage);
+  return perFace ? emotionData : formatEmotionImages(emotionData, selectedFilePathPointer);
 }
   // -------------------------- Face Detection --------------------------------
 
-   Future<List<img.Image>> performFaceDetection(File selectedImage) async {
+   Future<List<img.Image>> performFaceDetection(FilePointer selectedImage) async {
     // Load the input image
-      InputImage inputImage = InputImage.fromFile(selectedImage);
+      InputImage inputImage = InputImage.fromFile(selectedImage.file);
 
       final List<img.Image> facesList = [];
     // Detect faces in the image
@@ -143,7 +96,7 @@ class ModelManager {
     }
 
     // Load the image using the image package
-    final imageBytes = await selectedImage.readAsBytes();
+    final imageBytes = await selectedImage.file.readAsBytes();
     img.Image? originalImage = img.decodeImage(imageBytes);
 
     if (originalImage == null) {
@@ -159,7 +112,7 @@ class ModelManager {
 
     for (Face face in faces) {
         double confidenceScore = face.smilingProbability ?? 0.1; // Example confidence metric
-        print("here is confidence score initially: ${confidenceScore}");
+        print("here is confidence score initially: $confidenceScore");
       if (confidenceScore > highestConfidence) {
           print(confidenceScore);
           bestFace = face;
@@ -185,16 +138,11 @@ class ModelManager {
     return facesList;
   }
 
-  Future<File> displayFaceDetectedImage(img.Image images) async {
-    File jpgImage = (await getFaceDetectionJPEG(images));
-    return jpgImage;
-  }
-
 
   // return image array of faces
  
 
-  Future<File> getFaceDetectionJPEG(img.Image selectedImage) async {
+  Future<String> getFaceDetectionJPEGPath(img.Image selectedImage) async {
     // Encode the cropped face image back to a file
     if(selectedImage.isEmpty) print('no faces found');
     
@@ -212,7 +160,7 @@ class ModelManager {
       // Write the JPG data to the temporary file
       await tempFile.writeAsBytes(croppedImageBytes);
 
-    return tempFile;
+    return tempFile.path;
 
   }
 
@@ -315,7 +263,7 @@ EmotionImage parseIntoEmotionImage(List<dynamic> data) {
 }
 
 
-EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, File selectedImage,) {
+EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, FilePathPointer selectedImage,) {
   if (emotionImages.isEmpty) {
     throw Exception("Emotion image list is empty.");
   }
@@ -341,7 +289,7 @@ EmotionImage formatEmotionImages(List<EmotionImage> emotionImages, File selected
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
   return EmotionImage(
-    selectedImage: selectedImage,
+    selectedFilePathPointer: selectedImage,
     emotions: totalEmotions,
     valid: true,
     mostCommonEmotion: mostCommonEmotion

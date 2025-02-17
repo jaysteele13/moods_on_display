@@ -1,14 +1,14 @@
-import 'dart:io';
+import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 
 class EmotionImage {
-  File? selectedImage; // file due to efficiency reasons and clairty must be -> change this to FilePath rather than actual File!
+  FilePathPointer? selectedFilePathPointer; 
   final Map<String, double> emotions;
   final bool valid;
   String? mostCommonEmotion;
   
 
   EmotionImage({
-    this.selectedImage,
+    this.selectedFilePathPointer,
     required this.emotions,
     required this.valid,
     this.mostCommonEmotion

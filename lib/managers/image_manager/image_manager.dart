@@ -18,8 +18,8 @@ class ImageManager {
   List<File>? get selectedImages => selectedMultipleImagesNotifier.value;
 
   // file path object array
-  final ValueNotifier<List<FilePointer>?> selectedMultiplePathsNotifier = ValueNotifier<List<FilePointer>?>(null);
-  List<FilePointer>? get selectedPaths => selectedMultiplePathsNotifier.value;
+  final ValueNotifier<List<FilePathPointer>?> selectedMultiplePathsNotifier = ValueNotifier<List<FilePathPointer>?>(null);
+  List<FilePathPointer>? get selectedPaths => selectedMultiplePathsNotifier.value;
 
   final ValueNotifier<List<Uint8List>?> selectedByteImagesNotifier = ValueNotifier<List<Uint8List>?>(null);
   List<Uint8List>? get selectedByteImages => selectedByteImagesNotifier.value;
@@ -41,13 +41,13 @@ class ImageManager {
   }
 
   // setting unique objects
-   set selectedPaths(List<FilePointer>? newPaths) {
+   set selectedPaths(List<FilePathPointer>? newPaths) {
     if (newPaths != null) {
       // Remove duplicates by comparing file paths or other criteria (e.g., if file already exists)
-      List<FilePointer> uniquePaths = [];
+      List<FilePathPointer> uniquePaths = [];
       for (var path in newPaths) {
         if (!uniquePaths.any((existingPath) => existingPath.filePath == path.filePath)) {
-          uniquePaths.add(FilePointer(filePath: path.filePath, imagePointer: path.imagePointer)); // Add the image if it's not already in the list
+          uniquePaths.add(FilePathPointer(filePath: path.filePath, imagePointer: path.imagePointer)); // Add the image if it's not already in the list
         }
       }
       selectedMultiplePathsNotifier.value = uniquePaths; // Set the unique list of images
@@ -98,6 +98,31 @@ class ImageManager {
   selectedMultipleImagesNotifier.value = result;
 }
 
+Future<void> setPointersToFilePointer(List<String> pointers) async {
+  // sets fileImages based off of selected images for model detection
+  List<FilePathPointer> result = [];
+
+  for (String point in pointers) {
+    // Get the asset by pointer
+    AssetEntity? asset = await AssetEntity.fromId(point);
+
+    // Retrieve the file from the asset
+    File? assetFile = await asset?.file;
+
+    // Grab file path
+    String? assetFilePath = assetFile?.path;
+
+    if (assetFile != null && await assetFile.exists()) {
+      result.add(FilePathPointer(filePath: assetFilePath!, imagePointer: point));
+    } else {
+      throw Exception("Can't retrieve the file or file does not exist");
+    }
+  }
+
+  // Update the selectedMultipleImagesNotifier with the list of File objects
+  selectedMultiplePathsNotifier.value = result;
+}
+
   Future<void> setPointersToBytesNotifier(List<String> pointers) async {
     // sets byteImages based off of selected images for model detection
     List<Uint8List> result = [];
@@ -116,6 +141,8 @@ class ImageManager {
     }
 
   }
+
+  
 
   
   List<AssetEntity> images = []; // grab albums from db

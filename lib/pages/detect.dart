@@ -1,6 +1,8 @@
 
-import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
 import 'package:moods_on_display/managers/model_manager/model_manager.dart';
@@ -65,16 +67,30 @@ class AddImageScreenState extends State<AddImageScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          if (emotion.selectedImage != null)
-           ExtendedImage.file(
-              emotion.selectedImage!,
-              fit: BoxFit.cover,
-              width: isPerFace.value ? 75: 150,
-              height:isPerFace.value ? 75: 150,
-              clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
-            ),
-          
-          Icon(
+          FutureBuilder<Uint8List?>(
+        future: _imageManager.getImageByPointer(
+          emotion.selectedFilePathPointer!.imagePointer,
+          true,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator(); // Show a loader while waiting
+          } else if (snapshot.hasError) {
+            return const Icon(Icons.error, color: Colors.red); // Handle errors
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return const SizedBox(); // Handle null image
+          }
+
+          return ExtendedImage.memory(
+            snapshot.data!,
+            fit: BoxFit.cover,
+            width: isPerFace.value ? 75 : 150,
+            height: isPerFace.value ? 75 : 150,
+            clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+          );
+        },
+      ),
+         Icon(
             Icons.mood,
             color: getEmotionColor(emotion.mostCommonEmotion ?? ""),
           ),
@@ -89,8 +105,8 @@ class AddImageScreenState extends State<AddImageScreen> {
   }
 
 Widget showEmotionsOnToggle() {
-  return ValueListenableBuilder<List<File>?>(
-    valueListenable: _imageManager.selectedMultipleImagesNotifier,
+  return ValueListenableBuilder<List<FilePathPointer>?>(
+    valueListenable: _imageManager.selectedMultiplePathsNotifier,
     builder: (context, selectedImages, child) {
       if (selectedImages == null || selectedImages.isEmpty) {
         return const Text('No selected images');
@@ -128,13 +144,14 @@ Widget showEmotionsOnToggle() {
 Future<void> _openGallery() async {
   List<String>? pointers = await Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => GalleryScreen()), // nativeImagePickerScreen
+    MaterialPageRoute(builder: (context) => GalleryScreen()), // pops image pointers
   );
 
   if (pointers != null) {
       setState(() {
         _isGalleryLoading = false;
-         _imageManager.setPointersToFiles(pointers);
+        // we then turn pointers into temporary files
+         _imageManager.setPointersToFilePointer(pointers);
         // set imageManager Function to set pointerImages into UInt8List this won't work so pointers must be set to files
         // _imageManager.setPointersToBytesNotifier(pointers);
       });
