@@ -12,6 +12,8 @@ import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:io';
 
+import 'package:moods_on_display/utils/constants.dart';
+
 
 
 class AddImageScreen extends StatefulWidget {
@@ -24,7 +26,7 @@ class AddImageScreen extends StatefulWidget {
 class AddImageScreenState extends State<AddImageScreen> {
   final ImageManager _imageManager = ImageManager();
   final ModelManager _modelManager = ModelManager();
-  final ValueNotifier<bool> isPerFace = ValueNotifier<bool>(true); // Toggle state
+  final ValueNotifier<bool> isPerFace = ValueNotifier<bool>(false); // Toggle state
 
   bool _isGalleryLoading = false;
   List faceDetections = [];
@@ -41,19 +43,19 @@ class AddImageScreenState extends State<AddImageScreen> {
 
   Color getEmotionColor(String emotion) {
   switch (emotion) {
-    case "happy":
+    case EMOTIONS.happy:
       return Colors.yellow;
-    case "sad":
+    case EMOTIONS.sad:
       return Colors.blue;
-    case "angry":
+    case EMOTIONS.angry:
       return Colors.red;
-    case "fear":
+    case EMOTIONS.fear:
       return Colors.purple;
-    case "disgust":
+    case EMOTIONS.disgust:
       return Colors.green;
-    case "neutral":
+    case EMOTIONS.neutral:
       return Colors.grey;
-    case "surprise":
+    case EMOTIONS.surprise:
       return Colors.orange;
     default:
       return Colors.black;

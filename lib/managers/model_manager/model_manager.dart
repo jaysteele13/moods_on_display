@@ -10,6 +10,9 @@ import 'package:path_provider/path_provider.dart';
 import 'emotion_image.dart';
 import 'dart:math';
 
+// CONSTANTS
+import 'package:moods_on_display/utils/constants.dart';
+
 
 class ModelManager {
   // this is to load and run the model using tflite_flutter
@@ -111,13 +114,13 @@ class ModelManager {
     // Get the first detected face's bounding box
     double highestConfidence = 0.01;
     Face bestFace = faces.first;
-    print("lenth of faces ${faces.length}");
+    // print("lenth of faces ${faces.length}");
 
     for (Face face in faces) {
         double confidenceScore = face.smilingProbability ?? 0.1; // Example confidence metric
-        print("here is confidence score initially: $confidenceScore");
+        // print("here is confidence score initially: $confidenceScore");
       if (confidenceScore > highestConfidence) {
-          print(confidenceScore);
+          // print(confidenceScore);
           bestFace = face;
 
           boundingBox = bestFace.boundingBox;
@@ -137,7 +140,7 @@ class ModelManager {
     faceDetector.close();
     // print("Highest confidence face detected with score: $highestConfidence");
     // Return the cropped image file
-    print("facesList length: ${facesList.length}");
+    // print("facesList length: ${facesList.length}");
     return facesList;
   }
 
@@ -159,7 +162,7 @@ class ModelManager {
       // Create a temporary file with a unique name, including a random number and timestamp
       String fileName = 'temp_image_${DateTime.now().millisecondsSinceEpoch}_$randomNumber.jpg';
       File tempFile = File('${tempDir.path}/$fileName');
-      print(tempFile);
+      // print(tempFile);
       // Write the JPG data to the temporary file
       await tempFile.writeAsBytes(croppedImageBytes);
 
@@ -226,13 +229,13 @@ EmotionImage parseIntoEmotionImage(List<dynamic> data) {
 
   // FER labels (should match the data length)
   List<String> emotionLabels = [
-    'angry',
-    'disgust',
-    'fear',
-    'happy',
-    'neutral',
-    'sad',
-    'surprise'
+    EMOTIONS.angry,
+    EMOTIONS.disgust,
+    EMOTIONS.fear,
+    EMOTIONS.happy,
+    EMOTIONS.neutral,
+    EMOTIONS.sad,
+    EMOTIONS.surprise
   ];
 
   // Check if data is empty or the inner lists have the wrong length
@@ -292,6 +295,7 @@ Future<EmotionImage> formatEmotionImagesWithDB(List<EmotionImage> emotionImages,
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
   // DATABASE
+  // print('add to database this pointer: ${selectedFilePathPointer.imagePointer}');
   await DatabaseManager.instance.insertImage(selectedFilePathPointer.imagePointer, mostCommonEmotion);
   
 

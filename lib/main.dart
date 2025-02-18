@@ -33,6 +33,13 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key : key);
 
+  // Add this in to possibly avoid database leak if app runs out of 'memory'
+  //  void dispose() {
+  //   // Close the database when the app is disposed
+  //   DatabaseManager.instance.closeDatabase();
+  //   super.dispose();
+  // }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
