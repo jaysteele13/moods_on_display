@@ -1,11 +1,10 @@
 import 'dart:typed_data';
-
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
-import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/utils/types.dart';
 
 class ImagesScreen extends StatefulWidget {
   final String emotion;
@@ -17,7 +16,7 @@ class ImagesScreen extends StatefulWidget {
 }
 
 class _ImagesScreenState extends State<ImagesScreen> {
-  late Future<List<FilePathPointer>> _images;
+  late Future<List<EmotionPointer>> _images;
   final AlbumManager albumManager = AlbumManager();
 
   @override
@@ -26,14 +25,26 @@ class _ImagesScreenState extends State<ImagesScreen> {
     // Fetch images matching the selected emotion
     _images = DatabaseManager.instance.getImagesByEmotion(widget.emotion);
   }
-  @override
+
+// Psuedo Code
+/*
+- be able to select one image at a time, when an image is selected, amend the view so we can now view each image and scroll
+- this view will be a new alternative view called single-image-view
+- 
+
+
+
+*/
+@override
 Widget build(BuildContext context) {
   return BaseScaffold(
+    // Grab title of image baed off of context.
     appBar: AppBar(title: Text("Gallery: ${widget.emotion}")),
     body: Column(
       children: [
         Expanded(
-          child: FutureBuilder<List<FilePathPointer>>(
+          // Custom object passed containing pointer and emotion.
+          child: FutureBuilder<List<EmotionPointer>>(
             future: _images,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -46,8 +57,8 @@ Widget build(BuildContext context) {
                 return const Center(child: Text("No images found for this emotion"));
               }
 
-              List<FilePathPointer> selectedPointers = snapshot.data!;
-              print('pointer: ${selectedPointers[0].imagePointer}');
+              List<EmotionPointer> selectedPointers = snapshot.data!;
+              print('pointer: ${selectedPointers[0].pointer}');
 
               return ListView.builder(
                 itemCount: (selectedPointers.length / 4).ceil(), // ✅ Groups images into rows of 4
@@ -59,7 +70,7 @@ Widget build(BuildContext context) {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: selectedPointers.sublist(startIndex, endIndex).map((pointer) {
                       return FutureBuilder<Uint8List?>(
-                        future: albumManager.getImageByPointer(pointer.imagePointer, false), // ✅ Load image
+                        future: albumManager.getImageByPointer(pointer.pointer, false), // ✅ Load image
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const SizedBox(
@@ -107,5 +118,4 @@ Widget build(BuildContext context) {
     ),
   );
 }
-
 }

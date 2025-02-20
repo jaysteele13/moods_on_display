@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/utils/constants.dart';
+import 'package:moods_on_display/utils/types.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -39,7 +39,6 @@ class DatabaseManager{
   ''');
 }
 
-
  Future<int> insertImage(String id, String emotion) async {
 
 
@@ -70,9 +69,6 @@ class DatabaseManager{
     }
   }
 
-
-
-
   // Get all images with their emotions
   Future<List<Map<String, dynamic>>> getAllImages() async {
     print('attempt to get ALL images');
@@ -80,21 +76,7 @@ class DatabaseManager{
     return await db.query('images');
   }
 
-//   // Get images by album
-//   Future<List<FilePathPointer>> getImagesByEmotion(String emotion) async {
-//   Database db = await instance.database;
-//   // Query the database for records
-//   final result = await db.query(
-//     'images',
-//     where: 'emotion = ?',
-//     whereArgs: [emotion],
-//   );
-
-//   // Map the result to List<FilePathPointer>
-//   return result.map((map) => FilePathPointer.fromMap(map)).toList();
-// }
-
-Future<List<FilePathPointer>> getImagesByEmotion(String emotion) async {
+Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
   print('attempt to get images');
   Database db = await instance.database;
   // Query the database for records
@@ -105,7 +87,7 @@ Future<List<FilePathPointer>> getImagesByEmotion(String emotion) async {
   );
 
   // Map the result to List<FilePathPointer>
-  return result.map((map) => FilePathPointer.fromMap(map)).toList();
+  return result.map((map) => EmotionPointer.fromMap(map)).toList();
 }
 
 

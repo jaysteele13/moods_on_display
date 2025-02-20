@@ -85,7 +85,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   });
   PhotoManager.releaseCache(); // 🔹 Force cache release
   if (mounted) {
-    Navigator.pop(context, result); // Ensure the widget is still mounted before popping
+    Navigator.pop(context, result); // Ensure the widget is still mounted before popping. This pops the pointers to the page that is calling gallery.
   }
 
   }
@@ -136,6 +136,7 @@ void dispose() {
       body: Column(
         children: [
           Expanded(
+            // based on the selected album I will show each image in memory
             child: selectedAlbum == null
                 ? ListView.builder(
                     itemCount: albums.length,
@@ -146,6 +147,7 @@ void dispose() {
                       );
                     },
                   )
+                  // if album not null then an album has been selected
                 : NotificationListener<ScrollNotification>(
                     onNotification: (ScrollNotification scrollInfo) {
                       if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
@@ -161,11 +163,13 @@ void dispose() {
                           return Center(child: CircularProgressIndicator());
                         }
                         return FutureBuilder<Uint8List?>(
+                          // here we grab what image the users selects
                           future: images[index].thumbnailDataWithSize(ThumbnailSize(200, 200)),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
                               bool isSelected = selectedPointers.contains(images[index].id);
                               return GestureDetector(
+                                // per rendered image, per tap and image is selected
                                 onTap: () => toggleSelection(images[index]),
                                 child: Stack(
                                   children: [
@@ -193,6 +197,7 @@ void dispose() {
                     ),
                   ),
           ),
+          // have a notification displaying the amount of selected images
           if (selectedPointers.isNotEmpty)
             Container(
               padding: EdgeInsets.all(16),
