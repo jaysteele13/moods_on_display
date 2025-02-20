@@ -12,7 +12,7 @@ Future<Uint8List?> getImageByPointer(String assetId, bool lowRes) async {
 
   AssetEntity? asset = await AssetEntity.fromId(assetId);
   if (asset != null) {
-  ThumbnailSize size = lowRes ? const ThumbnailSize(100, 100) : const ThumbnailSize(250, 250);
+  ThumbnailSize size = lowRes ? const ThumbnailSize(100, 100) : const ThumbnailSize(750, 750);
   return asset.thumbnailDataWithSize(size);
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/pages/single_images.dart';
 import 'package:moods_on_display/utils/types.dart';
 
 class ImagesScreen extends StatefulWidget {
@@ -87,12 +88,37 @@ Widget build(BuildContext context) {
                             );
                           }
                           if (snapshot.hasData && snapshot.data != null) {
-                            return ExtendedImage.memory(
-                              snapshot.data!,
-                              fit: BoxFit.cover,
-                              width: 70,
-                              height: 70,
-                              clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+                            return GestureDetector(
+                              onTap: () async {
+                                List<Uint8List> imageDataList = [];
+                                for (var pointer in selectedPointers) {
+                                  Uint8List? imageData = await albumManager.getImageByPointer(pointer.pointer, false);
+                                  if (imageData != null) {
+                                    imageDataList.add(imageData);
+                                  }
+                                }
+
+                                if (imageDataList.isNotEmpty) {
+                                  int selectedIndex = selectedPointers.indexOf(pointer); // Find tapped image index
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SingleImageView(images: imageDataList, initialIndex: selectedIndex),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Stack(
+                                children: [
+                                  ExtendedImage.memory(
+                                    snapshot.data!,
+                                    fit: BoxFit.cover,
+                                    width: 70,
+                                    height: 70,
+                                    clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+                                  )
+                                ],
+                              ),
                             );
                           }
                           return const SizedBox(
