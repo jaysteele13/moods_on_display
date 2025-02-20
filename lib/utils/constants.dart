@@ -7,4 +7,5 @@ class EMOTIONS {
   static const sad = 'Sad';
   static const surprise = 'Surprise';
   static const list = [angry, disgust, fear, happy, neutral, sad, surprise];
+  static const albumList = [angry, disgust, fear, happy, neutral, sad, surprise];
 }

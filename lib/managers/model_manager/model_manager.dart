@@ -55,8 +55,6 @@ class ModelManager {
 
 
   for (img.Image face in faceDetect) {
-    
-    
     // Detect emotions for the face
     EmotionImage emotion = await performEmotionDetection(face);
     // Get face-specific image file (used only for per-face results)
@@ -69,7 +67,6 @@ class ModelManager {
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
 
     // Add emotion to dataset here - need check to ensure assetId isn't the same
-    
     emotionData.add(emotion);
   }
 
@@ -109,8 +106,6 @@ class ModelManager {
       throw Exception("Failed to load the image.");
     }
 
-    // have confidence system, make more accurate, then include more faces
-
     // Get the first detected face's bounding box
     double highestConfidence = 0.01;
     Face bestFace = faces.first;
@@ -143,11 +138,7 @@ class ModelManager {
     // print("facesList length: ${facesList.length}");
     return facesList;
   }
-
-
-  // return image array of faces
  
-
   Future<String> getFaceDetectionJPEGPath(img.Image selectedImage) async {
     // Encode the cropped face image back to a file
     if(selectedImage.isEmpty) print('no faces found');

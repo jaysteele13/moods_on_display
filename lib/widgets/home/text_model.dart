@@ -18,29 +18,29 @@ class HomeTextModel {
     List<HomeTextModel> features = [];
 
     features.add(HomeTextModel(
-      name: 'Album Pancake',
+      name: 'Albums',
       iconPath: 'assets/icons/album.svg',
-      level: 'Medium',
-      duration: '30mins',
-      calorie: '230kCal',
+      level: '',
+      duration: '',
+      calorie: '',
       boxIsSelected: true,
     ));
 
     features.add(HomeTextModel(
-      name: 'Slideshow Nigiri',
+      name: 'Slideshow',
       iconPath: 'assets/icons/slideshow.svg',
-      level: 'Easy',
-      duration: '20mins',
-      calorie: '120kCal',
+      level: 'It',
+      duration: 'is',
+      calorie: 'Fun',
       boxIsSelected: false,
     ));
 
     features.add(HomeTextModel(
-      name: 'Add Tuna',
+      name: 'Add Images',
       iconPath: 'assets/icons/add.svg',
-      level: 'Easy',
-      duration: '20mins',
-      calorie: '120kCal',
+      level: 'Find',
+      duration: 'your',
+      calorie: 'Emotion',
       boxIsSelected: false,
     ));
 

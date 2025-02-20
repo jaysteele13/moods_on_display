@@ -141,9 +141,6 @@ Future<void> setPointersToFilePathPointer(List<String> pointers) async {
     }
 
   }
-
-  
-
   
   List<AssetEntity> images = []; // grab albums from db
 
@@ -222,9 +219,6 @@ Future<void> listAndDeleteFiles() async {
 
   // Ensure uniqueness (optional, to prevent duplicates)
   newSelectedImages = newSelectedImages.toSet().toList();
-
-   
-
   // Update the ValueNotifier with the new list of selected images
   selectedMultipleImagesNotifier.value = newSelectedImages;
 }
