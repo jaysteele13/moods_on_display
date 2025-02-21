@@ -90,6 +90,29 @@ Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
   return result.map((map) => EmotionPointer.fromMap(map)).toList();
 }
 
+Future<void> deleteImageRecords(List<String> records) async {
+  Database db = await instance.database;
+
+  for (String record in records) {
+    // Check if the record exists in the database
+    List<Map<String, dynamic>> existingRecord = await db.query(
+      'images',
+      where: 'id = ?',
+      whereArgs: [record],
+    );
+
+    // If the record exists, delete it from the database
+    if (existingRecord.isNotEmpty) {
+      await db.delete(
+        'images',
+        where: 'id = ?',
+        whereArgs: [record],
+      );
+    }
+  }
+}
+
+
 
 
 Future<void> deleteDatabaseFile() async {

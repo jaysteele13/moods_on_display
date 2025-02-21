@@ -153,9 +153,8 @@ void toggleDeleteSelection(String pointer) {
 
 // Function to delete selected images
 Future<void> deleteSelectedImages( List<EmotionPointer> selectedPointers) async {
-
   // function that is a for loop that looks through local database and selectivly removes pointers in toDelete
-  
+  await DatabaseManager.instance.deleteImageRecords(pointersToDelete);
 
   setState(() {
     selectedPointers.removeWhere((p) => pointersToDelete.contains(p.pointer));
