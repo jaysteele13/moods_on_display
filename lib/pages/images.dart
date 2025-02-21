@@ -19,6 +19,8 @@ class ImagesScreen extends StatefulWidget {
 class _ImagesScreenState extends State<ImagesScreen> {
   late Future<List<EmotionPointer>> _images;
   final AlbumManager albumManager = AlbumManager();
+  late List<String> pointersToDelete = [];
+  bool isSelectionMode = false;
 
   @override
   void initState() {
@@ -29,13 +31,65 @@ class _ImagesScreenState extends State<ImagesScreen> {
 
 // Psuedo Code
 /*
-- be able to select one image at a time, when an image is selected, amend the view so we can now view each image and scroll
-- this view will be a new alternative view called single-image-view
-- 
-
+- on hold an image is selected (similar to gallery)
+- button at the bottom to select images to delete
 
 
 */
+
+void toggleDeleteSelection(String pointer) {
+    setState(() {
+      if (pointersToDelete.contains(pointer)) {
+        pointersToDelete.remove(pointer);
+        if (pointersToDelete.isEmpty) {
+        isSelectionMode = false; // Exit selection mode if no images are selected
+      }
+      } else {
+        pointersToDelete.add(pointer);
+      }
+    });
+  }
+
+// Function to delete selected images
+Future<void> deleteSelectedImages( List<EmotionPointer> selectedPointers) async {
+  setState(() {
+    selectedPointers.removeWhere((p) => pointersToDelete.contains(p.pointer));
+    pointersToDelete.clear();
+    isSelectionMode = false;
+  });
+  // function that is a for loop that looks through local database and selectivly removes pointers in toDelete
+
+}
+
+// Function to cancel selection mode
+void cancelSelection() {
+  setState(() {
+    pointersToDelete.clear();
+    isSelectionMode = false;
+  });
+}
+
+// Buttons for delete and cancel (should be placed in the UI)
+Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
+  return isSelectionMode
+      ? Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                await deleteSelectedImages(selectedPointers);
+              },
+              child: Text("Delete"),
+            ),
+            ElevatedButton(
+              onPressed: cancelSelection,
+              child: Text("Cancel"),
+            ),
+          ],
+        )
+      : Container();
+}
+
 @override
 Widget build(BuildContext context) {
   return BaseScaffold(
@@ -44,79 +98,103 @@ Widget build(BuildContext context) {
     body: Column(
       children: [
         Expanded(
-          // Custom object passed containing pointer and emotion.
-          child: FutureBuilder<List<EmotionPointer>>(
-            future: _images,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text('Error with database: ${snapshot.error}'));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text("No images found for this emotion"));
-              }
+  child: FutureBuilder<List<EmotionPointer>>(
+    future: _images,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (snapshot.hasError) {
+        return Center(child: Text('Error with database: ${snapshot.error}'));
+      }
+      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return const Center(child: Text("No images found for this emotion"));
+      }
 
-              List<EmotionPointer> selectedPointers = snapshot.data!;
-              print('pointer: ${selectedPointers[0].pointer}');
+      List<EmotionPointer> selectedPointers = snapshot.data!;
+      print('pointer: ${selectedPointers[0].pointer}');
 
-              return ListView.builder(
-                itemCount: (selectedPointers.length / 4).ceil(), // ✅ Groups images into rows of 4
+      return Column(
+        children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: (selectedPointers.length / 4).ceil(),
                 itemBuilder: (context, rowIndex) {
                   int startIndex = rowIndex * 4;
-                  int endIndex = (startIndex + 4).clamp(0, selectedPointers.length);
+                  int endIndex = (startIndex + 4 > selectedPointers.length)
+                      ? selectedPointers.length
+                      : startIndex + 4;
 
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: selectedPointers.sublist(startIndex, endIndex).map((pointer) {
                       return FutureBuilder<Uint8List?>(
-                        future: albumManager.getImageByPointer(pointer.pointer, false), // ✅ Load image
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                        future: albumManager.getImageByPointer(pointer.pointer, false),
+                        builder: (context, imageSnapshot) {
+                          if (imageSnapshot.connectionState == ConnectionState.waiting) {
                             return const SizedBox(
                               width: 70,
                               height: 70,
                               child: Center(child: CircularProgressIndicator()),
                             );
                           }
-                          if (snapshot.hasError) {
+                          if (imageSnapshot.hasError) {
                             return const SizedBox(
                               width: 70,
                               height: 70,
                               child: Center(child: Icon(Icons.error, color: Colors.red)),
                             );
                           }
-                          if (snapshot.hasData && snapshot.data != null) {
+                          if (imageSnapshot.hasData && imageSnapshot.data != null) {
                             return GestureDetector(
                               onTap: () async {
-                                List<Uint8List> imageDataList = [];
-                                for (var pointer in selectedPointers) {
-                                  Uint8List? imageData = await albumManager.getImageByPointer(pointer.pointer, false);
-                                  if (imageData != null) {
-                                    imageDataList.add(imageData);
+                                if (isSelectionMode) {
+                                  toggleDeleteSelection(pointer.pointer);
+                                } else {
+                                  List<Uint8List> imageDataList = [];
+                                  for (var ptr in selectedPointers) {
+                                    Uint8List? imageData =
+                                        await albumManager.getImageByPointer(ptr.pointer, false);
+                                    if (imageData != null) {
+                                      imageDataList.add(imageData);
+                                    }
+                                  }
+
+                                  if (imageDataList.isNotEmpty) {
+                                    int selectedIndex = selectedPointers.indexOf(pointer);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SingleImageView(
+                                          images: imageDataList,
+                                          initialIndex: selectedIndex,
+                                        ),
+                                      ),
+                                    );
                                   }
                                 }
-
-                                if (imageDataList.isNotEmpty) {
-                                  int selectedIndex = selectedPointers.indexOf(pointer); // Find tapped image index
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SingleImageView(images: imageDataList, initialIndex: selectedIndex),
-                                    ),
-                                  );
-                                }
+                              },
+                              onLongPress: () {
+                                setState(() {
+                                  isSelectionMode = true;
+                                  toggleDeleteSelection(pointer.pointer);
+                                });
                               },
                               child: Stack(
                                 children: [
                                   ExtendedImage.memory(
-                                    snapshot.data!,
+                                    imageSnapshot.data!,
                                     fit: BoxFit.cover,
                                     width: 70,
                                     height: 70,
-                                    clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
-                                  )
+                                    clearMemoryCacheWhenDispose: true,
+                                  ),
+                                  if (pointersToDelete.contains(pointer.pointer))
+                                    const Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+                                    ),
                                 ],
                               ),
                             );
@@ -131,15 +209,20 @@ Widget build(BuildContext context) {
                     }).toList(),
                   );
                 },
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 20), // Adds spacing before the button
-        ElevatedButton(
-          onPressed: DatabaseManager.instance.deleteDatabaseFile,
-          child: const Text("Delete Database"),
-        ),
+              ),
+            ),
+            const SizedBox(height: 20), // Adds spacing before the button
+            buildSelectionActions(selectedPointers),
+          ],
+        );
+      },
+    ),
+  ),
+  const SizedBox(height: 20), // Adds spacing before the button
+  ElevatedButton(
+    onPressed: DatabaseManager.instance.deleteDatabaseFile,
+    child: const Text("Delete Database"),
+  ),
       ],
     ),
   );
