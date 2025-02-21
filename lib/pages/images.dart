@@ -17,25 +17,182 @@ class ImagesScreen extends StatefulWidget {
 }
 
 class _ImagesScreenState extends State<ImagesScreen> {
-  late Future<List<EmotionPointer>> _images;
+  List<EmotionPointer> _loadedImages = [];
   final AlbumManager albumManager = AlbumManager();
+  late List<String> pointersToDelete = [];
+  bool isSelectionMode = false;
+  bool _isLoading = false;
+
+  void _fetchImages() async {
+  List<EmotionPointer> images = await DatabaseManager.instance.getImagesByEmotion(widget.emotion);
+    setState(() {
+      _loadedImages = images;
+      _isLoading = false;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    // Fetch images matching the selected emotion
-    _images = DatabaseManager.instance.getImagesByEmotion(widget.emotion);
+    _fetchImages();
   }
 
-// Psuedo Code
-/*
-- be able to select one image at a time, when an image is selected, amend the view so we can now view each image and scroll
-- this view will be a new alternative view called single-image-view
-- 
+Map<String, Uint8List?> imageCache = {}; // Cache images
 
+Widget _buildImageItem(EmotionPointer pointer) {
+  return FutureBuilder<Uint8List?>(
+    future: _getCachedImage(pointer.pointer),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting && !imageCache.containsKey(pointer.pointer)) {
+        return const SizedBox(
+          width: 70,
+          height: 70,
+          child: Center(child: Text("Loading...")),
+        );
+      }
+      if (snapshot.hasError) {
+        return const SizedBox(
+          width: 70,
+          height: 70,
+          child: Center(child: Icon(Icons.error, color: Colors.red)),
+        );
+      }
+      if (snapshot.hasData && snapshot.data != null) {
+        return GestureDetector(
+          onTap: () => _onImageTap(pointer),
+          onLongPress: () => _onImageLongPress(pointer.pointer),
+          child: Stack(
+            children: [
+              ExtendedImage.memory(
+                snapshot.data!,
+                fit: BoxFit.cover,
+                width: 70,
+                height: 70,
+                clearMemoryCacheWhenDispose: true,
+              ),
+              if (pointersToDelete.contains(pointer.pointer))
+                const Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+                ),
+            ],
+          ),
+        );
+      }
+      return const SizedBox(
+        width: 70,
+        height: 70,
+        child: Center(child: Text('No Image')),
+      );
+    },
+  );
+}
 
+Future<Uint8List?> _getCachedImage(String pointer) async {
+  if (imageCache.containsKey(pointer)) {
+    return imageCache[pointer];
+  } else {
+    Uint8List? imageData = await albumManager.getImageByPointer(pointer, false);
+    imageCache[pointer] = imageData;
+    return imageData;
+  }
+}
 
-*/
+void _onImageLongPress(String pointer) {
+  setState(() {
+    isSelectionMode = true;
+    toggleDeleteSelection(pointer);
+  });
+}
+
+void _onImageTap(EmotionPointer pointer) async {
+  if (isSelectionMode) {
+    // If in selection mode, just toggle the selection
+    toggleDeleteSelection(pointer.pointer);
+  } else {
+    // Otherwise, open the image in full view
+    List<Uint8List> imageDataList = [];
+    for (var ptr in _loadedImages) {
+      if (!imageCache.containsKey(ptr.pointer)) {
+        Uint8List? imageData = await albumManager.getImageByPointer(ptr.pointer, false);
+        imageCache[ptr.pointer] = imageData; // Cache for later use
+      }
+      if (imageCache[ptr.pointer] != null) {
+        imageDataList.add(imageCache[ptr.pointer]!);
+      }
+    }
+
+    if (imageDataList.isNotEmpty) {
+      int selectedIndex = _loadedImages.indexOf(pointer);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SingleImageView(
+            images: imageDataList,
+            initialIndex: selectedIndex,
+          ),
+        ),
+      );
+    }
+  }
+}
+
+void toggleDeleteSelection(String pointer) {
+    setState(() {
+      if (pointersToDelete.contains(pointer)) {
+        pointersToDelete.remove(pointer);
+        if (pointersToDelete.isEmpty) {
+        isSelectionMode = false; // Exit selection mode if no images are selected
+      }
+      } else {
+        pointersToDelete.add(pointer);
+      }
+    });
+  }
+
+// Function to delete selected images
+Future<void> deleteSelectedImages( List<EmotionPointer> selectedPointers) async {
+  // function that is a for loop that looks through local database and selectivly removes pointers in toDelete
+  await DatabaseManager.instance.deleteImageRecords(pointersToDelete);
+
+  setState(() {
+    selectedPointers.removeWhere((p) => pointersToDelete.contains(p.pointer));
+    pointersToDelete.clear();
+    isSelectionMode = false;
+  });
+  
+}
+
+// Function to cancel selection mode
+void cancelSelection() {
+  setState(() {
+    pointersToDelete.clear();
+    isSelectionMode = false;
+  });
+}
+
+// Buttons for delete and cancel (should be placed in the UI)
+Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
+  return isSelectionMode
+      ? Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                await deleteSelectedImages(selectedPointers);
+              },
+              child: Text("Delete"),
+            ),
+            ElevatedButton(
+              onPressed: cancelSelection,
+              child: Text("Cancel"),
+            ),
+          ],
+        )
+      : Container();
+}
+
 @override
 Widget build(BuildContext context) {
   return BaseScaffold(
@@ -44,102 +201,41 @@ Widget build(BuildContext context) {
     body: Column(
       children: [
         Expanded(
-          // Custom object passed containing pointer and emotion.
-          child: FutureBuilder<List<EmotionPointer>>(
-            future: _images,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text('Error with database: ${snapshot.error}'));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text("No images found for this emotion"));
-              }
+  child: _isLoading
+      ? const Center(child: CircularProgressIndicator()) // Show loading indicator initially
+      : _loadedImages.isEmpty
+          ? const Center(child: Text("No images found for this emotion"))
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: (_loadedImages.length / 4).ceil(),
+                    itemBuilder: (context, rowIndex) {
+                      int startIndex = rowIndex * 4;
+                      int endIndex = (startIndex + 4 > _loadedImages.length)
+                          ? _loadedImages.length
+                          : startIndex + 4;
 
-              List<EmotionPointer> selectedPointers = snapshot.data!;
-              print('pointer: ${selectedPointers[0].pointer}');
-
-              return ListView.builder(
-                itemCount: (selectedPointers.length / 4).ceil(), // ✅ Groups images into rows of 4
-                itemBuilder: (context, rowIndex) {
-                  int startIndex = rowIndex * 4;
-                  int endIndex = (startIndex + 4).clamp(0, selectedPointers.length);
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: selectedPointers.sublist(startIndex, endIndex).map((pointer) {
-                      return FutureBuilder<Uint8List?>(
-                        future: albumManager.getImageByPointer(pointer.pointer, false), // ✅ Load image
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const SizedBox(
-                              width: 70,
-                              height: 70,
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                          if (snapshot.hasError) {
-                            return const SizedBox(
-                              width: 70,
-                              height: 70,
-                              child: Center(child: Icon(Icons.error, color: Colors.red)),
-                            );
-                          }
-                          if (snapshot.hasData && snapshot.data != null) {
-                            return GestureDetector(
-                              onTap: () async {
-                                List<Uint8List> imageDataList = [];
-                                for (var pointer in selectedPointers) {
-                                  Uint8List? imageData = await albumManager.getImageByPointer(pointer.pointer, false);
-                                  if (imageData != null) {
-                                    imageDataList.add(imageData);
-                                  }
-                                }
-
-                                if (imageDataList.isNotEmpty) {
-                                  int selectedIndex = selectedPointers.indexOf(pointer); // Find tapped image index
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SingleImageView(images: imageDataList, initialIndex: selectedIndex),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Stack(
-                                children: [
-                                  ExtendedImage.memory(
-                                    snapshot.data!,
-                                    fit: BoxFit.cover,
-                                    width: 70,
-                                    height: 70,
-                                    clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
-                                  )
-                                ],
-                              ),
-                            );
-                          }
-                          return const SizedBox(
-                            width: 70,
-                            height: 70,
-                            child: Center(child: Text('No Image')),
-                          );
-                        },
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: _loadedImages.sublist(startIndex, endIndex).map((pointer) {
+                          return _buildImageItem(pointer);
+                        }).toList(),
                       );
-                    }).toList(),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 20), // Adds spacing before the button
-        ElevatedButton(
-          onPressed: DatabaseManager.instance.deleteDatabaseFile,
-          child: const Text("Delete Database"),
-        ),
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20), // Adds spacing before the button
+                buildSelectionActions(_loadedImages),
+              ],
+            ),
+)
+
+  //  SizedBox(height: 20), // Adds spacing before the button
+  // ElevatedButton(
+  //   onPressed: DatabaseManager.instance.deleteDatabaseFile,
+  //   child: const Text("Delete Database"),
+  // ),
       ],
     ),
   );

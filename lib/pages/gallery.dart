@@ -87,10 +87,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   if (mounted) {
     Navigator.pop(context, result); // Ensure the widget is still mounted before popping. This pops the pointers to the page that is calling gallery.
   }
-
-  }
-
-  
+}
 
   void resetAlbumSelection() {
     setState(() {
@@ -168,18 +165,21 @@ void dispose() {
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
                               bool isSelected = selectedPointers.contains(images[index].id);
+                              
                               return GestureDetector(
                                 // per rendered image, per tap and image is selected
                                 onTap: () => toggleSelection(images[index]),
                                 child: Stack(
                                   children: [
-                               ExtendedImage.memory(
-                                  snapshot.data!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
-                                ),
+                                
+                                      ExtendedImage.memory(
+                                          snapshot.data!,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+                                        ),
+                                  
                                     if (isSelected)
                                       Positioned(
                                         top: 8,
@@ -190,7 +190,7 @@ void dispose() {
                                 ),
                               );
                             }
-                            return CircularProgressIndicator();
+                            return SizedBox.shrink();
                           },
                         );
                       },
