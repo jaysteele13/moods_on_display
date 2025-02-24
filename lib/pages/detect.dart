@@ -38,6 +38,7 @@ class AddImageScreenState extends State<AddImageScreen> {
 
   bool _isGalleryLoading = false;
   List faceDetections = [];
+ ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
   
 
   List<String> selectedPointers = [];
@@ -48,6 +49,7 @@ class AddImageScreenState extends State<AddImageScreen> {
     albumManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed
     // call function to delete all images based on 
     _imageManager.listAndDeleteFiles();
+    _modelManager.dispose();
     super.dispose();
   }
 
@@ -120,23 +122,33 @@ class AddImageScreenState extends State<AddImageScreen> {
     );
   }
 
+
+
 Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   detectedEmotions.value = []; // Clear previous results
+  int totalImages = selectedImages.length;
 
-  for (var image in selectedImages) {
+  for (int i = 0; i < totalImages; i++) {
     try {
-      var result = await _modelManager.modelArchitectureV2(image);
+      var result = await _modelManager.modelArchitectureV2(selectedImages[i]);
 
       // Ensure result is always a List
       List<EmotionImage> emotions = (result is List<EmotionImage>) ? result : [result];
 
       // Prepend new emotions so they appear at the top (newest first)
       detectedEmotions.value = [...emotions, ...detectedEmotions.value];
+
+      // Update progress after each image is processed
+      progressNotifier.value = (i + 1) / totalImages;
     } catch (error) {
       print("Error processing image: $error");
     }
   }
+
+  // After processing all images, ensure progress is 1
+  progressNotifier.value = 1.0;
 }
+
 
 
   Widget showEmotionsFace() {
@@ -155,15 +167,16 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
               if (snapshot.connectionState == ConnectionState.waiting)
                 const CircularProgressIndicator(), // Show loader while processing
                 
-              ValueListenableBuilder<List<EmotionImage>>(
-                valueListenable: detectedEmotions,
-                builder: (context, processedEmotions, child) {
+               ValueListenableBuilder<double>(
+                valueListenable: progressNotifier,
+                builder: (context, progress, child) {
                   return Column(
                     children: [
                       LinearProgressIndicator(
-                        value: processedEmotions.length / selectedImages.length, // Dynamic progress
+                        value: progress, // Dynamically control progress
                       ),
-                      ...processedEmotions.map(_buildEmotionWidget).toList(),
+                      // Display processed emotions
+                      ...detectedEmotions.value.map(_buildEmotionWidget).toList(),
                     ],
                   );
                 },

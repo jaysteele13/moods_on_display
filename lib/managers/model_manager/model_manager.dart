@@ -18,25 +18,25 @@ class ModelManager {
   // this is to load and run the model using tflite_flutter
   late Interpreter interpreter;
   late FaceDetector faceDetector;
+  bool _isModelLoaded = false;
 
   List<Face> detectedFaces = [];  // Store detected faces
 
   ModelManager() {
     // loadModel / (s) initially
-    loadModel();
+    _loadModel();
   }
 
-  Future<void> loadModel() async {
-    // fer
-    //interpreter = await Interpreter.fromAsset('assets/models/model.tflite');
+  Future<void> _loadModel() async {
+    if (_isModelLoaded) return; // Prevent reloading
     interpreter = await Interpreter.fromAsset('assets/models/model_jay_m3_ft.tflite');
-
-    // affwild
-    // interpreter = await Interpreter.fromAsset('assets/models/model_aff.tflite');
-
-    // google face detector
-    final options = FaceDetectorOptions(performanceMode: FaceDetectorMode.accurate, enableClassification: true);
-    faceDetector = FaceDetector(options: options);
+    faceDetector = FaceDetector(
+      options: FaceDetectorOptions(
+        performanceMode: FaceDetectorMode.accurate,
+        enableClassification: true,
+      ),
+    );
+    _isModelLoaded = true;
   }
   // -------------------------- Architecture --------------------------------
 
@@ -311,5 +311,11 @@ String findMostCommonHighestEmotion(EmotionImage emotionImage) {
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
   return mostCommonEmotion;
 }
+
+void dispose() {
+  interpreter.close();
+  // await faceDetector.close();
+}
+
 
 }
