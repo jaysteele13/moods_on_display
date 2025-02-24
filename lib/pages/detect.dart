@@ -34,6 +34,8 @@ class AddImageScreenState extends State<AddImageScreen> {
   final ModelManager _modelManager = ModelManager();
   final ValueNotifier<List<EmotionImage>> detectedEmotions = ValueNotifier<List<EmotionImage>>([]);
 
+  final List<String> faceJPEGs = [];
+
   bool _isGalleryLoading = false;
   List faceDetections = [];
   
@@ -42,8 +44,10 @@ class AddImageScreenState extends State<AddImageScreen> {
   final AlbumManager albumManager = AlbumManager();
 
   @override
-  void dispose() {
+  void dispose()  {
     albumManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed
+    // call function to delete all images based on 
+    _imageManager.listAndDeleteFiles();
     super.dispose();
   }
 
