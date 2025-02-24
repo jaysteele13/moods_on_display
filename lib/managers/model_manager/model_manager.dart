@@ -18,29 +18,29 @@ class ModelManager {
   // this is to load and run the model using tflite_flutter
   late Interpreter interpreter;
   late FaceDetector faceDetector;
+  bool _isModelLoaded = false;
 
   List<Face> detectedFaces = [];  // Store detected faces
 
   ModelManager() {
     // loadModel / (s) initially
-    loadModel();
+    _loadModel();
   }
 
-  Future<void> loadModel() async {
-    // fer
-    //interpreter = await Interpreter.fromAsset('assets/models/model.tflite');
-    interpreter = await Interpreter.fromAsset('assets/models/model_jay_m1.tflite');
-
-    // affwild
-    // interpreter = await Interpreter.fromAsset('assets/models/model_aff.tflite');
-
-    // google face detector
-    final options = FaceDetectorOptions(performanceMode: FaceDetectorMode.accurate, enableClassification: true);
-    faceDetector = FaceDetector(options: options);
+  Future<void> _loadModel() async {
+    if (_isModelLoaded) return; // Prevent reloading
+    interpreter = await Interpreter.fromAsset('assets/models/model_jay_m3_ft.tflite');
+    faceDetector = FaceDetector(
+      options: FaceDetectorOptions(
+        performanceMode: FaceDetectorMode.accurate,
+        enableClassification: true,
+      ),
+    );
+    _isModelLoaded = true;
   }
   // -------------------------- Architecture --------------------------------
 
-  Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer, {bool perFace = false}) async {
+  Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer) async {
   // Load image through Face Detection
   // get file from path
   FilePointer filePointer = FilePointer(file: File(selectedFilePathPointer.filePath), imagePointer: selectedFilePathPointer.imagePointer);
@@ -50,7 +50,7 @@ class ModelManager {
   // If no faces are found, return an empty result ->
 
   if (faceDetect.isEmpty) {
-    return perFace ? emotionData : <EmotionImage>[];
+    return emotionData;
   }
 
 
@@ -70,8 +70,11 @@ class ModelManager {
     emotionData.add(emotion);
   }
 
+  // DB call
+  await formatEmotionImagesWithDB(emotionData, selectedFilePathPointer);
+
   // Return either a list of per-face emotions or a single formatted EmotionImage
-  return perFace ? emotionData : await formatEmotionImagesWithDB(emotionData, selectedFilePathPointer);
+  return emotionData;
 }
   // -------------------------- Face Detection --------------------------------
 
@@ -308,5 +311,11 @@ String findMostCommonHighestEmotion(EmotionImage emotionImage) {
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
   return mostCommonEmotion;
 }
+
+void dispose() {
+  interpreter.close();
+  // await faceDetector.close();
+}
+
 
 }

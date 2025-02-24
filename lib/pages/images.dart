@@ -123,6 +123,7 @@ void _onImageTap(EmotionPointer pointer) async {
       }
     }
 
+    // send to single image view
     if (imageDataList.isNotEmpty) {
       int selectedIndex = _loadedImages.indexOf(pointer);
       Navigator.push(
@@ -131,6 +132,7 @@ void _onImageTap(EmotionPointer pointer) async {
           builder: (context) => SingleImageView(
             images: imageDataList,
             initialIndex: selectedIndex,
+            emotion: widget.emotion
           ),
         ),
       );

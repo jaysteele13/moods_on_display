@@ -14,7 +14,13 @@ import 'dart:io';
 
 import 'package:moods_on_display/utils/constants.dart';
 
+/*
+Amend this code so everytime a detection happens and an image is generated show the face and the progress
+Should show the estimated time of model time prediction, as well as each face and emotion when detected.
 
+
+
+*/
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -26,18 +32,24 @@ class AddImageScreen extends StatefulWidget {
 class AddImageScreenState extends State<AddImageScreen> {
   final ImageManager _imageManager = ImageManager();
   final ModelManager _modelManager = ModelManager();
-  final ValueNotifier<bool> isPerFace = ValueNotifier<bool>(false); // Toggle state
+  final ValueNotifier<List<EmotionImage>> detectedEmotions = ValueNotifier<List<EmotionImage>>([]);
+
+  final List<String> faceJPEGs = [];
 
   bool _isGalleryLoading = false;
   List faceDetections = [];
+ ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
   
 
   List<String> selectedPointers = [];
   final AlbumManager albumManager = AlbumManager();
 
   @override
-  void dispose() {
+  void dispose()  {
     albumManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed
+    // call function to delete all images based on 
+    _imageManager.listAndDeleteFiles();
+    _modelManager.dispose();
     super.dispose();
   }
 
@@ -86,8 +98,6 @@ class AddImageScreenState extends State<AddImageScreen> {
           } else if (!snapshot.hasData || snapshot.data == null) {
             return const SizedBox(); // Handle null image
           }
-          if (isPerFace.value) {
-          // If isPerFace is true, return the ExtendedImage.memory widget
           return ExtendedImage.file(
             File(emotion.selectedFilePathPointer!.filePath),
             fit: BoxFit.cover,
@@ -96,16 +106,6 @@ class AddImageScreenState extends State<AddImageScreen> {
             clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
           );
          
-        } else {
-          // If isPerFace is false, return the ExtendedImage.file widget
-           return ExtendedImage.memory(
-            snapshot.data!,
-            fit: BoxFit.cover,
-            width: 150,
-            height: 150,
-            clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
-          );
-        }
         },
       ),
          Icon(
@@ -122,7 +122,36 @@ class AddImageScreenState extends State<AddImageScreen> {
     );
   }
 
-Widget showEmotionsOnToggle() {
+
+
+Future<void> _processImages(List<FilePathPointer> selectedImages) async {
+  detectedEmotions.value = []; // Clear previous results
+  int totalImages = selectedImages.length;
+
+  for (int i = 0; i < totalImages; i++) {
+    try {
+      var result = await _modelManager.modelArchitectureV2(selectedImages[i]);
+
+      // Ensure result is always a List
+      List<EmotionImage> emotions = (result is List<EmotionImage>) ? result : [result];
+
+      // Prepend new emotions so they appear at the top (newest first)
+      detectedEmotions.value = [...emotions, ...detectedEmotions.value];
+
+      // Update progress after each image is processed
+      progressNotifier.value = (i + 1) / totalImages;
+    } catch (error) {
+      print("Error processing image: $error");
+    }
+  }
+
+  // After processing all images, ensure progress is 1
+  progressNotifier.value = 1.0;
+}
+
+
+
+  Widget showEmotionsFace() {
   return ValueListenableBuilder<List<FilePathPointer>?>(
     valueListenable: _imageManager.selectedMultiplePathsNotifier,
     builder: (context, selectedImages, child) {
@@ -130,34 +159,37 @@ Widget showEmotionsOnToggle() {
         return const Text('No selected images');
       }
 
-      return FutureBuilder<List<dynamic>>(
-        future: Future.wait(selectedImages.map((image) => _modelManager.modelArchitectureV2(image, perFace: isPerFace.value))),
+      return FutureBuilder<void>(
+        future: _processImages(selectedImages), // Process images automatically
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          }
-          if (snapshot.hasError) {
-            return Text('Error - emotion detection modelV2: ${snapshot.error}');
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Text('No predictions found.');
-          }
-
-
-          print('show images');
-          final emotionWidgets = snapshot.data!.expand((data) {
-            final isList = data is List<EmotionImage>;
-            return isList ? (data).map(_buildEmotionWidget) : [_buildEmotionWidget(data as EmotionImage)];
-          }).toList();
-
           return Column(
-            children: emotionWidgets,
+            children: [
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const CircularProgressIndicator(), // Show loader while processing
+                
+               ValueListenableBuilder<double>(
+                valueListenable: progressNotifier,
+                builder: (context, progress, child) {
+                  return Column(
+                    children: [
+                      LinearProgressIndicator(
+                        value: progress, // Dynamically control progress
+                      ),
+                      // Display processed emotions
+                      ...detectedEmotions.value.map(_buildEmotionWidget).toList(),
+                    ],
+                  );
+                },
+              ),
+            ],
           );
         },
       );
     },
   );
 }
+
+
 
 Future<void> _openGallery() async {
   List<String>? pointers = await Navigator.push(
@@ -186,6 +218,7 @@ Future<void> _openGallery() async {
     _openGallery();
    });
     albumManager.releaseCache(); // ✅ Clears cache on initialization
+    detectedEmotions.value = [];
   }
 
 @override
@@ -211,14 +244,9 @@ Future<void> _openGallery() async {
               child: const Text('Muliple Images or one'),
             ),
             const SizedBox(height: 20),
-            Switch(
-              value: isPerFace.value,
-              onChanged: (newValue) { // this causes the function to run twice
-                isPerFace.value = newValue;
-                setState(() {}); // Update UI when toggle changes
-              }),
+    
            Column(
-          children: [ showEmotionsOnToggle() ],
+          children: [ showEmotionsFace() ],
         )
   
           ],
