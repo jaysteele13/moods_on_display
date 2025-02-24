@@ -29,7 +29,7 @@ class ModelManager {
   Future<void> loadModel() async {
     // fer
     //interpreter = await Interpreter.fromAsset('assets/models/model.tflite');
-    interpreter = await Interpreter.fromAsset('assets/models/model_jay_m1.tflite');
+    interpreter = await Interpreter.fromAsset('assets/models/model_jay_m3_ft.tflite');
 
     // affwild
     // interpreter = await Interpreter.fromAsset('assets/models/model_aff.tflite');
@@ -40,7 +40,7 @@ class ModelManager {
   }
   // -------------------------- Architecture --------------------------------
 
-  Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer, {bool perFace = false}) async {
+  Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer) async {
   // Load image through Face Detection
   // get file from path
   FilePointer filePointer = FilePointer(file: File(selectedFilePathPointer.filePath), imagePointer: selectedFilePathPointer.imagePointer);
@@ -50,7 +50,7 @@ class ModelManager {
   // If no faces are found, return an empty result ->
 
   if (faceDetect.isEmpty) {
-    return perFace ? emotionData : <EmotionImage>[];
+    return emotionData;
   }
 
 
@@ -70,8 +70,11 @@ class ModelManager {
     emotionData.add(emotion);
   }
 
+  // DB call
+  await formatEmotionImagesWithDB(emotionData, selectedFilePathPointer);
+
   // Return either a list of per-face emotions or a single formatted EmotionImage
-  return perFace ? emotionData : await formatEmotionImagesWithDB(emotionData, selectedFilePathPointer);
+  return emotionData;
 }
   // -------------------------- Face Detection --------------------------------
 
