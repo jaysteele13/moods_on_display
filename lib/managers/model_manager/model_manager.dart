@@ -263,6 +263,7 @@ EmotionImage parseIntoEmotionImage(List<dynamic> data) {
 }
 
 
+
 Future<EmotionImage> formatEmotionImagesWithDB(List<EmotionImage> emotionImages, FilePathPointer selectedFilePathPointer,) async{
   if (emotionImages.isEmpty) {
     throw Exception("Emotion image list is empty.");
@@ -301,16 +302,68 @@ Future<EmotionImage> formatEmotionImagesWithDB(List<EmotionImage> emotionImages,
   );
 }
 
+// this returns a different weighting based on how much images have certain scores
+String determineMostConfidentEmotion(Map<String, double> emotionScores) {
+  if (emotionScores.isEmpty) return "Unknown";
 
-String findMostCommonHighestEmotion(EmotionImage emotionImage) {
-  Map<String, int> emotionCount = {};
-  // Count occurrences of each highest emotion
-    String highest = emotionImage.highestEmotion;
-    emotionCount[highest] = (emotionCount[highest] ?? 0) + 1;
-  // Find the emotion with the highest count
-  String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  // Sort emotions by their values in descending order
+  var sortedEmotions = emotionScores.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
+  print('initial emotions: $sortedEmotions');
+  String mostCommonEmotion = sortedEmotions.first.key;
+  double mostCommonValue = sortedEmotions.first.value;
+
+  // Priority-based adjustments
+  Map<String, List<MapEntry<String, double>>> priorityRules = {
+    EMOTIONS.angry: [MapEntry(EMOTIONS.fear, 0.20)],  
+    EMOTIONS.happy: [MapEntry(EMOTIONS.disgust, 0.20)],  
+    EMOTIONS.neutral: [
+      MapEntry(EMOTIONS.disgust, 0.10),
+      // MapEntry(EMOTIONS.sad, 0.40),
+      MapEntry(EMOTIONS.angry, 0.45),
+      MapEntry(EMOTIONS.surprise, 0.46),
+      MapEntry(EMOTIONS.happy, 0.48)
+    ],
+    EMOTIONS.sad: [MapEntry(EMOTIONS.fear, 0.05)],
+    EMOTIONS.surprise: [MapEntry(EMOTIONS.angry, 0.30)],
+  };
+
+  // Apply priority adjustments
+  if (priorityRules.containsKey(mostCommonEmotion)) {
+    for (var condition in priorityRules[mostCommonEmotion]!) {
+      String competingEmotion = condition.key;
+    
+      double threshold = condition.value * mostCommonValue;
+      print('threshold: $threshold');
+      if (emotionScores[competingEmotion] != null &&
+          emotionScores[competingEmotion]! > threshold) {
+        print(emotionScores);
+        return competingEmotion; // Override most common emotion
+      }
+    }
+  }
+
   return mostCommonEmotion;
 }
+
+// String findMostCommonHighestEmotion(EmotionImage emotionImage) {
+//   Map<String, int> emotionCount = {};
+//   // Count occurrences of each highest emotion
+//     String highest = emotionImage.highestEmotion;
+//     emotionCount[highest] = (emotionCount[highest] ?? 0) + 1;
+//   // Find the emotion with the highest count
+//   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+//   return mostCommonEmotion;
+// }
+
+String findMostCommonHighestEmotion(EmotionImage emotionImage) {
+  if (emotionImage.emotions.isEmpty) return "Unknown";
+
+  // Determine the most confident emotion using priority rules
+  return determineMostConfidentEmotion(emotionImage.emotions);
+}
+
 
 void dispose() {
   interpreter.close();

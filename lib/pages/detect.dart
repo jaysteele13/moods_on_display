@@ -34,8 +34,6 @@ class AddImageScreenState extends State<AddImageScreen> {
   final ModelManager _modelManager = ModelManager();
   final ValueNotifier<List<EmotionImage>> detectedEmotions = ValueNotifier<List<EmotionImage>>([]);
 
-  final List<String> faceJPEGs = [];
-
   bool _isGalleryLoading = false;
   List faceDetections = [];
  ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
@@ -125,6 +123,7 @@ class AddImageScreenState extends State<AddImageScreen> {
 
 
 Future<void> _processImages(List<FilePathPointer> selectedImages) async {
+  print('length of selcted images: ${selectedImages.length}---------------------');
   detectedEmotions.value = []; // Clear previous results
   int totalImages = selectedImages.length;
 
@@ -165,6 +164,7 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
           return Column(
             children: [
               if (snapshot.connectionState == ConnectionState.waiting)
+                // add text waiting to progress images
                 const CircularProgressIndicator(), // Show loader while processing
                 
                ValueListenableBuilder<double>(
@@ -194,20 +194,30 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
 Future<void> _openGallery() async {
   List<String>? pointers = await Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => GalleryScreen()), // pops image pointers
+    MaterialPageRoute(builder: (context) => GalleryScreen()),
   );
 
   if (pointers != null) {
-      setState(() {
-        _isGalleryLoading = false;
-        // we then turn pointers into temporary files
-         _imageManager.setPointersToFilePathPointer(pointers);
-        // set imageManager Function to set pointerImages into UInt8List this won't work so pointers must be set to files
-        // _imageManager.setPointersToBytesNotifier(pointers);
-      });
+    setState(() {
+      _isGalleryLoading = true; // Show loading state while processing new batch
+    });
+
+    // ✅ Clear old data BEFORE starting a new detection
+    detectedEmotions.value = [];
+    progressNotifier.value = 0.0;
+
+    // Convert pointers to FilePathPointer
+    await _imageManager.setPointersToFilePathPointer(pointers);
+
+    // ✅ Wait for processing to complete before updating UI
+    await _processImages(_imageManager.selectedMultiplePathsNotifier.value ?? []);
+
+    setState(() {
+      _isGalleryLoading = false; // Hide loading state after processing
+    });
   }
-  print('here are pointers: $pointers');
 }
+
 
 
 
