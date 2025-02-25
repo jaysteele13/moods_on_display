@@ -48,6 +48,8 @@ class _SingleImageViewState extends State<SingleImageView> {
     super.dispose();
   }
 
+  
+
   String getEmojiByEmotion(String emotion) {
     switch (emotion) {
       case EMOTIONS.angry:
@@ -69,8 +71,30 @@ class _SingleImageViewState extends State<SingleImageView> {
     }
   }
 
+img.Color getEmotionColor(String emotion) {
+  switch (emotion) {
+    case EMOTIONS.happy:
+      return img.ColorRgb8(255, 255, 0); // Yellow
+    case EMOTIONS.sad:
+      return img.ColorRgb8(0, 0, 255); // Blue
+    case EMOTIONS.angry:
+      return img.ColorRgb8(255, 0, 0); // Red
+    case EMOTIONS.fear:
+      return img.ColorRgb8(128, 0, 128); // Purple
+    case EMOTIONS.disgust:
+      return img.ColorRgb8(0, 128, 0); // Green
+    case EMOTIONS.neutral:
+      return img.ColorRgb8(128, 128, 128); // Grey
+    case EMOTIONS.surprise:
+      return img.ColorRgb8(255, 165, 0); // Orange
+    default:
+      return img.ColorRgb8(0, 0, 0); // Black (default)
+  }
+}
+
+
 Future<Uint8List> drawRectangleOnImage(
-    String pointer, List<BoundingBox> boundingBoxes,) async {
+    String pointer, List<EmotionBoundingBox> boundingBoxes,) async {
 
   // db call
   
@@ -94,28 +118,26 @@ Future<Uint8List> drawRectangleOnImage(
   
 
   // Define the rectangle color (Orange)
-  img.Color rectangleColor = img.ColorRgb8(255, 255, 0);
+  
 
   // Draw all bounding boxes with adjusted scaling
-  for (BoundingBox bbox in boundingBoxes) {
+  for (EmotionBoundingBox bbox in boundingBoxes) {
     // Original bounding box coordinates
 
-  double boundingBoxLeft = bbox.x.toDouble();
-  double boundingBoxTop = bbox.y.toDouble();
-  double boundingBoxWidth = bbox.width.toDouble();
-  double boundingBoxHeight = bbox.height.toDouble();
+  img.Color rectangleColor = getEmotionColor(bbox.emotion);
+
+  double boundingBoxLeft = bbox.boundingBox.x.toDouble();
+  double boundingBoxTop = bbox.boundingBox.y.toDouble();
+  double boundingBoxWidth = bbox.boundingBox.width.toDouble();
+  double boundingBoxHeight = bbox.boundingBox.height.toDouble();
 
   int x = boundingBoxLeft.clamp(0.0, originalImageWidth).toInt();
   int y = boundingBoxTop.clamp(0.0, originalImageHeight).toInt();
   int width = boundingBoxWidth.clamp(0.0, originalImageWidth - x.toDouble()).toInt();
   int height = boundingBoxHeight.clamp(0.0, originalImageHeight - y.toDouble()).toInt();
 
-  // Output the new scaled bounding box
-  print("Scaled Bounding Box: ");
-  print("bbx ${bbox.x}, ${bbox.y}, ${bbox.width}, ${bbox.height}");
-    // img.drawRect(image, x1: newX.toInt(), y1: newY.toInt(), x2: newWidth.toInt(), y2: newHeight.toInt(), color: rectangleColor, thickness: 3);
-    // img.drawRect(image, x1: bbox.x, y1: bbox.y, x2: bbox.width, y2: bbox.height, color: rectangleColor, thickness: 3);
     img.drawRect(image, x1: x, y1: y, x2: x + width,y2: y + height, color: rectangleColor, thickness: 6); 
+    img.drawString(image, bbox.emotion, font: img.arial48, x: x, y: y-100, color: rectangleColor);
   }
 
   // Encode the modified image back to Uint8List
@@ -160,7 +182,7 @@ Future<void> _toggleBoundingBoxes(int index) async {
       await _fetchEmotionBoundingBox(widget.images[index].pointer);
       Uint8List updatedImage = await drawRectangleOnImage(
         widget.images[index].pointer,
-        _emotionBoundingBoxes.map((e) => e.boundingBox).toList(),
+        _emotionBoundingBoxes,
       );
       setState(() {
          widget.images[index].image = updatedImage;
