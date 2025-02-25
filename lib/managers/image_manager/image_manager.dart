@@ -185,11 +185,6 @@ Future<void> setPointersToFilePathPointer(List<String> pointers) async {
     });
   }
 
-  void releaseCache() {
-    triggerGC();
-    PhotoManager.releaseCache(); // 🔹 Force cache release
-  }
-
 
 Future<void> listAndDeleteFiles() async {
   // Get the temporary directory where files are stored
@@ -247,5 +242,10 @@ Future<void> listAndDeleteFiles() async {
       return img.copyResize(image, width: 224, height: 224);
     }
     return null;
+  }
+
+  void releaseCache() {
+    triggerGC();
+    PhotoManager.releaseCache(); // 🔹 Force cache release
   }
 }
