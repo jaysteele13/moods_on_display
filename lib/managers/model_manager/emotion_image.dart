@@ -1,5 +1,7 @@
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 
+
+
 class EmotionImage {
   FilePathPointer? selectedFilePathPointer; 
   final Map<String, double> emotions;
