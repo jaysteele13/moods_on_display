@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
+import 'package:moods_on_display/utils/types.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -41,12 +42,13 @@ class ModelManager {
   // -------------------------- Architecture --------------------------------
 
   Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer) async {
-  // Load image through Face Detection
-  // get file from path
+
   FilePointer filePointer = FilePointer(file: File(selectedFilePathPointer.filePath), imagePointer: selectedFilePathPointer.imagePointer);
 
-  List<img.Image> faceDetect = await performFaceDetection(filePointer);
+  // perhaps grab coordinates through faceDetection in a type that holds List<img.Image> List<BoudningBox>
+  List<ImageBoundingBox> faceDetect = await performFaceDetection(filePointer);
   List<EmotionImage> emotionData = [];
+  List<EmotionBoundingBox> emotionBoundingBoxData = [];
   // If no faces are found, return an empty result ->
 
   if (faceDetect.isEmpty) {
@@ -54,11 +56,11 @@ class ModelManager {
   }
 
 
-  for (img.Image face in faceDetect) {
+  for (ImageBoundingBox face in faceDetect) {
     // Detect emotions for the face
-    EmotionImage emotion = await performEmotionDetection(face);
+    EmotionImage emotion = await performEmotionDetection(face.image);
     // Get face-specific image file (used only for per-face results)
-    String filePath = await getFaceDetectionJPEGPath(face);
+    String filePath = await getFaceDetectionJPEGPath(face.image);
 
     // adds electedFilePath here
     emotion.selectedFilePathPointer = FilePathPointer(filePath: filePath, imagePointer: selectedFilePathPointer.imagePointer); // find way to pass down pointer
@@ -67,22 +69,27 @@ class ModelManager {
     emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
 
     // Add emotion to dataset here - need check to ensure assetId isn't the same
+    // Add bounding box at the same time
     emotionData.add(emotion);
+    emotionBoundingBoxData.add(EmotionBoundingBox(emotion: emotion.mostCommonEmotion!, boundingBox: face.boundingBox));
   }
 
-  // DB call
+  // DB call for image table
   await formatEmotionImagesWithDB(emotionData, selectedFilePathPointer);
+
+  // DB call to add EmotionBoudingBox entries
+  await DatabaseManager.instance.insertBoundingBoxes(selectedFilePathPointer.imagePointer, emotionBoundingBoxData);
 
   // Return either a list of per-face emotions or a single formatted EmotionImage
   return emotionData;
 }
   // -------------------------- Face Detection --------------------------------
 
-   Future<List<img.Image>> performFaceDetection(FilePointer selectedImage) async {
+   Future<List<ImageBoundingBox>> performFaceDetection(FilePointer selectedImage) async {
     // Load the input image
       InputImage inputImage = InputImage.fromFile(selectedImage.file);
 
-      final List<img.Image> facesList = [];
+      final List<ImageBoundingBox> facesList = [];
     // Detect faces in the image
       final List<Face> faces = await faceDetector.processImage(inputImage);
 
@@ -131,7 +138,8 @@ class ModelManager {
 
           croppedFace = img.copyCrop(originalImage, x: x, y: y, width: width, height: height);
 
-          facesList.add(croppedFace);
+          // add image and bounding box per face for later usage.
+          facesList.add(ImageBoundingBox(image: croppedFace, boundingBox: BoundingBox(x: x, y: y, width: width, height: height)));
       }
     }
 
@@ -139,6 +147,7 @@ class ModelManager {
     // print("Highest confidence face detected with score: $highestConfidence");
     // Return the cropped image file
     // print("facesList length: ${facesList.length}");
+    
     return facesList;
   }
  

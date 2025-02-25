@@ -29,19 +29,76 @@ class DatabaseManager{
     );
   }
 
-  // currently db accepts one key emotion per group of faces
-  Future<void> _onCreate(Database db, int version) async {
+ Future<void> _onCreate(Database db, int version) async {
   await db.execute('''
     CREATE TABLE images (
-      id TEXT PRIMARY KEY NOT NULL,
+      id TEXT PRIMARY KEY NOT NULL, 
       emotion TEXT NOT NULL
-    )
+    );
+  ''');
+
+  await db.execute('''
+    CREATE TABLE bounding_boxes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      emotion_id TEXT NOT NULL, 
+      emotion TEXT NOT NULL,
+      x INTEGER NOT NULL,
+      y INTEGER NOT NULL,
+      width INTEGER NOT NULL,
+      height INTEGER NOT NULL,
+      FOREIGN KEY (emotion_id) REFERENCES images(id) ON DELETE CASCADE
+    );
   ''');
 }
 
+
+Future<int> insertBoundingBoxes(
+  String emotionPointer, // FK to `images.id`
+  List<EmotionBoundingBox> boundingBoxes,
+) async {
+  const validEmotions = EMOTIONS.list;
+
+  if (boundingBoxes.isEmpty) {
+    throw Exception('Bounding box list is empty');
+  }
+
+  try {
+    print('Trying to add ${boundingBoxes.length} bounding boxes');
+    Database db = await instance.database;
+    Batch batch = db.batch(); // Use a batch transaction for efficiency
+
+    for (EmotionBoundingBox ebbx in boundingBoxes) {
+      if (!validEmotions.contains(ebbx.emotion)) {
+        throw Exception('Invalid emotion: ${ebbx.emotion}');
+      }
+
+      batch.insert(
+        'bounding_boxes',
+        {
+          'emotion_id': emotionPointer,
+          'emotion': ebbx.emotion,
+          'x': ebbx.boundingBox.x, // No need for `ebb.boundingBox.x`, just `ebb.x`
+          'y': ebbx.boundingBox.y,
+          'width': ebbx.boundingBox.width,
+          'height': ebbx.boundingBox.height,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(); // Execute all inserts in one go
+
+    print("Inserted ${boundingBoxes.length} bounding boxes for Image ID: $emotionPointer");
+    return boundingBoxes.length;
+  } catch (e) {
+    print("Error inserting bounding boxes: $e");
+    return -1;
+  }
+}
+
+
+
  Future<int> insertImage(String id, String emotion) async {
-
-
     const validEmotions = EMOTIONS.list;
     if (!validEmotions.contains(emotion)) {
       throw Exception('Invalid emotion');
@@ -88,6 +145,20 @@ Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
 
   // Map the result to List<FilePathPointer>
   return result.map((map) => EmotionPointer.fromMap(map)).toList();
+}
+
+Future<List<EmotionBoundingBox>> getEmotionBoundingBoxesByPointer(String pointer) async {
+  print('attempt to get bounding boxes');
+  Database db = await instance.database;
+  // Query the database for records
+  final result = await db.query(
+    'bounding_boxes',
+    where: 'emotion_id = ?',
+    whereArgs: [pointer],
+  );
+
+  // Map the result to List<FilePathPointer>
+  return result.map((map) => EmotionBoundingBox.fromMap(map)).toList();
 }
 
 Future<void> deleteImageRecords(List<String> records) async {

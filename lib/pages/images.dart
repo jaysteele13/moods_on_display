@@ -31,6 +31,8 @@ class _ImagesScreenState extends State<ImagesScreen> {
     });
   }
 
+ 
+
   @override
   void initState() {
     super.initState();
@@ -112,14 +114,14 @@ void _onImageTap(EmotionPointer pointer) async {
     toggleDeleteSelection(pointer.pointer);
   } else {
     // Otherwise, open the image in full view
-    List<Uint8List> imageDataList = [];
+    List<ImagePointer> imageDataList = [];
     for (var ptr in _loadedImages) {
       if (!imageCache.containsKey(ptr.pointer)) {
         Uint8List? imageData = await albumManager.getImageByPointer(ptr.pointer, false);
         imageCache[ptr.pointer] = imageData; // Cache for later use
       }
       if (imageCache[ptr.pointer] != null) {
-        imageDataList.add(imageCache[ptr.pointer]!);
+        imageDataList.add(ImagePointer(image: imageCache[ptr.pointer]!, pointer: ptr.pointer));
       }
     }
 
@@ -231,14 +233,15 @@ Widget build(BuildContext context) {
                 buildSelectionActions(_loadedImages),
               ],
             ),
-)
+), SizedBox(height: 20), // Adds spacing before the button
+  ElevatedButton(
+    onPressed: DatabaseManager.instance.deleteDatabaseFile,
+    child: const Text("Delete Database"),
+  ),
 
-  //  SizedBox(height: 20), // Adds spacing before the button
-  // ElevatedButton(
-  //   onPressed: DatabaseManager.instance.deleteDatabaseFile,
-  //   child: const Text("Delete Database"),
-  // ),
+  
       ],
+      
     ),
   );
 }

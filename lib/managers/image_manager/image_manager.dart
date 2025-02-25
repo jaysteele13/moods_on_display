@@ -98,6 +98,21 @@ class ImageManager {
   selectedMultipleImagesNotifier.value = result;
 }
 
+Future<File> getFilefromPointer(String pointer) async {
+  // sets fileImages based off of selected images for model detection
+    AssetEntity? asset = await AssetEntity.fromId(pointer);
+
+    // Retrieve the file from the asset
+    File? assetFile = await asset?.file;
+
+    if (assetFile != null && await assetFile.exists()) {
+       return assetFile;
+    } else {
+      throw Exception("Can't retrieve the file or file does not exist");
+    }
+}
+  
+
 Future<void> setPointersToFilePathPointer(List<String> pointers) async {
   // sets fileImages based off of selected images for model detection
   List<FilePathPointer> result = [];
@@ -170,11 +185,6 @@ Future<void> setPointersToFilePathPointer(List<String> pointers) async {
     });
   }
 
-  void releaseCache() {
-    triggerGC();
-    PhotoManager.releaseCache(); // 🔹 Force cache release
-  }
-
 
 Future<void> listAndDeleteFiles() async {
   // Get the temporary directory where files are stored
@@ -232,5 +242,10 @@ Future<void> listAndDeleteFiles() async {
       return img.copyResize(image, width: 224, height: 224);
     }
     return null;
+  }
+
+  void releaseCache() {
+    triggerGC();
+    PhotoManager.releaseCache(); // 🔹 Force cache release
   }
 }

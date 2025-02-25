@@ -220,9 +220,6 @@ Future<void> _openGallery() async {
     // Convert pointers to FilePathPointer
     await _imageManager.setPointersToFilePathPointer(pointers);
 
-    // ✅ Wait for processing to complete before updating UI
-    // await _processImages(_imageManager.selectedMultiplePathsNotifier.value ?? []);
-
     setState(() {
       _isGalleryLoading = false; // Hide loading state after processing
     });
