@@ -98,6 +98,21 @@ class ImageManager {
   selectedMultipleImagesNotifier.value = result;
 }
 
+Future<File> getFilefromPointer(String pointer) async {
+  // sets fileImages based off of selected images for model detection
+    AssetEntity? asset = await AssetEntity.fromId(pointer);
+
+    // Retrieve the file from the asset
+    File? assetFile = await asset?.file;
+
+    if (assetFile != null && await assetFile.exists()) {
+       return assetFile;
+    } else {
+      throw Exception("Can't retrieve the file or file does not exist");
+    }
+}
+  
+
 Future<void> setPointersToFilePathPointer(List<String> pointers) async {
   // sets fileImages based off of selected images for model detection
   List<FilePathPointer> result = [];
