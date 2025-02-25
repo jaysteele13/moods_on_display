@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,14 +13,6 @@ import 'dart:io';
 
 import 'package:moods_on_display/utils/constants.dart';
 
-/*
-Amend this code so everytime a detection happens and an image is generated show the face and the progress
-Should show the estimated time of model time prediction, as well as each face and emotion when detected.
-
-
-
-*/
-
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
 
@@ -33,8 +24,6 @@ class AddImageScreenState extends State<AddImageScreen> {
   final ImageManager _imageManager = ImageManager();
   final ModelManager _modelManager = ModelManager();
   final ValueNotifier<List<EmotionImage>> detectedEmotions = ValueNotifier<List<EmotionImage>>([]);
-
-  final List<String> faceJPEGs = [];
 
   bool _isGalleryLoading = false;
   List faceDetections = [];
@@ -125,6 +114,7 @@ class AddImageScreenState extends State<AddImageScreen> {
 
 
 Future<void> _processImages(List<FilePathPointer> selectedImages) async {
+  print('length of selcted images: ${selectedImages.length}---------------------');
   detectedEmotions.value = []; // Clear previous results
   int totalImages = selectedImages.length;
 
@@ -149,6 +139,26 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   progressNotifier.value = 1.0;
 }
 
+// Widget showEmotionsFace() {
+//   return Column(
+//     children: [
+//       ValueListenableBuilder<double>(
+//         valueListenable: progressNotifier,
+//         builder: (context, progress, child) {
+//           return LinearProgressIndicator(value: progress);
+//         },
+//       ),
+//       ValueListenableBuilder<List<EmotionImage>>(
+//         valueListenable: detectedEmotions,
+//         builder: (context, processedEmotions, child) {
+//           return Column(
+//             children: processedEmotions.map(_buildEmotionWidget).toList(),
+//           );
+//         },
+//       ),
+//     ],
+//   );
+// }
 
 
   Widget showEmotionsFace() {
@@ -165,6 +175,7 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
           return Column(
             children: [
               if (snapshot.connectionState == ConnectionState.waiting)
+                // add text waiting to progress images
                 const CircularProgressIndicator(), // Show loader while processing
                 
                ValueListenableBuilder<double>(
@@ -194,20 +205,30 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
 Future<void> _openGallery() async {
   List<String>? pointers = await Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => GalleryScreen()), // pops image pointers
+    MaterialPageRoute(builder: (context) => GalleryScreen()),
   );
 
   if (pointers != null) {
-      setState(() {
-        _isGalleryLoading = false;
-        // we then turn pointers into temporary files
-         _imageManager.setPointersToFilePathPointer(pointers);
-        // set imageManager Function to set pointerImages into UInt8List this won't work so pointers must be set to files
-        // _imageManager.setPointersToBytesNotifier(pointers);
-      });
+    setState(() {
+      _isGalleryLoading = true; // Show loading state while processing new batch
+    });
+
+    // ✅ Clear old data BEFORE starting a new detection
+    detectedEmotions.value = [];
+    progressNotifier.value = 0.0;
+
+    // Convert pointers to FilePathPointer
+    await _imageManager.setPointersToFilePathPointer(pointers);
+
+    // ✅ Wait for processing to complete before updating UI
+    // await _processImages(_imageManager.selectedMultiplePathsNotifier.value ?? []);
+
+    setState(() {
+      _isGalleryLoading = false; // Hide loading state after processing
+    });
   }
-  print('here are pointers: $pointers');
 }
+
 
 
 
@@ -253,7 +274,5 @@ Future<void> _openGallery() async {
         ),
       ),
     )));
-  }
-
-  
+  } 
 }
