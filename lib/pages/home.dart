@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
     return BaseScaffold(
         appBar: AppBar(title: Text('Home')),
         body: ListView(
+          key: const Key('home_body'),
           // necessary to scroll app
           children: [
             HomeFeatures(features: features),
