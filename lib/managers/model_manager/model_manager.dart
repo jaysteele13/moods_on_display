@@ -30,7 +30,9 @@ class ModelManager {
 
   Future<void> _loadModel() async {
     if (_isModelLoaded) return; // Prevent reloading
-    interpreter = await Interpreter.fromAsset('assets/models/model_jay_m3_ft.tflite');
+    // prev was assets/models/model_jay_m5_ft_b
+    //model_facerec_m1_tflite is actually m2-1st-facerec
+    interpreter = await Interpreter.fromAsset('assets/models/model_facerec_m1_ft.tflite');
     faceDetector = FaceDetector(
       options: FaceDetectorOptions(
         performanceMode: FaceDetectorMode.accurate,
