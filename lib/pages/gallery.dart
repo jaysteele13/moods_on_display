@@ -117,6 +117,7 @@ void dispose() {
     return BaseScaffold(
       appBar: AppBar(
         title: Text(selectedAlbum == null ? "Select an Album" : selectedAlbum!.name),
+        key: const Key('gallery_body'),
         actions: [
           if (selectedAlbum != null)
             IconButton(

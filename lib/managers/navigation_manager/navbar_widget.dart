@@ -77,6 +77,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               label: 'Albums',
             ),
             BottomNavigationBarItem(
+              key: const Key('add_images_screen_nav'),
               icon: SvgPicture.asset(
                 'assets/icons/add.svg',
                 height: 20,

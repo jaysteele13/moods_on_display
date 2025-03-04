@@ -7,7 +7,7 @@ import 'package:moods_on_display/pages/login.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import '../test/mocks.mocks.dart';
+import '../../test/mocks.mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 
@@ -27,7 +27,7 @@ void main() {
   });
 
   // Mock App Flow Tree
-  Widget createTestableWidget(Widget child) {
+  Widget mockFlowTree(Widget child) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<NavigationProvider>(
@@ -42,11 +42,11 @@ void main() {
   }
 
   group('FlowTree Widget Tests', () {
-    testWidgets("Shows LoginScreen when user is not authenticated", (WidgetTester tester) async {
+    testWidgets("Shows Login Screen when user is not authenticated", (WidgetTester tester) async {
       // mocks user not authenticated
       when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(null));
 
-      await tester.pumpWidget(createTestableWidget(const FlowTree()));
+      await tester.pumpWidget(mockFlowTree(const FlowTree()));
 
       await tester.pumpAndSettle();
 
@@ -71,11 +71,11 @@ void main() {
       }
     });
 
-    testWidgets("Shows HomePage when user is authenticated", (WidgetTester tester) async {
+    testWidgets("Shows Home Page when user is authenticated", (WidgetTester tester) async {
       // mocks successful login
       when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
 
-      await tester.pumpWidget(createTestableWidget(const FlowTree()));
+      await tester.pumpWidget(mockFlowTree(const FlowTree()));
 
       await tester.pumpAndSettle();
       try {
