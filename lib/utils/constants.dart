@@ -9,3 +9,4 @@ class EMOTIONS {
   static const list = [angry, disgust, fear, happy, neutral, sad, surprise];
   static const albumList = [angry, disgust, fear, happy, neutral, sad, surprise];
 }
+
