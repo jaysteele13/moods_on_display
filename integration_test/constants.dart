@@ -1,5 +1,40 @@
 class DETECTION_TEST {
   static const emotion_test_album = 'test_album';
+  static const emotion_test_album2 = 'test_album2';
+    static const emotion_test_album3 = 'test_album3';
+
+  static Model_Benchmark benchmark1 = Model_Benchmark(
+  albumName: emotion_test_album,
+  anger: 2,
+  disgust: 2,
+  fear: 1,
+  happy: 9,
+  neutral: 5,
+  sad: 0,
+  surprise: 2,
+);
+
+static Model_Benchmark benchmark2 = Model_Benchmark(
+  albumName: emotion_test_album2,
+  anger: 2,
+  disgust: 1,
+  fear: 2,
+  happy: 7,
+  neutral: 6,
+  sad: 3,
+  surprise: 3,
+);
+
+static Model_Benchmark benchmark3 = Model_Benchmark(
+  albumName: emotion_test_album3,
+  anger: 4,
+  disgust: 0,
+  fear: 1,
+  happy: 6,
+  neutral: 2,
+  sad: 3,
+  surprise: 1,
+);
   
 }
 

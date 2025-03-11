@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moods_on_display/app_flow/flow.dart';
@@ -8,7 +7,6 @@ import 'package:moods_on_display/pages/detect.dart';
 import 'package:mockito/mockito.dart';
 import 'package:moods_on_display/pages/gallery.dart';
 import 'package:moods_on_display/pages/home.dart';
-import 'package:moods_on_display/utils/constants.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import '../../test/mocks.mocks.dart';
@@ -17,139 +15,13 @@ import 'package:firebase_core/firebase_core.dart';
 
 
 import '../constants.dart';
-
-// Extension to add countStrings method to WidgetTester
-extension WidgetTesterExtensions on WidgetTester {
-  // Function to count the occurrences of a string in the widget tree
-  Future<int> countStrings(String searchString) async {
-    // Find all Text widgets in the widget tree
-    final textWidgets = find.byType(Text);
-    
-    // Get the widgets from the finder
-    final widgets = await widgetList(textWidgets);
-    
-    // Count how many times the searchString appears in the Text widgets
-    int count = 0;
-    for (var widget in widgets) {
-      if (widget is Text && widget.data?.contains(searchString) == true) {
-        count++;
-      }
-    }
-    return count;
-  }
-}
-
-// Helper Function 2: Verify GalleryScreen and Gallery Body
-Future<void> verifyGalleryScreenDisplayed(WidgetTester tester) async {
-  print("✅ Navigating to Gallery Screen");
-  expect(find.byType(GalleryScreen), findsOneWidget, reason: "Gallery Screen should be displayed.");
-  print("✅ Gallery Screen is displayed");
-
-  expect(find.byKey(const Key('gallery_body')), findsOneWidget, reason: "Main body of Gallery should be opened.");
-  print("✅ Gallery body is displayed");
-}
-
-// Helper Function 3: Scroll to the album and select it
-Future<void> scrollToAndSelectAlbum(WidgetTester tester) async {
-  print("Attempting to scroll to album...");
-  await tester.scrollUntilVisible(
-    find.text(DETECTION_TEST.emotion_test_album),
-    500.0, // Adjust scroll distance
-    scrollable: find.byType(Scrollable),
-  );
-  await tester.pump();
-  print("✅ Scrolled ListView to find album");
-
-  expect(find.text(DETECTION_TEST.emotion_test_album), findsOneWidget, reason: "Album should be visible.");
-  
-  // Tap on the album
-  await tester.tap(find.widgetWithText(ListTile, DETECTION_TEST.emotion_test_album));
-  await tester.pumpAndSettle();
-  print("✅ Tapped on album: ${DETECTION_TEST.emotion_test_album}");
-  
-  // Ensure the album is selected in the AppBar
-  expect(find.widgetWithText(AppBar, DETECTION_TEST.emotion_test_album), findsOneWidget, reason: "AppBar should display the selected album name.");
-  print("✅ Selected album is displayed in the AppBar");
-}
-
-// Helper Function 4: Tap on all images in the GridView
-Future<void> tapAllImagesInGrid(WidgetTester tester) async {
-  print("Attempting to tap all images in GridView...");
-  
-  Finder gridViewFinder = find.byType(GridView);
-  Finder imagesFinder = find.descendant(
-    of: gridViewFinder,
-    matching: find.byType(GestureDetector),
-  );
-
-  for (var i = 0; i < imagesFinder.evaluate().length; i++) {
-    Finder imageFinder = imagesFinder.at(i);
-    
-    // Ensure the image is visible and tap it
-    await tester.scrollUntilVisible(
-      imageFinder,
-      100.0, // Scroll amount per step (adjust if needed)
-      scrollable: find.byType(Scrollable), 
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(imageFinder);
-    await tester.pumpAndSettle();
-
-    print("✅ Tapped on image ${i + 1}");
-
-    // Small delay before selecting the next image
-    await Future.delayed(Duration(milliseconds: 500));
-  }
-
-  print("✅ Successfully tapped all images in the GridView");
-}
-
-// Helper Function 5: Run emotion prediction and compare to benchmark
-Future<double> runEmotionPrediction(WidgetTester tester) async {
-  Model_Benchmark benchmark = Model_Benchmark(
-    albumName: DETECTION_TEST.emotion_test_album,
-    anger: 2,
-    disgust: 2,
-    fear: 1,
-    happy: 9,
-    neutral: 5,
-    sad: 0,
-    surprise: 2,
-  );
-
-  print("✅ Running Prediction on test_album");
-
-  final int angryCount = await tester.countStrings(EMOTIONS.angry);
-  final int disgustCount = await tester.countStrings(EMOTIONS.disgust);
-  final int fearCount = await tester.countStrings(EMOTIONS.fear);
-  final int happyCount = await tester.countStrings(EMOTIONS.happy);
-  final int neutralCount = await tester.countStrings(EMOTIONS.neutral);
-  final int sadCount = await tester.countStrings(EMOTIONS.sad);
-  final int surpriseCount = await tester.countStrings(EMOTIONS.surprise);
-
-  // Create predicted emotion model
-  Model_Benchmark pred_benchmark = Model_Benchmark(
-    albumName: DETECTION_TEST.emotion_test_album,
-    anger: angryCount,
-    disgust: disgustCount,
-    fear: fearCount,
-    happy: happyCount,
-    neutral: neutralCount,
-    sad: sadCount,
-    surprise: surpriseCount,
-  );
-
-  // Compare the predicted benchmark to the real benchmark
-  double accuracy = benchmark.compareAndAnalyzePredictions(pred_benchmark);
-  
-  return accuracy;
-}
+import 'detection_utils.dart';
 
 void main() {
   late MockAuth mockAuth;
   late MockUser mockUser;
   late MockIPhotoManagerService mockPhotoManagerService; 
+  late DetectionUtils detectionUtils;
 
 
   setUpAll(() async {
@@ -160,6 +32,7 @@ void main() {
   setUp(() async {
     mockAuth = MockAuth();
     mockUser = MockUser();
+    detectionUtils = DetectionUtils();
     mockPhotoManagerService = MockIPhotoManagerService();
     
     Auth.instance = mockAuth; // Inject mock Auth instance
@@ -185,7 +58,7 @@ void main() {
     );
   }
 
-  group('Emotion Detection Tests', () {
+  group('E2E Navigate to Gallery', () {
 
     // E2E => Displays Gallery
      testWidgets("From Flow Navigate to Home", (WidgetTester tester) async {
@@ -242,7 +115,61 @@ void main() {
       
     });
 
-    test('should return granted permission without prompt', () async {
+    
+  });
+
+
+  group('Detection Test', () {
+    // function to run model bench prediction
+    Future<void> runModelPredictionTest(
+    WidgetTester tester, 
+    MockAuth mockAuth, 
+    MockIPhotoManagerService mockPhotoManagerService, 
+    DetectionUtils detectionUtils, 
+    MockUser mockUser,
+    {required double expectedAccuracy, required Model_Benchmark benchmark}) async {
+  try {
+    // Mock successful login
+    when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
+    await tester.pumpWidget(mockAddImages(const FlowTree()));
+    await tester.pumpAndSettle();
+
+    // Step 2: Handle Dialog for "Allow Full Access"
+    when(mockPhotoManagerService.requestPermission())
+      .thenAnswer((_) async => PermissionState.authorized);
+    final result = await mockPhotoManagerService.requestPermission();
+    expect(result, PermissionState.authorized);
+
+    // Step 1: Navigate to Add Images screen
+    await tester.tap(find.byKey(const Key('add_images_screen_nav')));
+    await tester.pumpAndSettle();
+
+    // Step 3: Ensure Gallery Screen and Gallery Body are displayed
+    await detectionUtils.verifyGalleryScreenDisplayed(tester);
+
+    // Step 4: Scroll to find album and select it
+    await detectionUtils.scrollToAndSelectAlbum(tester);
+
+    // Step 5: Tap on all images in the GridView
+    await detectionUtils.tapAllImagesInGrid(tester);
+
+    // Step 6: Tap the "check" icon
+    await tester.tap(find.byIcon(Icons.check));
+    await tester.pumpAndSettle();
+    print("✅ Tapped on Tick");
+
+    // Step 7: Run the emotion prediction and compare with benchmark
+    double accuracy = await detectionUtils.runEmotionPrediction(tester, benchmark);
+    expect(accuracy, greaterThan(expectedAccuracy), 
+        reason: "Accuracy should be greater than $expectedAccuracy%");
+    
+  } catch (e, stack) {
+    print("❌ Test Failed: \nError: $e");
+    print(stack);
+    rethrow; // Ensure test still fails
+  }
+}
+    test('Mock Prompt for PhotoManager permission request', () async {
       when(mockPhotoManagerService.requestPermission())
           .thenAnswer((_) async => PermissionState.authorized);
 
@@ -250,49 +177,50 @@ void main() {
 
       expect(result, PermissionState.authorized);
     });
-    testWidgets("Should select Images from Albums", (WidgetTester tester) async {
-      try {
-        // Mock successful login
-        when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
-        await tester.pumpWidget(mockAddImages(const FlowTree()));
-        await tester.pumpAndSettle();
-
-         // Step 2: Handle Dialog for "Allow Full Access"
-        when(mockPhotoManagerService.requestPermission())
-          .thenAnswer((_) async => PermissionState.authorized);
-        final result = await mockPhotoManagerService.requestPermission();
-        expect(result, PermissionState.authorized);
-
-        // Step 1: Navigate to Add Images screen
-        await tester.tap(find.byKey(const Key('add_images_screen_nav')));
-        await tester.pumpAndSettle();
-
-       
-
-        // Step 3: Ensure Gallery Screen and Gallery Body are displayed
-        await verifyGalleryScreenDisplayed(tester);
-
-        // Step 4: Scroll to find album and select it
-        await scrollToAndSelectAlbum(tester);
-
-        // Step 5: Tap on all images in the GridView
-        await tapAllImagesInGrid(tester);
-
-        // Step 6: Tap the "check" icon
-        await tester.tap(find.byIcon(Icons.check));
-        await tester.pumpAndSettle();
-        print("✅ Tapped on Tick");
-
-        // Step 7: Run the emotion prediction and compare with benchmark
-        double accuracy = await runEmotionPrediction(tester);
-        expect(accuracy, greaterThan(70), reason: "Accuracy should be greater than 70%");
-
-      } catch (e, stack) {
-        print("❌ Test Failed: \nError: $e");
-        print(stack);
-        rethrow; // Ensure test still fails
-      }
+    testWidgets("Test Model Prediction Benchmark 1", (WidgetTester tester) async {
+      await runModelPredictionTest(
+        tester, 
+        mockAuth, 
+        mockPhotoManagerService, 
+        detectionUtils, 
+        mockUser,
+        expectedAccuracy: 70.0,
+        benchmark: DETECTION_TEST.benchmark1,
+      );
     });
+
+    testWidgets("Test Model Prediction Benchmark 2", (WidgetTester tester) async {
+      await runModelPredictionTest(
+        tester, 
+        mockAuth, 
+        mockPhotoManagerService, 
+        detectionUtils, 
+        mockUser,
+        expectedAccuracy: 70.0,
+        benchmark: DETECTION_TEST.benchmark3,
+      );
+    });
+
+    testWidgets("Test Model Prediction Benchmark 3", (WidgetTester tester) async {
+      await runModelPredictionTest(
+        tester, 
+        mockAuth, 
+        mockPhotoManagerService, 
+        detectionUtils, 
+        mockUser,
+        expectedAccuracy: 75.0,
+        benchmark: DETECTION_TEST.benchmark1,
+      );
+    });
+
   });
+
+  
+
+  // Add another Model Detection / add to next dataset
+
+  // Add Performance Recording Test When Running Emotion Detection Model
+
+  // Add E2E to Test Happy album and using Emotion detection bounding box feature
   
 }
