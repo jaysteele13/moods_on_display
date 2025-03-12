@@ -1,0 +1,11 @@
+Steps to generate performance log.
+
+Duration: 1min
+
+Steps:
+1. Loaded up app
+2. selected 9 Images to process. 
+3. Processed them. 
+4. Navigated to view albums. 
+5. Selected on one of selected images that were Processed
+6. Generated Bounding Box of Emotion
