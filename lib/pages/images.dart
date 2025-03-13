@@ -61,6 +61,7 @@ Widget _buildImageItem(EmotionPointer pointer) {
       }
       if (snapshot.hasData && snapshot.data != null) {
         return GestureDetector(
+          key: const Key('single_image'),
           onTap: () => _onImageTap(pointer),
           onLongPress: () => _onImageLongPress(pointer.pointer),
           child: Stack(

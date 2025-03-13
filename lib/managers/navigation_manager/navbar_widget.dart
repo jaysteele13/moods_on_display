@@ -69,6 +69,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               label: 'Home',
             ),
             BottomNavigationBarItem(
+              key: const Key('view_gallery_screen_nav'),
               icon: SvgPicture.asset(
                 'assets/icons/album.svg',
                 height: 20,

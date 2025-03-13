@@ -10,6 +10,7 @@ class AlbumScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BaseScaffold(
       appBar: AppBar(title: Text("Albums")),
+      key: const Key('album_body'),
       body: ListView.builder(
         itemCount: emotions.length,
         itemBuilder: (context, index) {

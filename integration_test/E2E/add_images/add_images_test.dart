@@ -140,7 +140,7 @@ void main() {
         await addImageUtils.verifyGalleryScreenDisplayed(tester);
 
         // Step 4: Scroll to find album and select it
-        await addImageUtils.scrollToAndSelectAlbum(tester, 'recent');
+        await addImageUtils.scrollToAndSelectAlbum(tester, 'Recents');
 
         await addImageUtils.tapImagesInGrid(tester, 5);
 
