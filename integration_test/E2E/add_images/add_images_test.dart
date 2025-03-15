@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../../mocks/mocks.mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import '../../constants.dart';
 import 'add_image_utils.dart';
 
 void main() {
@@ -140,7 +141,7 @@ void main() {
         await addImageUtils.verifyGalleryScreenDisplayed(tester);
 
         // Step 4: Scroll to find album and select it
-        await addImageUtils.scrollToAndSelectAlbum(tester, 'Recents');
+        await addImageUtils.scrollToAndSelectAlbum(tester, DETECTION_TEST.emotion_test_album2);
 
         await addImageUtils.tapImagesInGrid(tester, 5);
 
