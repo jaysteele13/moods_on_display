@@ -52,6 +52,9 @@ dependencies:
   flutter_image_compress: ^2.4.0
   sqflite: ^2.4.1
   path: ^1.9.0
+  matcher: ^0.12.0
+  crypto: ^3.0.0
+  
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +66,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  integration_test:
+    sdk: flutter
+  mockito: ^5.0.0
+  sqflite_common_ffi: ^2.3.0
+  build_runner: ^2.1.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -80,6 +88,7 @@ flutter:
     - assets/images/ #
     - assets/icons/
     - assets/models/
+    - assets/test_images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -69,6 +69,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               label: 'Home',
             ),
             BottomNavigationBarItem(
+              key: const Key('view_gallery_screen_nav'),
               icon: SvgPicture.asset(
                 'assets/icons/album.svg',
                 height: 20,
@@ -77,6 +78,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               label: 'Albums',
             ),
             BottomNavigationBarItem(
+              key: const Key('add_images_screen_nav'),
               icon: SvgPicture.asset(
                 'assets/icons/add.svg',
                 height: 20,

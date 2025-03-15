@@ -61,6 +61,7 @@ Widget _buildImageItem(EmotionPointer pointer) {
       }
       if (snapshot.hasData && snapshot.data != null) {
         return GestureDetector(
+          key: const Key('single_image'),
           onTap: () => _onImageTap(pointer),
           onLongPress: () => _onImageLongPress(pointer.pointer),
           child: Stack(
@@ -201,7 +202,7 @@ Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
 Widget build(BuildContext context) {
   return BaseScaffold(
     // Grab title of image baed off of context.
-    appBar: AppBar(title: Text("Gallery: ${widget.emotion}")),
+    appBar: AppBar(title: Text(widget.emotion)),
     body: Column(
       children: [
         Expanded(

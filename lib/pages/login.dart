@@ -37,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: _isLoading ? Text('Logging in') : Text('Login Screen')),
+      key: const Key('login_body'),
       body: Center(
         child: _isLoading
             ? CircularProgressIndicator()

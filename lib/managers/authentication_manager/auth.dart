@@ -2,6 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class Auth {
+  static Auth instance = Auth._internal(); // Replaceable in tests
+  Auth._internal();
+
+  factory Auth() => instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // instance for auth functions
 
   User? get currentUser => _firebaseAuth.currentUser; // gets user

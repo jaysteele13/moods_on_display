@@ -115,11 +115,6 @@ Future<Uint8List> drawRectangleOnImage(
   double originalImageWidth = image.width.toDouble();
   double originalImageHeight = image.height.toDouble();
 
-  
-
-  // Define the rectangle color (Orange)
-  
-
   // Draw all bounding boxes with adjusted scaling
   for (EmotionBoundingBox bbox in boundingBoxes) {
     // Original bounding box coordinates
@@ -135,6 +130,8 @@ Future<Uint8List> drawRectangleOnImage(
   int y = boundingBoxTop.clamp(0.0, originalImageHeight).toInt();
   int width = boundingBoxWidth.clamp(0.0, originalImageWidth - x.toDouble()).toInt();
   int height = boundingBoxHeight.clamp(0.0, originalImageHeight - y.toDouble()).toInt();
+
+  print('bbox: x: $x, y: $y, height: $height, width: $width');
 
     img.drawRect(image, x1: x, y1: y, x2: x + width,y2: y + height, color: rectangleColor, thickness: 6); 
     img.drawString(image, bbox.emotion, font: img.arial48, x: x, y: y-100, color: rectangleColor);
@@ -214,6 +211,7 @@ Future<void> _toggleBoundingBoxes(int index) async {
                         ? widget.images[index].image
                         : widget.images[index].image,
                     fit: BoxFit.contain,
+                    key: Key('single_image_view'),
                     width: 800,
                     height: 500,
                   ),
