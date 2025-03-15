@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
+import 'package:flutter/services.dart';
+
 class DETECTION_TEST {
   static const emotion_test_album = 'test_album';
   static const emotion_test_album2 = 'test_album2';
@@ -37,6 +41,17 @@ static Model_Benchmark benchmark3 = Model_Benchmark(
 );
   
 }
+class BBOX_TEST {
+  Future<img.Image> loadTestImage() async {
+  // Load image from assets
+  final ByteData data = await rootBundle.load('assets/test_images/sample.jpg');
+  final Uint8List bytes = data.buffer.asUint8List();
+  
+  // Decode the image using the image package
+  return img.decodeImage(bytes)!;
+}
+}
+
 
 class Model_Benchmark {
   String albumName;

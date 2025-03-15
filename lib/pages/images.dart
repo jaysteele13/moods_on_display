@@ -202,7 +202,7 @@ Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
 Widget build(BuildContext context) {
   return BaseScaffold(
     // Grab title of image baed off of context.
-    appBar: AppBar(title: Text("Gallery: ${widget.emotion}")),
+    appBar: AppBar(title: Text(widget.emotion)),
     body: Column(
       children: [
         Expanded(
