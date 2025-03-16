@@ -11,15 +11,66 @@ import 'package:path_provider/path_provider.dart';
 import 'emotion_image.dart';
 import 'dart:math';
 
+
 // CONSTANTS
 import 'package:moods_on_display/utils/constants.dart';
 
+class ModelManagerUtils {
+    EmotionImage parseIntoEmotionImage(List<dynamic> data) {
+
+    // FER labels (should match the data length)
+    List<String> emotionLabels = [
+      EMOTIONS.angry,
+      EMOTIONS.disgust,
+      EMOTIONS.fear,
+      EMOTIONS.happy,
+      EMOTIONS.neutral,
+      EMOTIONS.sad,
+      EMOTIONS.surprise
+    ];
+
+    // Check if data is empty or the inner lists have the wrong length
+    if (data.isEmpty || data[0].length != emotionLabels.length) {
+      print("Error: Data length does not match the number of emotion labels.");
+      throw Exception("Data length does not match the number of emotion labels.");
+    }
+
+    // Sum of all the percentages from each nested list
+    Map<String, double> totalEmotions = {};
+
+    for (var row in data) {
+      double totalSum = row.fold(0, (sum, value) => sum + value); // Sum each inner list
+
+      for (int i = 0; i < row.length; i++) {
+        double percentage = (row[i] / totalSum) * 100;
+        totalEmotions[emotionLabels[i]] = (totalEmotions[emotionLabels[i]] ?? 0) + percentage;
+      }
+    }
+
+    // Normalize the values to ensure they add up to 100% (if necessary)
+    double total = totalEmotions.values.fold(0, (sum, value) => sum + value);
+    if (total > 0) {
+      totalEmotions.updateAll((key, value) => (value / total) * 100);
+    }
+
+    return EmotionImage(
+      emotions: totalEmotions,
+      valid: true,
+    );
+  }
+
+  String findMostCommonHighestEmotion(EmotionImage emotionImage) {
+    return emotionImage.highestEmotion;
+  }
+
+}
 
 class ModelManager {
   // this is to load and run the model using tflite_flutter
   late Interpreter interpreter;
   late FaceDetector faceDetector;
-  bool _isModelLoaded = false;
+  late ModelManagerUtils modelManagerUtils;
+  bool isModelLoaded = false;
 
   List<Face> detectedFaces = [];  // Store detected faces
 
@@ -29,9 +80,8 @@ class ModelManager {
   }
 
   Future<void> _loadModel() async {
-    if (_isModelLoaded) return; // Prevent reloading
-    // prev was assets/models/model_jay_m5_ft_b
-    //model_facerec_m1_tflite is actually m2-1st-facerec
+    if (isModelLoaded) return; // Prevent reloading
+    modelManagerUtils = ModelManagerUtils();
     interpreter = await Interpreter.fromAsset('assets/models/model_facerec_m1_ft.tflite');
     faceDetector = FaceDetector(
       options: FaceDetectorOptions(
@@ -39,7 +89,7 @@ class ModelManager {
         enableClassification: true,
       ),
     );
-    _isModelLoaded = true;
+  isModelLoaded = true;
   }
   // -------------------------- Architecture --------------------------------
 
@@ -68,7 +118,7 @@ class ModelManager {
     emotion.selectedFilePathPointer = FilePathPointer(filePath: filePath, imagePointer: selectedFilePathPointer.imagePointer); // find way to pass down pointer
 
     // Find most common highest emotion
-    emotion.mostCommonEmotion = findMostCommonHighestEmotion(emotion);
+    emotion.mostCommonEmotion = modelManagerUtils.findMostCommonHighestEmotion(emotion);
 
     // Add emotion to dataset here - need check to ensure assetId isn't the same
     // Add bounding box at the same time
@@ -208,8 +258,9 @@ class ModelManager {
 
     // Run inference
     interpreter.run(input, output);
+    print('interpreter output: $output');
 
-    EmotionImage emotionImage = parseIntoEmotionImage(output);
+    EmotionImage emotionImage = modelManagerUtils.parseIntoEmotionImage(output);
 
     // return as EmotionImage
 
@@ -217,68 +268,11 @@ class ModelManager {
   }
 
 
-
-EmotionImage parseIntoEmotionImage(List<dynamic> data) {
-
-  // // Affwild labels
-  //   List<String> emotionLabels = [
-  //   'neutral',
-  //   'angry',
-  //   'disgust',
-  //   'fear',
-  //   'happy',
-  //   'sad',
-  //   'surprise'
-  // ];
-
-
-  // FER labels (should match the data length)
-  List<String> emotionLabels = [
-    EMOTIONS.angry,
-    EMOTIONS.disgust,
-    EMOTIONS.fear,
-    EMOTIONS.happy,
-    EMOTIONS.neutral,
-    EMOTIONS.sad,
-    EMOTIONS.surprise
-  ];
-
-  // Check if data is empty or the inner lists have the wrong length
-  if (data.isEmpty || data[0].length != emotionLabels.length) {
-    print("Error: Data length does not match the number of emotion labels.");
-    throw Exception("Data length does not match the number of emotion labels.");
-  }
-
-  // Sum of all the percentages from each nested list
-  Map<String, double> totalEmotions = {};
-
-  for (var row in data) {
-    double totalSum = row.fold(0, (sum, value) => sum + value); // Sum each inner list
-
-    for (int i = 0; i < row.length; i++) {
-      double percentage = (row[i] / totalSum) * 100;
-      totalEmotions[emotionLabels[i]] = (totalEmotions[emotionLabels[i]] ?? 0) + percentage;
-    }
-  }
-
-  // Normalize the values to ensure they add up to 100% (if necessary)
-  double total = totalEmotions.values.fold(0, (sum, value) => sum + value);
-  if (total > 0) {
-    totalEmotions.updateAll((key, value) => (value / total) * 100);
-  }
-
-  return EmotionImage(
-    emotions: totalEmotions,
-    valid: true,
-  );
-}
-
-
-Future<EmotionImage> formatEmotionImagesWithDB(List<EmotionImage> emotionImages, FilePathPointer selectedFilePathPointer,) async{
+Future<void> formatEmotionImagesWithDB(List<EmotionImage> emotionImages, FilePathPointer selectedFilePathPointer,) async{
   if (emotionImages.isEmpty) {
     throw Exception("Emotion image list is empty.");
   }
-
+  print('Processing EmotionImages');
   Map<String, double> totalEmotions = {};
   Map<String, int> emotionCount = {};
 
@@ -300,27 +294,15 @@ Future<EmotionImage> formatEmotionImagesWithDB(List<EmotionImage> emotionImages,
   String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
   // DATABASE
-  // print('add to database this pointer: ${selectedFilePathPointer.imagePointer}');
   await DatabaseManager.instance.insertImage(selectedFilePathPointer.imagePointer, mostCommonEmotion);
   
 
-  return EmotionImage(
-    selectedFilePathPointer: selectedFilePathPointer,
-    emotions: totalEmotions,
-    valid: true,
-    mostCommonEmotion: mostCommonEmotion
-  );
-}
-
-
-String findMostCommonHighestEmotion(EmotionImage emotionImage) {
-  Map<String, int> emotionCount = {};
-  // Count occurrences of each highest emotion
-    String highest = emotionImage.highestEmotion;
-    emotionCount[highest] = (emotionCount[highest] ?? 0) + 1;
-  // Find the emotion with the highest count
-  String mostCommonEmotion = emotionCount.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-  return mostCommonEmotion;
+  // return EmotionImage(
+  //   selectedFilePathPointer: selectedFilePathPointer,
+  //   emotions: totalEmotions,
+  //   valid: true,
+  //   mostCommonEmotion: mostCommonEmotion
+  // );
 }
 
 void dispose() {
