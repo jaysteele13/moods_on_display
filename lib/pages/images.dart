@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/pages/single_images.dart';
 import 'package:moods_on_display/utils/types.dart';
 
@@ -18,7 +19,7 @@ class ImagesScreen extends StatefulWidget {
 
 class _ImagesScreenState extends State<ImagesScreen> {
   List<EmotionPointer> _loadedImages = [];
-  final AlbumManager albumManager = AlbumManager();
+  final AlbumManager albumManager = AlbumManager(assetEntityService: AssetEntityService(), photoManagerService: PhotoManagerService());
   late List<String> pointersToDelete = [];
   bool isSelectionMode = false;
   bool _isLoading = false;

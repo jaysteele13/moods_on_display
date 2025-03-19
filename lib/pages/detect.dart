@@ -7,6 +7,7 @@ import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
 import 'package:moods_on_display/managers/model_manager/model_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
+import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:io';
@@ -21,7 +22,7 @@ class AddImageScreen extends StatefulWidget {
 }
 
 class AddImageScreenState extends State<AddImageScreen> {
-  final ImageManager _imageManager = ImageManager();
+  final ImageManager _imageManager = ImageManager(assetEntityService: AssetEntityService());
   final ModelManager _modelManager = ModelManager();
   final ValueNotifier<List<EmotionImage>> detectedEmotions = ValueNotifier<List<EmotionImage>>([]);
 
@@ -31,7 +32,7 @@ class AddImageScreenState extends State<AddImageScreen> {
   
 
   List<String> selectedPointers = [];
-  final AlbumManager albumManager = AlbumManager();
+  final AlbumManager albumManager = AlbumManager(assetEntityService: AssetEntityService(), photoManagerService: PhotoManagerService());
 
   @override
   void dispose()  {

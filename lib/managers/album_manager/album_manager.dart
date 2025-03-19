@@ -1,10 +1,15 @@
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:moods_on_display/managers/services/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
 
 class AlbumManager {
   List<AssetEntity> images = []; // grab albums from db
+
+  final AssetEntityService assetEntityService;
+  final PhotoManagerService photoManagerService;
+  AlbumManager({required this.assetEntityService, required this.photoManagerService});
 
 Future<Uint8List?> getImageByPointer(String assetId, bool lowRes) async {
   final PermissionState result = await PhotoManager.requestPermissionExtend();

@@ -7,8 +7,8 @@ import 'package:moods_on_display/pages/detect.dart';
 import 'package:mockito/mockito.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import '../../../mocks/mocks.mocks.dart';
-import '../../../mocks/photo_manager_mock.mocks.dart';
+import '../../../test/mocks/mocks.mocks.dart';
+import '../../../test/mocks/photo_manager_mock.mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 

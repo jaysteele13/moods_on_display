@@ -5,6 +5,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/types.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
@@ -27,7 +28,7 @@ class SingleImageView extends StatefulWidget {
 }
 
 class _SingleImageViewState extends State<SingleImageView> {
-  final ImageManager _imageManager = ImageManager();
+  final ImageManager _imageManager = ImageManager(assetEntityService: AssetEntityService());
   List<EmotionBoundingBox> _emotionBoundingBoxes = [];
   bool _isLoading = false;
   bool _showBoundingBoxes = false; // Toggle state
