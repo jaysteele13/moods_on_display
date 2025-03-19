@@ -56,6 +56,7 @@ void main() {
 */
   group('ModelManager Logic Tests', () {
 
+    // fixtures
     List<dynamic> modelOutput = [[0.1, 0.3, 0.1, 0.1, 0.2, 0.1, 0.1]];
 
     // Fixtures
@@ -180,9 +181,6 @@ void main() {
       verify(() => mockDatabaseManager.insertImage(mockPointer.imagePointer, emotionImages[0].mostCommonEmotion!)).called(1);
       print('✅ Tests Passed -> Mock Database Stores image when all emotions are summarised per image.');
     });
-
-
-
 
   });
 

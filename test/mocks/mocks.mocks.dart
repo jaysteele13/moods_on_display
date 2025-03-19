@@ -88,6 +88,15 @@ class MockAuth extends _i1.Mock implements _i3.Auth {
             returnValue: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
+
+  @override
+  _i4.Future<void> SignOut() =>
+      (super.noSuchMethod(
+            Invocation.method(#SignOut, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }
 
 /// A class which mocks [User].
