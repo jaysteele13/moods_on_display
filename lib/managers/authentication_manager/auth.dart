@@ -42,29 +42,10 @@ class Auth {
   }
 
 
-
-
-  // ------------------ Native ---------------------------
-  // Native Sign In
-  Future<void> SignIn({
-    required String email,
-    required String password,
-  }) async {
-    await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-  }
-
-
   Future<void> SignOut() async {
     await _firebaseAuth.signOut();
   }
 
-  // Create Account
-  Future<void> CreateUser({
-    required String email,
-    required String password
-  }) async {
-    await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-  }
   // ------------------- End ----------------------
 }
 
