@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/types.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseManager{
-  static final DatabaseManager instance = DatabaseManager._privateConstructor();
+  final GetDirectoryService getDirectoryService;
+  DatabaseManager({required this.getDirectoryService});
+
+  static final DatabaseManager instance = DatabaseManager._privateConstructor(GetDirectoryService());
   static Database? _database;
 
-  DatabaseManager._privateConstructor();
+  DatabaseManager._privateConstructor(this.getDirectoryService);
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -19,7 +22,7 @@ class DatabaseManager{
   }
 
   Future<Database> _initDatabase() async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    Directory documentsDirectory = await getDirectoryService.getCurrentDirectory();
     String path = p.join(documentsDirectory.path, 'emotions.db');
 
     return await openDatabase(
@@ -183,12 +186,34 @@ Future<void> deleteImageRecords(List<String> records) async {
   }
 }
 
+Future<void> deleteBoundingBoxRecords(List<String> records) async {
+  Database db = await instance.database;
+
+  for (String record in records) {
+    // Check if the record exists in the database
+    List<Map<String, dynamic>> existingRecord = await db.query(
+      'bounding_boxes',
+      where: 'emotion_id = ?',
+      whereArgs: [record],
+    );
+
+    // If the record exists, delete it from the database
+    if (existingRecord.isNotEmpty) {
+      await db.delete(
+        'bounding_boxes',
+        where: 'emotion_id = ?',
+        whereArgs: [record],
+      );
+    }
+  }
+}
+
 
 
 
 Future<void> deleteDatabaseFile() async {
   try {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getDirectoryService.getCurrentDirectory();
     final dbPath = '${dir.path}/emotions.db';
     final file = File(dbPath);
 
