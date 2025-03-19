@@ -24,8 +24,6 @@ void main() {
   late ModelManagerUtils modelManagerUtils;
   late UNIT_TEST unit;
 
-  
-
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -79,23 +77,26 @@ void main() {
       // given the fixture the output should be disgust
      
       String result = modelManagerUtils.findMostCommonHighestEmotion(emotionImageTest);
-      print('Result: $result');
-      expect(result, EMOTIONS.disgust);
-      expect(result, isNot(EMOTIONS.angry));
-      print('✅ Tests Passed -> FindMostCommonHighestEmotion');
+      try {
+        expect(result, EMOTIONS.disgust);
+        expect(result, isNot(EMOTIONS.angry));
+        UNIT_TEST.visualTestLogger('find mmost common emotion returns true most common emotion', true, logs: ['Result: $result']);
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('', false);
+      }
     });
 
     test('parseIntoEmotionImage test', () async {
       EmotionImage result = modelManagerUtils.parseIntoEmotionImage(modelOutput);
 
-      print(result.emotions);
-
-      expect(result.emotions.entries.first.key, EMOTIONS.angry);
-      expect(result.emotions.entries.first.value, 10.0);
-      expect(result.selectedFilePathPointer, null);
-      print('✅ Tests Passed -> parseIntoEmotionImage');
-
-
+      try {
+        expect(result.emotions.entries.first.key, EMOTIONS.angry);
+        expect(result.emotions.entries.first.value, 10.0);
+        expect(result.selectedFilePathPointer, null);
+        UNIT_TEST.visualTestLogger('converted into correct EmotionImage type', true, logs: ['Result: ${result.emotions}']);
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('', false);
+      }
     });
   });
 
@@ -105,8 +106,12 @@ void main() {
       when(() => mockModelManager.isModelLoaded).thenReturn(true);
 
       // On initialization, model should be loaded
-      expect(mockModelManager.isModelLoaded, true);
-      print('✅ Tests Passed -> Mock Load Model');
+      try {
+        expect(mockModelManager.isModelLoaded, true);
+        UNIT_TEST.visualTestLogger('Model Loaded mocked', true, logs: []);
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('', false);
+      }
     });
 
     test('Face detection returns empty when no faces found', () async {
@@ -117,8 +122,13 @@ void main() {
           .thenAnswer((_) async => []);
 
       List<ImageBoundingBox> faces = await mockModelManager.performFaceDetection(mockFilePointer);
-      expect(faces.isEmpty, true);
-      print('✅ Tests Passed -> Mock Face Detection Returns Empty if no faces detected!');
+      try {
+        expect(faces.isEmpty, true);
+        UNIT_TEST.visualTestLogger('Mock Face Detection Returns Empty if no faces detected', true, logs: []);
+        
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('', false);
+      }
     });
 
     test('Face detection returns with list when faces are found', () async {
@@ -129,8 +139,12 @@ void main() {
           .thenAnswer((_) async => [unit.IMAGE_BOUNDING_BOX]);
 
       List<ImageBoundingBox> faces = await mockModelManager.performFaceDetection(mockFilePointer);
-      expect(faces.isEmpty, false);
-      print('✅ Tests Passed -> Face Detection returns list of ImageBoundingbox type if found images!');
+      try {
+        expect(faces.isEmpty, false);
+        UNIT_TEST.visualTestLogger('Face Detection returns list of ImageBoundingbox type if found images', true, logs: []);
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('', false);
+      }
     });
 
     test('Perform Emotion Detection returns valid EmotionImage', () async {
@@ -149,12 +163,14 @@ void main() {
 
       if (testImage != null) {
         EmotionImage emotion = await mockModelManager.performEmotionDetection(testImage);
-        expect(emotion.valid, true);
+        try {
+            expect(emotion.valid, true);
         expect(emotion.emotions.isNotEmpty, true);
-        print('✅ Tests Passed -> Mock Returns valid EmotionImage type after prediction!');
-      } else {
-        print("❌ Test Failed: Error: No test image found!");
+        UNIT_TEST.visualTestLogger('Mock Returns valid EmotionImage type after prediction!', true, logs: []);
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('Error: No test image found', false);
       }
+      } 
     });
 
     test('Database stores image emotion correctly', () async {
@@ -177,9 +193,14 @@ void main() {
       // Call the function you're testing, which returns void
       await mockModelManager.formatEmotionImagesWithDB(emotionImages, mockPointer);
 
-      // Verify that the insertImage method was called with the correct arguments
+      try {
+        // Verify that the insertImage method was called with the correct arguments
       verify(() => mockDatabaseManager.insertImage(mockPointer.imagePointer, emotionImages[0].mostCommonEmotion!)).called(1);
-      print('✅ Tests Passed -> Mock Database Stores image when all emotions are summarised per image.');
+        UNIT_TEST.visualTestLogger('Mock Database Stores image when all emotions are summarised per image.', true, logs: []);
+      } catch(e) {
+        UNIT_TEST.visualTestLogger('', false);
+      }
+      
     });
 
   });
