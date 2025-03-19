@@ -12,10 +12,10 @@ class AlbumManager {
   AlbumManager({required this.assetEntityService, required this.photoManagerService});
 
 Future<Uint8List?> getImageByPointer(String assetId, bool lowRes) async {
-  final PermissionState result = await PhotoManager.requestPermissionExtend();
+  final PermissionState result = await photoManagerService.requestPermission();
   if (!result.isAuth) return null; // Check permission
 
-  AssetEntity? asset = await AssetEntity.fromId(assetId);
+  AssetEntity? asset = await assetEntityService.fromId(assetId);
   if (asset != null) {
   ThumbnailSize size = lowRes ? const ThumbnailSize(100, 100) : const ThumbnailSize(800, 600);
   return asset.thumbnailDataWithSize(size);

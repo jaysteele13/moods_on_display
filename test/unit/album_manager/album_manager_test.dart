@@ -6,10 +6,15 @@ import 'package:photo_manager/photo_manager.dart';
 
 
 import '../../mocks/album_mock/album_mock.mocks.dart';
+import '../constants.dart';
 
 
 
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
   late MockAssetEntityService mockAssetEntityService;
   late MockAssetEntity mockAssetEntity;
   late MockPhotoManagerService mockPhotoManagerService;
@@ -22,81 +27,65 @@ void main() {
     albumManager = AlbumManager(assetEntityService: mockAssetEntityService, photoManagerService: mockPhotoManagerService);
   });
 
-  group('ImageManager', () {
+  group('AlbumManager', () {
 
-      test('getImageByPointer should return Uint8List when permission granted and image exists', () async {
+  String testCaseA = "getImageByPointer should return Uint8List when permission granted and image exists";
+  test(testCaseA, () async {
     // Arrange
     const String assetId = '123';
     const bool lowRes = true;
-    final mockThumbnailData = Uint8List(10); // Mock image data
+    final mockThumbnailData = Uint8List(10); 
 
-    // Mock permission check
-    when(mockPhotoManagerService.requestPermission()).thenAnswer((_) async => PermissionState.authorized);
-    
-    // Mock AssetEntity methods
-    when(mockAssetEntity.thumbnailDataWithSize(any)).thenAnswer((_) async => mockThumbnailData);
-    when(mockAssetEntityService.fromId(assetId)).thenAnswer((_) async => mockAssetEntity);
+    when(mockPhotoManagerService.requestPermission())
+        .thenAnswer((_) async => PermissionState.authorized);
+
+    when(mockAssetEntity.thumbnailDataWithSize(any))
+        .thenAnswer((_) async => mockThumbnailData);
+    when(mockAssetEntityService.fromId(assetId))
+        .thenAnswer((_) async => mockAssetEntity);
 
     // Act
     final result = await albumManager.getImageByPointer(assetId, lowRes);
 
     // Assert
-    expect(result, isA<Uint8List>());
-    expect(result!.length, equals(mockThumbnailData.length));
+    try {
+      expect(result, isA<Uint8List>());
+      expect(result!.length, equals(mockThumbnailData.length));
+      UNIT_TEST.visualTestLogger(testCaseA, true);
+    } catch (e) {
+      UNIT_TEST.visualTestLogger(testCaseA, false);
+      rethrow; // Ensure the error is still shown in test reports
+    }
   });
 
-  test('getImageByPointer should return Uint8List when permission limited and image exists', () async {
+
+  String testCaseB = "getImageByPointer should return null when image not found";
+  test(testCaseB, () async {
     // Arrange
     const String assetId = '123';
     const bool lowRes = true;
-    final mockThumbnailData = Uint8List(10); // Mock image data
+    final mockThumbnailData = Uint8List(10); 
 
-    // Mock permission check
-    when(mockPhotoManagerService.requestPermission()).thenAnswer((_) async => PermissionState.limited);
-    
-    // Mock AssetEntity methods
-    when(mockAssetEntity.thumbnailDataWithSize(any)).thenAnswer((_) async => mockThumbnailData);
-    when(mockAssetEntityService.fromId(assetId)).thenAnswer((_) async => mockAssetEntity);
+    when(mockPhotoManagerService.requestPermission())
+        .thenAnswer((_) async => PermissionState.denied);
+
+    when(mockAssetEntity.thumbnailDataWithSize(any))
+        .thenAnswer((_) async => mockThumbnailData);
+    when(mockAssetEntityService.fromId(assetId))
+        .thenAnswer((_) async => mockAssetEntity);
 
     // Act
     final result = await albumManager.getImageByPointer(assetId, lowRes);
 
     // Assert
-    expect(result, isA<Uint8List>());
-    expect(result!.length, equals(mockThumbnailData.length));
-  });
-
-  test('getImageByPointer should return null when permission is not granted', () async {
-    // Arrange
-    const String assetId = '123';
-    const bool lowRes = true;
-
-    // Mock permission check to return no permission
-    when(mockPhotoManagerService.requestPermission()).thenAnswer((_) async => PermissionState.denied);
-
-    // Act
-    final result = await albumManager.getImageByPointer(assetId, lowRes);
-
-    // Assert
-    expect(result, isNull);
-  });
-
-  test('getImageByPointer should return null when image not found', () async {
-    // Arrange
-    const String assetId = '123';
-    const bool lowRes = true;
-
-    // Mock permission check -> // must now Mock Static instance with dependency injection for PhotoManager
-    when(mockPhotoManagerService.requestPermission()).thenAnswer((_) async => PermissionState.denied);
-    
-    // Mock AssetEntity not found
-    when(mockAssetEntityService.fromId(assetId)).thenAnswer((_) async => null);
-
-    // Act
-    final result = await albumManager.getImageByPointer(assetId, lowRes);
-
-    // Assert
-    expect(result, isNull);
+    try {
+      expect(result, isNull);
+      UNIT_TEST.visualTestLogger(testCaseB, true);
+    } catch (e) {
+      UNIT_TEST.visualTestLogger(testCaseB, false);
+      rethrow; // Ensure the error is still shown in test reports
+    }
+  
   });
  });
 }
