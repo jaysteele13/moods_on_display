@@ -18,4 +18,30 @@ class UNIT_TEST {
       boundingBox: BoundingBox(x: 10, y: 10, width: 40, height: 40),
     );
   }
+
+  static void visualTestLogger(String description, bool passed, {List<String>? logs}) {
+    final String emoji = passed ? '✅' : '❌';
+    final String status = passed ? 'PASS' : 'FAIL';
+    
+    // Color output for terminals that support ANSI escape codes
+    final String colorStatus = passed 
+        ? '\x1B[32m$status\x1B[0m'  // Green for pass
+        : '\x1B[31m$status\x1B[0m'; // Red for fail
+
+    final String descriptionHeader = '\x1B[35mDESCRIPTION\x1B[0m';  // Pink for description
+
+    // Print status and description
+    print('$emoji $colorStatus\n📖 $descriptionHeader: $description');
+
+    // Print logs if they exist
+    if (logs != null && logs.isNotEmpty) {
+      print('📝 \x1B[36mLOGS\x1B[0m:'); // Cyan for logs
+      for (int i = 0; i < logs.length; i++) {
+        print('  Log ${i + 1}: ${logs[i]}');
+      }
+    }
+
+    print('------------------------------------------------------------------------');
+  }
+
 }

@@ -10,7 +10,7 @@ import 'package:moods_on_display/pages/detect.dart';
 import 'package:mockito/mockito.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:provider/provider.dart';
-import '../../../mocks/mocks.mocks.dart';
+import '../../../test/mocks/mocks.mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../../constants.dart';
 import '../../integration/model/detection_utils.dart';
