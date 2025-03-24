@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
+import 'package:moods_on_display/pages/albums.dart';
+import 'package:moods_on_display/pages/detect.dart';
+import 'package:moods_on_display/pages/home.dart';
 import 'package:provider/provider.dart';
 
 class NavigationMenu extends StatefulWidget {
@@ -25,13 +29,28 @@ class _NavigationMenuState extends State<NavigationMenu> {
             // to ammend this go to main.dart
             switch (index) {
               case 0:
-                Navigator.pushReplacementNamed(context, '/home');
+               Navigator.pushReplacement(
+                context,
+                SadPageRouter(
+                  child: HomePage(),
+                ),
+              );
                 break;
               case 1:
-                Navigator.pushReplacementNamed(context, '/add_images');
+                 Navigator.pushReplacement(
+                context,
+                SadPageRouter(
+                  child: AddImageScreen(),
+                ),
+              );
                 break;
               case 2:
-                Navigator.pushReplacementNamed(context, '/album');
+                 Navigator.pushReplacement(
+                context,
+                SadPageRouter(
+                  child: AlbumScreen(),// Define the route name here
+                ),
+              );
                 break;
               default:
                 break;

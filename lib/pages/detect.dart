@@ -140,26 +140,6 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   progressNotifier.value = 1.0;
 }
 
-// Widget showEmotionsFace() {
-//   return Column(
-//     children: [
-//       ValueListenableBuilder<double>(
-//         valueListenable: progressNotifier,
-//         builder: (context, progress, child) {
-//           return LinearProgressIndicator(value: progress);
-//         },
-//       ),
-//       ValueListenableBuilder<List<EmotionImage>>(
-//         valueListenable: detectedEmotions,
-//         builder: (context, processedEmotions, child) {
-//           return Column(
-//             children: processedEmotions.map(_buildEmotionWidget).toList(),
-//           );
-//         },
-//       ),
-//     ],
-//   );
-// }
 
 
   Widget showEmotionsFace() {
@@ -205,9 +185,25 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
 
 Future<void> _openGallery() async {
   List<String>? pointers = await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => GalleryScreen()),
-  );
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => GalleryScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Apply a fade transition animation
+          return FadeTransition(
+              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                CurvedAnimation(
+                  parent: ModalRoute.of(context)!.animation!,
+                  curve: Curves.easeInOut,
+                ),
+              ),
+              child: child,
+            );
+        },
+        transitionDuration: Duration(milliseconds: 500), // Apply animation duration
+      ),
+    );
+
 
   if (pointers != null) {
     setState(() {
@@ -233,9 +229,6 @@ Future<void> _openGallery() async {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-    _openGallery();
-   });
     albumManager.releaseCache(); // ✅ Clears cache on initialization
     detectedEmotions.value = [];
   }
