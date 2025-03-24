@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 // import firebase
 import 'package:firebase_core/firebase_core.dart';
-import 'package:moods_on_display/app_flow/flow.dart';
+import 'package:moods_on_display/managers/animation_manager/animation_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/home.dart';
-import 'package:moods_on_display/pages/login.dart';
-import 'package:moods_on_display/pages/profile.dart';
 import 'package:moods_on_display/pages/detect.dart';
 import 'package:provider/provider.dart';
 
@@ -47,16 +45,18 @@ class MyApp extends StatelessWidget {
       // routes in app
       routes: {
         '/home': (context) => HomePage(),
-        '/profile': (context) => ProfileScreen(),
         '/add_images': (context) => AddImageScreen(),
         '/album': (context) => AlbumScreen(),
-        '/login': (context) => LoginScreen()
       },
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange
+      theme:  ThemeData(
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: CustomPageTransitionBuilder(),
+      },
+    ),
       ),
-      home: const FlowTree()
+      home: const HomePage()
     );
   }
 }

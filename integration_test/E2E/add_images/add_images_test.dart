@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:moods_on_display/app_flow/flow.dart';
 import 'package:moods_on_display/managers/authentication_manager/auth.dart';
 import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 import 'package:moods_on_display/pages/detect.dart';
@@ -61,7 +60,7 @@ void main() {
       // mocks successful login
       when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
 
-      await tester.pumpWidget(mockAddImages(const FlowTree()));
+      await tester.pumpWidget(mockAddImages(const HomePage()));
       await tester.pumpAndSettle();
       expect(find.byType(HomePage), findsOneWidget, reason: "HomePage should be displayed when user is authenticated");  
       // Additional verifications (Optional):
@@ -81,7 +80,7 @@ void main() {
       // mocks successful login
       when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
 
-      await tester.pumpWidget(mockAddImages(const FlowTree()));
+      await tester.pumpWidget(mockAddImages(const HomePage()));
       await tester.pumpAndSettle();
       expect(find.byType(HomePage), findsOneWidget, reason: "HomePage should be displayed when user is authenticated");  
       // Additional verifications (Optional):
@@ -118,7 +117,7 @@ void main() {
       // mocks successful login
       when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
 
-      await tester.pumpWidget(mockAddImages(const FlowTree()));
+      await tester.pumpWidget(mockAddImages(const HomePage()));
       await tester.pumpAndSettle();
       expect(find.byType(HomePage), findsOneWidget, reason: "HomePage should be displayed when user is authenticated");  
       // Additional verifications (Optional):

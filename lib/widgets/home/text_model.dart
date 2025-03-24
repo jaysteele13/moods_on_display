@@ -37,7 +37,7 @@ class HomeTextModel {
 
     features.add(HomeTextModel(
       name: 'Add Images',
-      iconPath: 'assets/icons/add.svg',
+      iconPath: 'assets/icons/Plus_circle.svg',
       level: 'Find',
       duration: 'your',
       calorie: 'Emotion',
