@@ -1,6 +1,8 @@
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';              
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:moods_on_display/pages/detect.dart';
+import 'package:moods_on_display/widgets/utils/utils.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:ui';
@@ -118,6 +120,9 @@ void dispose() {
       appBar: AppBar(
         title: Text(selectedAlbum == null ? "Select an Album" : selectedAlbum!.name),
         key: const Key('gallery_body'),
+        leading: selectedAlbum == null
+      ? WidgetUtils.buildBackButton(context, AddImageScreen())
+      : SizedBox(),
         actions: [
           if (selectedAlbum != null)
             IconButton(

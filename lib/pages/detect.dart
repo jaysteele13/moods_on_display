@@ -5,6 +5,7 @@ import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
 import 'package:moods_on_display/managers/model_manager/model_manager.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/services/services.dart';
@@ -235,11 +236,9 @@ Future<void> _openGallery() async {
 
 @override
   Widget build(BuildContext context) {
+    
     return BaseScaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text('Scanning for Emotion'),
-      ),
+      appBar: Base.appBar(title: Text('Scanning for Emotion'), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
       body: SingleChildScrollView(
     physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
     child: Padding(

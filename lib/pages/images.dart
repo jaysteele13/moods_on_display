@@ -3,10 +3,13 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/single_images.dart';
 import 'package:moods_on_display/utils/types.dart';
+import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class ImagesScreen extends StatefulWidget {
   final String emotion;
@@ -203,7 +206,7 @@ Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
 Widget build(BuildContext context) {
   return BaseScaffold(
     // Grab title of image baed off of context.
-    appBar: AppBar(title: Text(widget.emotion)),
+    appBar: Base.appBar(title: Text(widget.emotion), leading: WidgetUtils.buildBackButton(context, AlbumScreen())),
     body: Column(
       children: [
         Expanded(
