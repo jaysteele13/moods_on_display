@@ -4,6 +4,7 @@ import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart'
 import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:moods_on_display/widgets/home/home_constants.dart';
 import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class HomePage extends StatefulWidget {
@@ -162,6 +163,20 @@ Widget buildUserDetails(String username, int photos, String emotion) {
     );
   }
 
+  Widget _buildInfoButton(String text, Color color) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+          backgroundColor: color,
+        ),
+        child: Text(text, style: TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
   Widget buildUserAccessibility() {
     return Container(
       
@@ -170,21 +185,9 @@ Widget buildUserDetails(String username, int photos, String emotion) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Edit Profile'),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-            ),
-          ),
+          _buildInfoButton(HOME_CONSTANTS.gettingStarted, DefaultColors.green),
           SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Settings'),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-            ),
-          ),
+          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue),
         ],
       ),
     );
