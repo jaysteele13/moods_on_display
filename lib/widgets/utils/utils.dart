@@ -1,7 +1,93 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
+import 'package:moods_on_display/utils/utils.dart';
+
 
 class WidgetUtils {
+
+  static const double defaultPadding = 16.0;
+  static const double titleFontSize = 24.0;
+  static const double paragraphFontSize = 16.0;
+
+  static Widget buildTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: titleFontSize,
+        fontWeight: FontWeight.bold,
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+
+  static Widget buildParagraph(String paragraph) {
+  const Map<String, Color> colorMap = {
+    'p': DefaultColors.purple,
+    'r': DefaultColors.red,
+    'g': DefaultColors.green,
+    'b': DefaultColors.blue,
+    'o': DefaultColors.orange,
+    'y': DefaultColors.yellow,
+    'D': DefaultColors.black,
+  };
+
+  final List<InlineSpan> spans = [];
+  final regex = RegExp(r'(\*.*?\*)|\{color->(\w+)(,b)?(,u)?\}(.*?)\{/color\}|([^*{]+)');
+  final matches = regex.allMatches(paragraph);
+
+  for (final match in matches) {
+    if (match[1] != null) {
+      // Bold text using *text*
+      spans.add(TextSpan(
+        text: match[1]!.substring(1, match[1]!.length - 1),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: paragraphFontSize,
+          color: DefaultColors.black,
+        ),
+      ));
+    } else if (match[2] != null && match[5] != null) {
+      // Apply color, bold, and underline using {color->colorName,b,u}text{/color}
+      final color = colorMap[match[2]] ?? DefaultColors.black;
+      final isBold = match[3] != null;
+      final isUnderlined = match[4] != null;
+
+      spans.add(TextSpan(
+        text: match[5],
+        style: TextStyle(
+          color: color,
+          fontSize: paragraphFontSize,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          decoration: isUnderlined ? TextDecoration.underline : TextDecoration.none,
+        ),
+      ));
+    } else if (match[6] != null) {
+      // Regular text
+      spans.add(TextSpan(
+        text: match[6],
+        style: const TextStyle(
+          fontSize: paragraphFontSize,
+          color: DefaultColors.black,
+        ),
+      ));
+    }
+  }
+
+  return Container(
+    alignment: Alignment.center, // Center the content within the container
+    width: double.infinity, // Ensure it takes full width
+    child: RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: const TextStyle(color: DefaultColors.black),
+        children: spans,
+      ),
+    ),
+  );
+}
+
+
+
   static Widget buildBackButton(BuildContext context, Widget path) {
   return IconButton(
     icon: const Icon(Icons.arrow_back),
@@ -15,89 +101,5 @@ class WidgetUtils {
     },
   );
 }
-
- static Widget bottomScreenAlert(
-      BuildContext context, String title, List<String> paragraphs, String buttonText) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
-      ),
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Title
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16.0),
-          
-          // Paragraphs with bold and colored text
-          ...paragraphs.map((paragraph) => _buildStyledText(paragraph)).toList(),
-
-          const SizedBox(height: 24.0),
-
-          // Exit Button
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text(buttonText),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildStyledText(String text) {
-    final RegExp pattern = RegExp(r'\*(.*?)\*|\[(.*?)\]');
-    final List<TextSpan> spans = [];
-    int currentIndex = 0;
-
-    for (final match in pattern.allMatches(text)) {
-      // Add normal text before match
-      if (match.start > currentIndex) {
-        spans.add(TextSpan(text: text.substring(currentIndex, match.start)));
-      }
-
-      if (match.group(1) != null) {
-        // Bold text between * *
-        spans.add(TextSpan(
-          text: match.group(1),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ));
-      } else if (match.group(2) != null) {
-        // Colored text between [ ]
-        spans.add(TextSpan(
-          text: match.group(2),
-          style: const TextStyle(color: Colors.blue),
-        ));
-      }
-      
-      currentIndex = match.end;
-    }
-
-    // Add remaining text
-    if (currentIndex < text.length) {
-      spans.add(TextSpan(text: text.substring(currentIndex)));
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: const TextStyle(color: Colors.black, fontSize: 16),
-          children: spans,
-        ),
-      ),
-    );
-  }
 
 }

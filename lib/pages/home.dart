@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<HomeTextModel> features = [];
+  bool isProfileSetUp = false; // will be told by db
 
   void getInitialInfo() {
     features = HomeTextModel.getCategories();
@@ -23,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   void _openAlert() {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertScreen(title: HOME_SCREEN_START_UP.title, paragraph: HOME_SCREEN_START_UP.paragraphs),
+      builder: (ctx) => AlertScreen(title: HOME_SCREEN_START_UP.title, paragraph: HOME_SCREEN_START_UP.paragraphs, buttonText: HOME_SCREEN_START_UP.buttonText),
     );
   }
 
@@ -31,7 +32,8 @@ class _HomePageState extends State<HomePage> {
 void initState() {
   super.initState();
   WidgetsBinding.instance.addPostFrameCallback((_) {
-      _openAlert();
+      if(!isProfileSetUp) _openAlert();
+     
   });
 }
 
