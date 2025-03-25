@@ -12,6 +12,7 @@ import '../../../test/mocks/photo_manager_mock.mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 
+import '../../../test/unit/constants.dart';
 import '../../constants.dart';
 import 'detection_utils.dart';
 
@@ -68,6 +69,7 @@ void main() {
     DetectionUtils detectionUtils, 
     MockUser mockUser,
     {required double expectedAccuracy, required Model_Benchmark benchmark}) async {
+      double? accuracy;
       try {
         // Mock successful login
         when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
@@ -99,13 +101,16 @@ void main() {
         print("✅ Tapped on Tick");
 
         // Step 7: Run the emotion prediction and compare with benchmark
-        double accuracy = await detectionUtils.runEmotionPrediction(tester, benchmark);
+        accuracy = await detectionUtils.runEmotionPrediction(tester, benchmark);
         expect(accuracy, greaterThan(expectedAccuracy), 
             reason: "Accuracy should be greater than $expectedAccuracy%");
+        UNIT_TEST.visualTestLogger('Accuracy should be greater than $expectedAccuracy', true, logs: 
+        ['Accuracy recieved: $accuracy.\nAccuracy expected: $expectedAccuracy']);  
         
-      } catch (e, stack) {
+      } catch (e) {
         print("❌ Test Failed: \nError: $e");
-        print(stack);
+        UNIT_TEST.visualTestLogger('Accuracy was not great enough', false, logs: 
+        ['Accuracy recieved: $accuracy.\nAccuracy expected: $expectedAccuracy']);
         rethrow; // Ensure test still fails
       }
 }

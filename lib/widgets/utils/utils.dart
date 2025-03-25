@@ -7,6 +7,7 @@ class WidgetUtils {
 
   static const double defaultPadding = 16.0;
   static const double titleFontSize = 24.0;
+  static const double titleFontSize_75 = 20.0;
   static const double paragraphFontSize = 16.0;
 
   static Widget buildTitle(String title) {

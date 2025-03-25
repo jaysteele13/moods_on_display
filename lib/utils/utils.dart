@@ -7,8 +7,11 @@ class DefaultColors {
   static const Color purple = Color(0xFF740F74);
   static const Color green = Color(0xFF1AC793);
   static const Color lightGreen = Color(0xFF6AE568);
-  static const Color grey = Color(0xFF808080);
+  static const Color grey = Color(0xFFCEC8C8);
+  static const Color darkGrey = Color(0xFF848282);
   static const Color orange = Color(0xFFFFA500);
   static const Color neutral = Color(0xFF5E7E70);
   static const Color black = Color(0xFF000000);
+
+  static const Color user_profile = Color(0xFFD9D9D9);
 }
