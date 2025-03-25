@@ -2,7 +2,6 @@ import 'package:crypto/crypto.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:moods_on_display/app_flow/flow.dart';
 import 'package:moods_on_display/managers/authentication_manager/auth.dart';
 import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 import 'package:moods_on_display/pages/albums.dart';
@@ -96,7 +95,7 @@ testWidgets("Draw rectangle on image and verify image update", (WidgetTester tes
     String albumToTest = 'Happy';
     when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
 
-    await tester.pumpWidget(mockViewGallery(const FlowTree()));
+    await tester.pumpWidget(mockViewGallery(const HomePage()));
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget, reason: "HomePage should be displayed when user is authenticated");
 

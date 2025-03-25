@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:moods_on_display/app_flow/flow.dart';
 import 'package:moods_on_display/managers/authentication_manager/auth.dart';
 import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 import 'package:moods_on_display/pages/detect.dart';
 import 'package:mockito/mockito.dart';
+import 'package:moods_on_display/pages/home.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import '../../../test/mocks/mocks.mocks.dart';
@@ -71,7 +71,7 @@ void main() {
       try {
         // Mock successful login
         when(mockAuth.authStateChanges).thenAnswer((_) => Stream.value(mockUser));
-        await tester.pumpWidget(mockAddImages(const FlowTree()));
+        await tester.pumpWidget(mockAddImages(const HomePage()));
         await tester.pumpAndSettle();
 
         // Step 2: Handle Dialog for "Allow Full Access"

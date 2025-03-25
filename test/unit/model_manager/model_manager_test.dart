@@ -80,9 +80,9 @@ void main() {
       try {
         expect(result, EMOTIONS.disgust);
         expect(result, isNot(EMOTIONS.angry));
-        UNIT_TEST.visualTestLogger('find mmost common emotion returns true most common emotion', true, logs: ['Result: $result']);
+        UNIT_TEST.visualTestLogger('find most common emotion returns true most common emotion', true, logs: ['Result: $result']);
       } catch(e) {
-        UNIT_TEST.visualTestLogger('', false);
+        UNIT_TEST.visualTestLogger('wrong emotion outputted!', false);
       }
     });
 
@@ -200,7 +200,6 @@ void main() {
       } catch(e) {
         UNIT_TEST.visualTestLogger('', false);
       }
-      
     });
 
   });

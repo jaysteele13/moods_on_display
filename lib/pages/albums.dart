@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/pages/images.dart';
 import 'package:moods_on_display/utils/constants.dart';
@@ -9,7 +10,7 @@ class AlbumScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
-      appBar: AppBar(title: Text("Albums")),
+      appBar: Base.appBar(title: Text('Albums')),
       key: const Key('album_body'),
       body: ListView.builder(
         itemCount: emotions.length,
