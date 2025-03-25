@@ -78,7 +78,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
       icon: Column(
         children: [
           SvgPicture.asset(
-            'assets/icons/Home.svg',
+            'assets/icons/Home1.svg',
             height: 32,
             width: 32,
           ),
