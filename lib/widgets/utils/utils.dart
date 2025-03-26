@@ -10,12 +10,15 @@ class WidgetUtils {
   static const double titleFontSize_75 = 20.0;
   static const double paragraphFontSize = 16.0;
 
-  static Widget buildTitle(String title) {
+  
+
+  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black}) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: titleFontSize,
+      style: TextStyle(
+        fontSize: fontSize,
         fontWeight: FontWeight.bold,
+        color: color
       ),
       textAlign: TextAlign.center,
     );

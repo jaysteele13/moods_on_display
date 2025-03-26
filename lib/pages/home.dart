@@ -41,14 +41,14 @@ Widget _buildUserTitle(String title) {
       children: [
         Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: WidgetUtils.titleFontSize,
         fontWeight: FontWeight.normal,
       ),
       textAlign: TextAlign.center,
     ),
     SizedBox(width: 8.0),
-    Icon(Icons.mode_edit_outline_outlined, color: DefaultColors.black),
+    Icon(Icons.mode_edit_outline_outlined, color: DefaultColors.black)
     ]);
   }
 
@@ -181,7 +181,7 @@ Widget buildUserDetails(String username, int photos, String emotion) {
     return Container(
       
       color: Colors.white,
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(WidgetUtils.defaultPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -193,54 +193,143 @@ Widget buildUserDetails(String username, int photos, String emotion) {
     );
   }
 
-  Widget buildFeatures() {
+  Widget _buildFeatureTitle(String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+      title,
+      style: TextStyle(
+        fontSize: WidgetUtils.titleFontSize_75,
+        fontWeight: FontWeight.normal,
+        decoration: TextDecoration.underline, 
+      ),
+      textAlign: TextAlign.center,
+    ),
+    SizedBox(width: 8.0),
+    ]);
+  }
+
+Widget _buildImage(String filePath) {
+  bool isSvg = filePath.endsWith('.svg');
+  
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(5.0), // For rounded rectangle
+    child: isSvg
+        ? SvgPicture.asset(
+            filePath,
+            width: 64,
+            height: 64,
+            fit: BoxFit.contain,
+            placeholderBuilder: (context) => CircularProgressIndicator(), // Placeholder while loading
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.print,
+                color: DefaultColors.darkGreen,
+                size: 64,
+              ); // Return an error icon if loading fails
+            },
+          )
+        : Image.asset(
+            filePath, // For PNG files or other image formats
+            width: 64,
+            height: 96,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.image,
+                color: DefaultColors.darkGreen,
+                size: 64,
+              ); // Return an error icon if loading fails
+            },
+          ),
+  );
+}
+
+
+  Widget _buildFeatureButton(String text, String iconPath, String filePath, Color primaryColor, Color secondaryColor) {
     return Container(
-      color: Colors.white,
-      padding: EdgeInsets.all(16.0),
-      child: Column(
+      width: double.infinity,
+      height: HOME_CONSTANTS.featureButtonHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5.0),
+        gradient: LinearGradient(
+          colors: [primaryColor, secondaryColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
         children: [
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Feature 1'),
-            style: ElevatedButton.styleFrom(
-              minimumSize: Size(double.infinity, 60),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  WidgetUtils.buildTitle(text, fontSize: WidgetUtils.titleFontSize_75, color: DefaultColors.black),
+                  SizedBox(height: 4),
+                  SvgPicture.asset(
+                    iconPath,
+                    width: 32,
+                    height: 32,
+                    color: DefaultColors.black,
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Feature 2'),
-            style: ElevatedButton.styleFrom(
-              minimumSize: Size(double.infinity, 60),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-            ),
+          Padding(
+            padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+            child: _buildImage(filePath),
           ),
         ],
       ),
     );
   }
 
-
- @override
-  Widget build(BuildContext context) {
-    return BaseScaffold(
-      appBar: AppBar(title: Text('Hub')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            buildUserDetails('Jay Steele', 2, EMOTIONS.happy),
-            Divider(color: DefaultColors.grey, thickness: 1),
-            buildUserAccessibility(),
-            Divider(color: DefaultColors.grey, thickness: 1),
-            buildFeatures(),
-          ],
-        ),
+  Widget buildFeatures() {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.all(WidgetUtils.defaultPadding),
+      child: Column(
+        children: [
+          _buildFeatureTitle(HOME_CONSTANTS.features),
+          SizedBox(height: 16),
+          _buildFeatureButton(HOME_CONSTANTS.viewAlbums, 'assets/icons/Folder.svg', '', DefaultColors.blue, DefaultColors.green),
+          SizedBox(height: 16),
+          _buildFeatureButton(HOME_CONSTANTS.predictEmotions, 'assets/icons/Plus_circle.svg', 'assets/icons/Vector.svg', DefaultColors.green, Colors.white),
+        ],
       ),
-      backgroundColor: Colors.white,
     );
   }
+
+
+@override
+Widget build(BuildContext context) {
+  return BaseScaffold(
+    appBar:  AppBar(
+  backgroundColor: DefaultColors.background,  // Set the background color to white
+  title: WidgetUtils.buildTitle('Hub'), // Use the buildTitle method from the WidgetUtils class
+),
+    body: SingleChildScrollView( 
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          buildUserDetails('Jay Steele', 2, EMOTIONS.happy),
+          Divider(color: DefaultColors.grey, thickness: 1),
+          buildUserAccessibility(),
+          Divider(color: DefaultColors.grey, thickness: 1),
+          buildFeatures(),
+        ],
+      ),
+    ),
+    backgroundColor: Colors.white,
+  );
+}
+
 }
 
 
