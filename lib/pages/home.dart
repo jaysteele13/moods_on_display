@@ -16,7 +16,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
   bool isProfileSetUp = false; // will be told by db
+  String username = 'Guest';
 
   void _openAlert() {
     showModalBottomSheet(
@@ -30,26 +33,116 @@ void initState() {
   super.initState();
   WidgetsBinding.instance.addPostFrameCallback((_) {
       if(!isProfileSetUp) _openAlert();
+
+      setState(() {
+      });
      
   });
 }
 
+HomeValidationName formatTitleValidation(String title, double fontSize) {
+  String newtitle;
+  double newFontSize = fontSize;
+
+  if (title.length > 15) {
+    int spaceIndex = title.indexOf(' ', (1).toInt());
+    if (spaceIndex != -1) {
+      newtitle = '${title.substring(0, spaceIndex)}\n${title.substring(spaceIndex + 1)}';
+      newFontSize = WidgetUtils.titleFontSize_75;
+    } else {
+      newtitle = title;
+    }
+
+    // Reduce size if there are multiple spaces
+    int spaceCount = title.split(' ').length;
+    if (spaceCount > 1) {
+      newFontSize *= 0.75;
+    }
+
+    return HomeValidationName(text: newtitle, fontSize: newFontSize);
+  }
+
+  return HomeValidationName(text: title, fontSize: fontSize);
+}
+
+// Validate the length of the title, scale the title based off of the length,
 Widget _buildUserTitle(String title) {
+
+    double fontSize = WidgetUtils.titleFontSize;
+
+    HomeValidationName textAndFont = formatTitleValidation(title, fontSize);
+   
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-      title,
+      textAndFont.text,
       style: TextStyle(
-        fontSize: WidgetUtils.titleFontSize,
+        fontSize: textAndFont.fontSize,
         fontWeight: FontWeight.normal,
       ),
       textAlign: TextAlign.center,
     ),
     SizedBox(width: 8.0),
-    Icon(Icons.mode_edit_outline_outlined, color: DefaultColors.black)
+    IconButton(onPressed: () => _showNameModal(context),
+    icon: Icon(Icons.mode_edit_outline_outlined, color: DefaultColors.black))
     ]);
+  }
+
+// Validate Name can't be any bigger than 30 characters
+void _showNameModal(BuildContext context) {
+  showDialog(
+    context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(HOME_CONSTANTS.enterName),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
+            controller: _nameController,
+            cursorColor: DefaultColors.neutral,
+            cursorErrorColor: DefaultColors.red,
+            
+            decoration: InputDecoration(
+              hintText: HOME_CONSTANTS.enterNamePlaceHolder,
+              border: OutlineInputBorder(),
+              
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.neutral)),
+              errorBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.red))
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return HOME_CONSTANTS.validationText;
+                }
+                if(value.characters.length > 25) {
+                  return HOME_CONSTANTS.validationTooLong;
+                }
+              return null;
+              },
+            ),
+          ),
+          actions: [
+            _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
+            _buildInfoButton('Submit', DefaultColors.darkGreen, () {
+              if (_formKey.currentState!.validate()) {
+                // If the form is valid, display the entered name
+                  setState((
+                  ) {
+                     username = _nameController.text;
+                     _nameController.clear();
+                  });
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Hello, $username!')),
+                  );
+                }
+            }),
+          ],
+        );
+      },
+    );
   }
 
 Widget _drawUserProfile() {
@@ -163,11 +256,11 @@ Widget buildUserDetails(String username, int photos, String emotion) {
     );
   }
 
-  Widget _buildInfoButton(String text, Color color) {
+  Widget _buildInfoButton(String text, Color color, void Function() onPressed) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
           backgroundColor: color,
@@ -185,9 +278,9 @@ Widget buildUserDetails(String username, int photos, String emotion) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildInfoButton(HOME_CONSTANTS.gettingStarted, DefaultColors.green),
+          _buildInfoButton(HOME_CONSTANTS.gettingStarted, DefaultColors.green, () => {}),
           SizedBox(height: 16),
-          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue),
+          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue, () => {}),
         ],
       ),
     );
@@ -318,7 +411,7 @@ Widget build(BuildContext context) {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          buildUserDetails('Jay Steele', 2, EMOTIONS.happy),
+          buildUserDetails(username, 2, EMOTIONS.happy),
           Divider(color: DefaultColors.grey, thickness: 1),
           buildUserAccessibility(),
           Divider(color: DefaultColors.grey, thickness: 1),
