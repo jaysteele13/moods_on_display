@@ -5,6 +5,7 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/detect.dart';
+import 'package:moods_on_display/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 
@@ -42,6 +43,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       //initialRoute: '/home',
       // routes in app
+      theme: ThemeData(
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: DefaultColors.neutral,
+          selectionColor: DefaultColors.green.withAlpha(20),
+          selectionHandleColor: DefaultColors.darkGreen
+          
+        )
+      ),
       routes: {
         '/home': (context) => HomePage(),
         '/add_images': (context) => AddImageScreen(),

@@ -6,4 +6,20 @@ class HOME_CONSTANTS {
   static const predictEmotions = 'Predict Emotions';
 
   static const featureButtonHeight = 100.0;
+
+  // Add Username
+  static const enterName = 'Enter your name';
+  static const enterNamePlaceHolder = 'Enter name';
+  static const validationText = 'Enter a valid name!';
+  static const validationTooLong = 'That name is too long... sorry.';
+}
+
+class HomeValidationName { 
+  String text; 
+  double fontSize;
+
+  HomeValidationName({
+    required this.text,
+    required this.fontSize
+  });
 }
