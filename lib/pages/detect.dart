@@ -14,6 +14,7 @@ import 'package:extended_image/extended_image.dart';
 import 'dart:io';
 
 import 'package:moods_on_display/utils/constants.dart';
+import 'package:moods_on_display/utils/utils.dart';
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -47,21 +48,21 @@ class AddImageScreenState extends State<AddImageScreen> {
   Color getEmotionColor(String emotion) {
   switch (emotion) {
     case EMOTIONS.happy:
-      return Colors.yellow;
+      return DefaultColors.yellow;
     case EMOTIONS.sad:
-      return Colors.blue;
+      return DefaultColors.blue;
     case EMOTIONS.angry:
-      return Colors.red;
+      return DefaultColors.red;
     case EMOTIONS.fear:
-      return Colors.purple;
+      return DefaultColors.purple;
     case EMOTIONS.disgust:
-      return Colors.green;
+      return DefaultColors.green;
     case EMOTIONS.neutral:
-      return Colors.grey;
+      return DefaultColors.neutral;
     case EMOTIONS.surprise:
-      return Colors.orange;
+      return DefaultColors.orange;
     default:
-      return Colors.black;
+      return DefaultColors.black;
   }
 }
 

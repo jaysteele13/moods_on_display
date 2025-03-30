@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
+import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
+import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/alert.dart';
+import 'package:moods_on_display/pages/detect.dart';
 import 'package:moods_on_display/pages/documentation.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/home/home_constants.dart';
 import 'package:moods_on_display/widgets/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -377,8 +382,17 @@ Widget _buildImage(String filePath) {
 }
 
 
-  Widget _buildFeatureButton(String text, String iconPath, String filePath, Color primaryColor, Color secondaryColor) {
-    return Container(
+  Widget _buildFeatureButton(
+  String text,
+  String iconPath,
+  String filePath,
+  Color primaryColor,
+  Color secondaryColor,
+  VoidCallback onPressed,
+) {
+  return GestureDetector(
+    onTap: onPressed,
+    child: Container(
       width: double.infinity,
       height: HOME_CONSTANTS.featureButtonHeight,
       decoration: BoxDecoration(
@@ -398,7 +412,11 @@ Widget _buildImage(String filePath) {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  WidgetUtils.buildTitle(text, fontSize: WidgetUtils.titleFontSize_75, color: DefaultColors.black),
+                  WidgetUtils.buildTitle(
+                    text,
+                    fontSize: WidgetUtils.titleFontSize_75,
+                    color: DefaultColors.black,
+                  ),
                   SizedBox(height: 4),
                   SvgPicture.asset(
                     iconPath,
@@ -416,8 +434,10 @@ Widget _buildImage(String filePath) {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget buildFeatures() {
     return Container(
@@ -427,9 +447,11 @@ Widget _buildImage(String filePath) {
         children: [
           _buildFeatureTitle(HOME_CONSTANTS.features),
           SizedBox(height: 16),
-          _buildFeatureButton(HOME_CONSTANTS.viewAlbums, 'assets/icons/Folder.svg', '', DefaultColors.blue, DefaultColors.green),
+          _buildFeatureButton(HOME_CONSTANTS.viewAlbums, 'assets/icons/Folder.svg', '', DefaultColors.blue, DefaultColors.green,
+          () {Provider.of<NavigationProvider>(context, listen: false).navigateTo(2, context);}),
           SizedBox(height: 16),
-          _buildFeatureButton(HOME_CONSTANTS.predictEmotions, 'assets/icons/Plus_circle.svg', 'assets/icons/Vector.svg', DefaultColors.green, Colors.white),
+          _buildFeatureButton(HOME_CONSTANTS.predictEmotions, 'assets/icons/Plus_circle.svg', 'assets/icons/Vector.svg', DefaultColors.green, Colors.white,
+          () {Provider.of<NavigationProvider>(context, listen: false).navigateTo(1, context);}),
         ],
       ),
     );
@@ -439,10 +461,7 @@ Widget _buildImage(String filePath) {
 @override
 Widget build(BuildContext context) {
   return BaseScaffold(
-    appBar:  AppBar(
-  backgroundColor: DefaultColors.background,  // Set the background color to white
-  title: WidgetUtils.buildTitle('Hub'), // Use the buildTitle method from the WidgetUtils class
-),
+    appBar: Base.appBar(title: WidgetUtils.buildTitle('Hub'), backgroundColor: DefaultColors.background),
     body: SingleChildScrollView( 
       padding: const EdgeInsets.all(16.0),
       child: Column(
