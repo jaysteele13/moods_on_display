@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class SadPageRouter extends PageRouteBuilder {
+class NoAnimRouter extends PageRouteBuilder {
   final Widget child;
 
-  SadPageRouter({required this.child})
+  NoAnimRouter({required this.child})
       : super(
           pageBuilder: (BuildContext context, Animation<double> animation,
               Animation<double> secondaryAnimation) {
