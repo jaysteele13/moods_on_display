@@ -70,7 +70,6 @@ HomeValidationName formatTitleValidation(String title, double fontSize) {
   return HomeValidationName(text: title, fontSize: fontSize);
 }
 
-// Validate the length of the title, scale the title based off of the length,
 Widget _buildUserTitle(String title) {
   double fontSize = WidgetUtils.titleFontSize;
   HomeValidationName textAndFont = formatTitleValidation(title, fontSize);
@@ -101,79 +100,63 @@ Widget _buildUserTitle(String title) {
   );
 }
 
-
+// Validate Name can't be any bigger than 25 characters
 void _showNameModal(BuildContext context) async {
-  showGeneralDialog(
+  showDialog(
     context: context,
-    barrierDismissible: true,
-    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (context, _, __) {
-      return Center(
-        child: Material(
-          type: MaterialType.transparency,
-          child: ScaleTransition(
-            scale: CurvedAnimation(
-              parent: ModalRoute.of(context)!.animation!,
-              curve: Curves.easeOutBack,
-            ),
-            child: AlertDialog(
-              title: Text(HOME_CONSTANTS.enterName),
-              content: Form(
-                key: _formKey,
-                child: TextFormField(
-                  autofocus: true,
-                  maxLength: 25,
-                  controller: _nameController,
-                  cursorColor: DefaultColors.neutral,
-                  cursorErrorColor: DefaultColors.red,
-                  decoration: InputDecoration(
-                    hintText: HOME_CONSTANTS.enterNamePlaceHolder,
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.neutral)),
-                    errorBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.red)),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return HOME_CONSTANTS.validationText;
-                    }
-                    if (value.characters.length > 25) {
-                      return HOME_CONSTANTS.validationTooLong;
-                    }
-                    return null;
-                  },
-                ),
+      builder: (context) {
+        return AlertDialog(
+          title: Text(HOME_CONSTANTS.enterName),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
+            autofocus: true, 
+            maxLength: 25,
+            controller: _nameController,
+            cursorColor: DefaultColors.neutral,
+            cursorErrorColor: DefaultColors.red,
+            
+            decoration: InputDecoration(
+              hintText: HOME_CONSTANTS.enterNamePlaceHolder,
+              border: OutlineInputBorder(),
+              
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.neutral)),
+              errorBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.red))
               ),
-              actions: [
-                _buildInfoButton('Submit', DefaultColors.darkGreen, () async {
-                  if (_formKey.currentState!.validate()) {
-                    await DatabaseManager.instance.updateDefaultUser(_nameController.text);
-                    setState(() {
-                      username = _nameController.text;
-                      _nameController.clear();
-                    });
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Hello, $username!')),
-                    );
-                  }
-                }),
-                _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
-              ],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return HOME_CONSTANTS.validationText;
+                }
+                if(value.characters.length > 25) {
+                  return HOME_CONSTANTS.validationTooLong;
+                }
+              return null;
+              },
             ),
           ),
-        ),
-      );
-    },
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
-    },
-  );
-}
-
+          actions: [
+            _buildInfoButton('Submit', DefaultColors.darkGreen, () async {
+              if (_formKey.currentState!.validate()) {
+                // If the form is valid, display the entered name
+                 // update DB
+                  await DatabaseManager.instance.updateDefaultUser(_nameController.text);
+                  setState((
+                  ) {
+                      username = _nameController.text;
+                     _nameController.clear();
+                  });
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Hello, $username!')),
+                  );
+                }
+            }),
+            _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
+          ],
+        );
+      },
+    );
+  }
 
 Widget _drawUserProfile() {
    return Stack(
