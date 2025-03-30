@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/pages/alert.dart';
+import 'package:moods_on_display/pages/documentation.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/home/home_constants.dart';
@@ -19,13 +21,34 @@ class _HomePageState extends State<HomePage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  bool isProfileSetUp = false; // will be told by db
-  String username = 'No Name';
+  bool isProfileSetUp = false;
+  String username = ''; 
 
   void _openAlert() {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => AlertScreen(title: HOME_SCREEN_START_UP.title, paragraph: HOME_SCREEN_START_UP.paragraphs, buttonText: HOME_SCREEN_START_UP.buttonText, onButtonPressed: _showNameModal),
+    );
+  }
+
+  void _openGettingStarted() {
+     Navigator.pushReplacement(
+      context,
+      NoAnimRouter(
+        child: DocumentationScreen(title: HOME_CONSTANTS.gettingStartedTitle, paragraph: HOME_CONSTANTS.gettingStartedText,
+        color: DefaultColors.green,
+        iconPaths: HOME_CONSTANTS.gettingStartedIcons, image: HOME_CONSTANTS.gettingStartedImage),
+      ),
+    );
+  }
+
+  void _openDataUsed() {
+     Navigator.pushReplacement(
+      context,
+      NoAnimRouter(
+        child: DocumentationScreen(title: HOME_CONSTANTS.howWillDataBeUsedTitle, paragraph: HOME_CONSTANTS.howWillDataBeUsedText,
+        color: DefaultColors.blue,),
+      ),
     );
   }
 
@@ -291,9 +314,9 @@ Widget buildUserDetails(String username, int photos, String emotion) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildInfoButton(HOME_CONSTANTS.gettingStarted, DefaultColors.green, () => {}),
+          _buildInfoButton(HOME_CONSTANTS.gettingStarted, DefaultColors.green,  _openGettingStarted),
           SizedBox(height: 16),
-          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue, () => {}),
+          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue, _openDataUsed),
         ],
       ),
     );

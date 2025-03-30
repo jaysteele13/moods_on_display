@@ -14,19 +14,21 @@ class WidgetUtils {
 
   
 
-  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black}) {
+  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black, bool isUnderlined = false}) {
     return Text(
       title,
       style: TextStyle(
         fontSize: fontSize,
         fontWeight: FontWeight.bold,
-        color: color
+        color: color,
+        decoration: isUnderlined ? TextDecoration.underline : TextDecoration.none,
+        decorationColor: color,
       ),
       textAlign: TextAlign.center,
     );
   }
 
-  static Widget buildParagraph(String paragraph) {
+  static Widget buildParagraph(String paragraph, {double fontSize = paragraphFontSize, bool isCentered = true}) {
   const Map<String, Color> colorMap = {
     'p': DefaultColors.purple,
     'r': DefaultColors.red,
@@ -81,9 +83,9 @@ class WidgetUtils {
 
   return Container(
     alignment: Alignment.center, // Center the content within the container
-    width: double.infinity, // Ensure it takes full width
+    
     child: RichText(
-      textAlign: TextAlign.center,
+      textAlign: isCentered ? TextAlign.center : TextAlign.left,
       text: TextSpan(
         style: const TextStyle(color: DefaultColors.black),
         children: spans,
