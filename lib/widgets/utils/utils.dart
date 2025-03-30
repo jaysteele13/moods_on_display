@@ -100,7 +100,7 @@ class WidgetUtils {
     onPressed: () {
       Navigator.pushReplacement(
         context,
-        SadPageRouter(
+        NoAnimRouter(
           child: path,
         ),
       );

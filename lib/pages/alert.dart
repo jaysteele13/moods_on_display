@@ -7,11 +7,13 @@ class AlertScreen extends StatelessWidget {
   final String title;
   final List<String> paragraph;
   final String? buttonText;
+  final Function(BuildContext) onButtonPressed;  // Change to accept context
 
   const AlertScreen({
     super.key,
     required this.title,
     required this.paragraph,
+    required this.onButtonPressed,
     this.buttonText,
   });
 
@@ -49,9 +51,15 @@ Widget build(BuildContext context) {
                   backgroundColor: DefaultColors.blue,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
+                onPressed: () async {
+                  final currentContext = context;
+                  Navigator.of(currentContext).pop();
+                  await Future.delayed(const Duration(milliseconds: 100)); // Wait for animation
+                  if (currentContext.mounted) {
+                    onButtonPressed(currentContext);
+                  }
                 },
+                
                 child: Text(buttonText ?? 'Exit'),
               ),
             ),

@@ -31,7 +31,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               case 0:
                Navigator.pushReplacement(
                 context,
-                SadPageRouter(
+                NoAnimRouter(
                   child: HomePage(),
                 ),
               );
@@ -39,7 +39,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               case 1:
                  Navigator.pushReplacement(
                 context,
-                SadPageRouter(
+                NoAnimRouter(
                   child: AddImageScreen(),
                 ),
               );
@@ -47,7 +47,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               case 2:
                  Navigator.pushReplacement(
                 context,
-                SadPageRouter(
+                NoAnimRouter(
                   child: AlbumScreen(),// Define the route name here
                 ),
               );

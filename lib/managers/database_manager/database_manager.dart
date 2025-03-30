@@ -52,6 +52,61 @@ class DatabaseManager{
       FOREIGN KEY (emotion_id) REFERENCES images(id) ON DELETE CASCADE
     );
   ''');
+
+ await db.execute('''
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    has_updated_profile BOOLEAN NOT NULL DEFAULT 0
+  );
+''');
+
+  // 2. Initialize default user (with has_updated_profile = false)
+await db.execute('''
+    INSERT OR IGNORE INTO users (id, name, has_updated_profile) 
+    VALUES (1, 'Guest', 0)
+  ''');
+}
+
+// 3. Updated function to track profile updates
+Future<int> updateDefaultUser(String name) async {
+  Database db = await instance.database;
+  return await db.update(
+    'users',
+    {
+      'name': name,
+      'has_updated_profile': 1, // Mark as updated
+    },
+    where: 'id = ?',
+    whereArgs: [1],
+  );
+}
+
+// 4. New function to check if profile was updated
+Future<bool> hasUserUpdatedProfile() async {
+  Database db = await instance.database;
+  final result = await db.query(
+    'users',
+    columns: ['has_updated_profile'],
+    where: 'id = ?',
+    whereArgs: [1],
+  );
+  return result.isNotEmpty && result.first['has_updated_profile'] == 1;
+}
+
+Future<String> getDefaultUser() async {
+  Database db = await instance.database;
+  List<Map<String, dynamic>> result = await db.query(
+    'users',
+    where: 'id = ?',
+    whereArgs: [1],  // Targeting the default user with id = 1
+  );
+
+  if (result.isNotEmpty) {
+    return result.first['name'] as String;
+  } else {
+    throw Exception('No default user found');
+  }
 }
 
 

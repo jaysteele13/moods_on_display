@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/utils/constants.dart';
@@ -19,24 +20,28 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   bool isProfileSetUp = false; // will be told by db
-  String username = 'Guest';
+  String username = 'No Name';
 
   void _openAlert() {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertScreen(title: HOME_SCREEN_START_UP.title, paragraph: HOME_SCREEN_START_UP.paragraphs, buttonText: HOME_SCREEN_START_UP.buttonText),
+      builder: (ctx) => AlertScreen(title: HOME_SCREEN_START_UP.title, paragraph: HOME_SCREEN_START_UP.paragraphs, buttonText: HOME_SCREEN_START_UP.buttonText, onButtonPressed: _showNameModal),
     );
   }
 
 @override
 void initState() {
   super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-      if(!isProfileSetUp) _openAlert();
-
-      setState(() {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await DatabaseManager.instance.getDefaultUser().then((user) {
+        setState(() {
+          username = user;
+        });
       });
-     
+      
+      await DatabaseManager.instance.hasUserUpdatedProfile().then((profileUpdated) {
+        if(!profileUpdated) _openAlert();
+      });
   });
 }
 
@@ -67,83 +72,108 @@ HomeValidationName formatTitleValidation(String title, double fontSize) {
 
 // Validate the length of the title, scale the title based off of the length,
 Widget _buildUserTitle(String title) {
+  double fontSize = WidgetUtils.titleFontSize;
+  HomeValidationName textAndFont = formatTitleValidation(title, fontSize);
 
-    double fontSize = WidgetUtils.titleFontSize;
-
-    HomeValidationName textAndFont = formatTitleValidation(title, fontSize);
-   
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-      textAndFont.text,
-      style: TextStyle(
-        fontSize: textAndFont.fontSize,
-        fontWeight: FontWeight.normal,
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Flexible(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            textAndFont.text,
+            style: TextStyle(
+              fontSize: textAndFont.fontSize,
+              fontWeight: FontWeight.normal,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
       ),
-      textAlign: TextAlign.center,
-    ),
-    SizedBox(width: 8.0),
-    IconButton(onPressed: () => _showNameModal(context),
-    icon: Icon(Icons.mode_edit_outline_outlined, color: DefaultColors.black))
-    ]);
-  }
+      const SizedBox(width: 8.0),
+      IconButton(
+        onPressed: () => _showNameModal(context),
+        icon: const Icon(Icons.mode_edit_outline_outlined, color: DefaultColors.black),
+      ),
+    ],
+  );
+}
 
-// Validate Name can't be any bigger than 30 characters
-void _showNameModal(BuildContext context) {
-  showDialog(
+
+void _showNameModal(BuildContext context) async {
+  showGeneralDialog(
     context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(HOME_CONSTANTS.enterName),
-          content: Form(
-            key: _formKey,
-            child: TextFormField(
-            controller: _nameController,
-            cursorColor: DefaultColors.neutral,
-            cursorErrorColor: DefaultColors.red,
-            
-            decoration: InputDecoration(
-              hintText: HOME_CONSTANTS.enterNamePlaceHolder,
-              border: OutlineInputBorder(),
-              
-              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.neutral)),
-              errorBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.red))
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    transitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (context, _, __) {
+      return Center(
+        child: Material(
+          type: MaterialType.transparency,
+          child: ScaleTransition(
+            scale: CurvedAnimation(
+              parent: ModalRoute.of(context)!.animation!,
+              curve: Curves.easeOutBack,
+            ),
+            child: AlertDialog(
+              title: Text(HOME_CONSTANTS.enterName),
+              content: Form(
+                key: _formKey,
+                child: TextFormField(
+                  autofocus: true,
+                  maxLength: 25,
+                  controller: _nameController,
+                  cursorColor: DefaultColors.neutral,
+                  cursorErrorColor: DefaultColors.red,
+                  decoration: InputDecoration(
+                    hintText: HOME_CONSTANTS.enterNamePlaceHolder,
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.neutral)),
+                    errorBorder: OutlineInputBorder(borderSide: BorderSide(color: DefaultColors.red)),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return HOME_CONSTANTS.validationText;
+                    }
+                    if (value.characters.length > 25) {
+                      return HOME_CONSTANTS.validationTooLong;
+                    }
+                    return null;
+                  },
+                ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return HOME_CONSTANTS.validationText;
-                }
-                if(value.characters.length > 25) {
-                  return HOME_CONSTANTS.validationTooLong;
-                }
-              return null;
-              },
+              actions: [
+                _buildInfoButton('Submit', DefaultColors.darkGreen, () async {
+                  if (_formKey.currentState!.validate()) {
+                    await DatabaseManager.instance.updateDefaultUser(_nameController.text);
+                    setState(() {
+                      username = _nameController.text;
+                      _nameController.clear();
+                    });
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Hello, $username!')),
+                    );
+                  }
+                }),
+                _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
+              ],
             ),
           ),
-          actions: [
-            _buildInfoButton('Submit', DefaultColors.darkGreen, () {
-              if (_formKey.currentState!.validate()) {
-                // If the form is valid, display the entered name
-                  setState((
-                  ) {
-                     username = _nameController.text;
-                     _nameController.clear();
-                  });
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Hello, $username!')),
-                  );
-                }
-            }),
-            _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
-          ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: child,
+      );
+    },
+  );
+}
+
 
 Widget _drawUserProfile() {
    return Stack(
