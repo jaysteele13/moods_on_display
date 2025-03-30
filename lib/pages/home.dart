@@ -124,7 +124,6 @@ void _showNameModal(BuildContext context) {
             ),
           ),
           actions: [
-            _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
             _buildInfoButton('Submit', DefaultColors.darkGreen, () {
               if (_formKey.currentState!.validate()) {
                 // If the form is valid, display the entered name
@@ -139,6 +138,7 @@ void _showNameModal(BuildContext context) {
                   );
                 }
             }),
+            _buildInfoButton('Cancel', DefaultColors.red, () => Navigator.of(context).pop()),
           ],
         );
       },

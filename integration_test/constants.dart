@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
+import 'package:moods_on_display/utils/constants.dart';
 
 class DETECTION_TEST {
   static const emotion_test_album = 'test_album';
@@ -77,7 +78,7 @@ class Model_Benchmark {
 
   double compareAndAnalyzePredictions(Model_Benchmark pred_benchmark) {
     // Emotion names
-    List<String> emotions = ['anger', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise'];
+    List<String> emotions = EMOTIONS.list;
 
     // Create a map to store the accuracies based on predicted and benchmark values
     Map<String, double> accuracies = {};
@@ -119,13 +120,13 @@ class Model_Benchmark {
   // Convert Model_Benchmark properties to a Map for easier access
   Map<String, int> toMap() {
     return {
-      'anger': anger,
-      'disgust': disgust,
-      'fear': fear,
-      'happy': happy,
-      'neutral': neutral,
-      'sad': sad,
-      'surprise': surprise,
+      EMOTIONS.angry: anger,
+      EMOTIONS.disgust: disgust,
+      EMOTIONS.fear: fear,
+      EMOTIONS.happy: happy,
+      EMOTIONS.neutral: neutral,
+      EMOTIONS.sad: sad,
+      EMOTIONS.surprise: surprise,
     };
   }
 }

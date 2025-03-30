@@ -41,7 +41,7 @@ Since **performance testing is manual**, follow these steps:
    ```
 2. **Open Xcode Instruments:**
    - Go to **Xcode > Open Developer Tool > Instruments**
-   - Select **Time Profiler** or **Memory Usage** template.
+   - Select **Activity Monitor** template.
    - Attach it to the running app.
 3. **Monitor and Record Performance:**
    - Analyze **CPU, Memory, and GPU usage** while running tests.
