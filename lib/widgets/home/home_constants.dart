@@ -21,6 +21,13 @@ class HOME_CONSTANTS {
   ];
   static const gettingStartedIcons = ['assets/icons/Plus_circle.svg', 'assets/icons/Folder.svg'];
   static const gettingStartedImage = 'assets/images/dummies.png';
+
+
+  // How will your data be used
+  static const howWillDataBeUsedTitle = 'How will your data be used?';
+  static const howWillDataBeUsedText = ['Moods on Display uses *AI* to predict emotions in your images and needs full photo access.',
+'*Rest assured* — your photos never leave your device. Everything stays {color->b,b,u}local{/color}, with nothing stored in the cloud or *accessible by anyone else.*',
+'*Want proof?* Predict an emotion, delete the image from your phones gallery, and see it disappear from the app too. {color->b,b,u}Your data stays yours.{/color}'];
 }
 
 class HomeValidationName { 

@@ -21,8 +21,8 @@ class _HomePageState extends State<HomePage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  bool isProfileSetUp = false; // will be told by db
-  String username = 'No Name';
+  bool isProfileSetUp = false;
+  String username = ''; 
 
   void _openAlert() {
     showModalBottomSheet(
@@ -36,7 +36,18 @@ class _HomePageState extends State<HomePage> {
       context,
       NoAnimRouter(
         child: DocumentationScreen(title: HOME_CONSTANTS.gettingStartedTitle, paragraph: HOME_CONSTANTS.gettingStartedText,
+        color: DefaultColors.green,
         iconPaths: HOME_CONSTANTS.gettingStartedIcons, image: HOME_CONSTANTS.gettingStartedImage),
+      ),
+    );
+  }
+
+  void _openDataUsed() {
+     Navigator.pushReplacement(
+      context,
+      NoAnimRouter(
+        child: DocumentationScreen(title: HOME_CONSTANTS.howWillDataBeUsedTitle, paragraph: HOME_CONSTANTS.howWillDataBeUsedText,
+        color: DefaultColors.blue,),
       ),
     );
   }
@@ -305,7 +316,7 @@ Widget buildUserDetails(String username, int photos, String emotion) {
         children: [
           _buildInfoButton(HOME_CONSTANTS.gettingStarted, DefaultColors.green,  _openGettingStarted),
           SizedBox(height: 16),
-          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue, () => {}),
+          _buildInfoButton(HOME_CONSTANTS.howWillDataBeUsed, DefaultColors.blue, _openDataUsed),
         ],
       ),
     );

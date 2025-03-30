@@ -8,6 +8,7 @@ import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class DocumentationScreen extends StatelessWidget {
   final String title;
+  final Color color;
   final List<String> paragraph;
   final List<String>? iconPaths;
   final String? image;
@@ -16,6 +17,7 @@ class DocumentationScreen extends StatelessWidget {
     super.key,
     required this.title,
     required this.paragraph,
+    required this.color,
     this.iconPaths,
     this.image,
   });
@@ -48,18 +50,35 @@ Widget build(BuildContext context) {
                 SizedBox(height: 40),
                 WidgetUtils.buildTitle(
                   title,
-                  color: DefaultColors.green,
+                  color: color,
                   isUnderlined: true,
                 ),
                 SizedBox(height: 16),
+                // If image is true then:
+                image != null && image!.isNotEmpty ?
                 Image.asset(
                   image ?? '',
                   height: 150,
                   width: 300,
                   fit: BoxFit.contain,
-                ),
+                ) : SizedBox(),
                 SizedBox(height: 32),
-                
+
+                // If Icon and image is true then:
+                if(iconPaths == null || iconPaths!.isEmpty && image != null && image!.isNotEmpty) ...[
+                  for (int i = 0; i < paragraph.length; i++) ...[
+                    WidgetUtils.buildParagraph(
+                      paragraph[i], 
+                      fontSize: WidgetUtils.titleFontSize_75,
+                      isCentered: false,
+                    ),
+                    SizedBox(height: 16),
+                    if (i < paragraph.length - 1) ...[
+                      Divider(color: DefaultColors.grey),
+                    ],
+                  ],
+                  SizedBox(height: 32),
+                ] else ...[
                 // Loop through paragraphs
                 for (int i = 0; i < paragraph.length; i++) ...[
                   if (iconPaths != null && iconPaths!.isNotEmpty && i != paragraph.length-1)...[
@@ -106,6 +125,7 @@ Widget build(BuildContext context) {
                   ],
                 ],
               ],
+              ],
             ),
           ),
           
@@ -120,8 +140,8 @@ Widget build(BuildContext context) {
                 icon: Icon(Icons.close),
                 onPressed: () => Navigator.pushReplacement(
                   context,
-                  NoAnimRouter(
-                    child: HomePage(),
+                  Animations.animFade(
+                     context, HomePage(),
                   ),
                 ),
               ),
