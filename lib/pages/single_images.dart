@@ -47,7 +47,7 @@ class _SingleImageViewState extends State<SingleImageView> {
    @override
   void dispose()  {
     // call function to delete all images based on
-    _imageManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed 
+    _imageManager.releaseCache(); // Ensures cache is cleared when screen is disposed 
     _imageManager.listAndDeleteFiles();
     super.dispose();
   }

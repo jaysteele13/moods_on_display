@@ -66,17 +66,23 @@ class ModelManagerUtils {
 }
 
 class ModelManager {
-  // this is to load and run the model using tflite_flutter
+  // Singleton instance
+  static final ModelManager _instance = ModelManager._internal();
+
+  // This is to load and run the model using tflite_flutter
   late Interpreter interpreter;
   late FaceDetector faceDetector;
   late ModelManagerUtils modelManagerUtils;
   bool isModelLoaded = false;
 
-  List<Face> detectedFaces = [];  // Store detected faces
+  List<Face> detectedFaces = []; // Store detected faces
 
-  ModelManager() {
-    // loadModel / (s) initially
-    _loadModel();
+  // Private constructor to prevent instantiation outside
+  ModelManager._internal();
+
+  // Factory constructor to return the singleton instance
+  factory ModelManager() {
+    return _instance;
   }
 
   Future<void> _loadModel() async {
@@ -89,12 +95,22 @@ class ModelManager {
         enableClassification: true,
       ),
     );
-  isModelLoaded = true;
+    isModelLoaded = true;
+  }
+
+  // Call this method to ensure the model is loaded
+  Future<void> load() async {
+    if (!isModelLoaded) {
+      await _loadModel();
+    }
   }
   // -------------------------- Architecture --------------------------------
 
   Future<dynamic> modelArchitectureV2(FilePathPointer selectedFilePathPointer) async {
 
+    if (!isModelLoaded) {
+      await load(); // Ensure the model is loaded before detecting faces
+    }
   FilePointer filePointer = FilePointer(file: File(selectedFilePathPointer.filePath), imagePointer: selectedFilePathPointer.imagePointer);
 
   // perhaps grab coordinates through faceDetection in a type that holds List<img.Image> List<BoudningBox>
@@ -305,9 +321,9 @@ Future<void> formatEmotionImagesWithDB(List<EmotionImage> emotionImages, FilePat
   // );
 }
 
-void dispose() {
+void dispose() async {
   interpreter.close();
-  // await faceDetector.close();
+  await faceDetector.close();
 }
 
 

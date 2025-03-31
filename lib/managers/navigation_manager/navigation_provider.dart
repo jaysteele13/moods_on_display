@@ -15,28 +15,31 @@ class NavigationProvider with ChangeNotifier {
 
   // Centralized navigation function
   void navigateTo(int index, BuildContext context) {
-    if (index != _currentIndex) {
-      setIndex(index);
+  if (!context.mounted) return; // Ensure widget is still mounted
 
-      Widget screen;
-      switch (index) {
-        case 0:
-          screen = HomePage();
-          break;
-        case 1:
-          screen = AddImageScreen();
-          break;
-        case 2:
-          screen = AlbumScreen();
-          break;
-        default:
-          return;
-      }
+  if (index != _currentIndex) {
+    setIndex(index);
 
-      Navigator.pushReplacement(
-        context,
-        NoAnimRouter(child: screen),
-      );
+    Widget screen;
+    switch (index) {
+      case 0:
+        screen = HomePage();
+        break;
+      case 1:
+        screen = AddImageScreen();
+        break;
+      case 2:
+        screen = AlbumScreen();
+        break;
+      default:
+        return;
     }
+
+    Navigator.pushReplacement(
+      context,
+      NoAnimRouter(child: screen),
+    );
   }
+}
+
 }

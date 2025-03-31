@@ -64,7 +64,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 
-  /// ✅ **Efficiently stores only asset ID in memory**
+  /// **Efficiently stores only asset ID in memory**
   void toggleSelection(AssetEntity asset) {
     setState(() {
       if (selectedPointers.contains(asset.id)) {
@@ -76,11 +76,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
 
-  /// ✅ **Returns selected image IDs instead of loading files into memory**
+  /// **Returns selected image IDs instead of loading files into memory**
   void saveSelectedImages() {
     List<String> result = List.from(selectedPointers); // Copy pointers before clearing
 
-  // ✅ Clear memory before closing the page
+  // Clear memory before closing the page
   setState(() {
     images.clear();
     selectedPointers.clear();
@@ -183,7 +183,7 @@ void dispose() {
                                           fit: BoxFit.cover,
                                           width: double.infinity,
                                           height: double.infinity,
-                                          clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+                                          clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed
                                         ),
                                   
                                     if (isSelected)

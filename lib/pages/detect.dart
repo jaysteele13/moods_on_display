@@ -15,6 +15,7 @@ import 'dart:io';
 
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -29,6 +30,7 @@ class AddImageScreenState extends State<AddImageScreen> {
   final ValueNotifier<List<EmotionImage>> detectedEmotions = ValueNotifier<List<EmotionImage>>([]);
 
   bool _isGalleryLoading = false;
+  ValueNotifier<bool> isPredictionModeNotifier = ValueNotifier<bool>(false);
   List faceDetections = [];
  ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
   
@@ -38,7 +40,7 @@ class AddImageScreenState extends State<AddImageScreen> {
 
   @override
   void dispose()  {
-    albumManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed
+    albumManager.releaseCache(); // Ensures cache is cleared when screen is disposed
     // call function to delete all images based on 
     _imageManager.listAndDeleteFiles();
     _modelManager.dispose();
@@ -95,7 +97,7 @@ class AddImageScreenState extends State<AddImageScreen> {
             fit: BoxFit.cover,
             width: 75,
             height: 75,
-            clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+            clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed
           );
          
         },
@@ -115,12 +117,15 @@ class AddImageScreenState extends State<AddImageScreen> {
   }
 
 
-
 Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   print('length of selcted images: ${selectedImages.length}---------------------');
   detectedEmotions.value = []; // Clear previous results
-  int totalImages = selectedImages.length;
 
+  // isPredictionModeNotifier.value = true;  // Start prediction
+  
+
+  // Enable Navigation Disabled during Image Processing  
+  int totalImages = selectedImages.length;
   for (int i = 0; i < totalImages; i++) {
     try {
       var result = await _modelManager.modelArchitectureV2(selectedImages[i]);
@@ -140,6 +145,7 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
 
   // After processing all images, ensure progress is 1
   progressNotifier.value = 1.0;
+  // isPredictionModeNotifier.value = false;  // Start prediction
 }
 
 
@@ -148,6 +154,7 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   return ValueListenableBuilder<List<FilePathPointer>?>(
     valueListenable: _imageManager.selectedMultiplePathsNotifier,
     builder: (context, selectedImages, child) {
+
       if (selectedImages == null || selectedImages.isEmpty) {
         return const Text('No selected images');
       }
@@ -160,7 +167,7 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
               if (snapshot.connectionState == ConnectionState.waiting)
                 // add text waiting to progress images
                 const CircularProgressIndicator(), // Show loader while processing
-                
+               
                ValueListenableBuilder<double>(
                 valueListenable: progressNotifier,
                 builder: (context, progress, child) {
@@ -212,7 +219,7 @@ Future<void> _openGallery() async {
       _isGalleryLoading = true; // Show loading state while processing new batch
     });
 
-    // ✅ Clear old data BEFORE starting a new detection
+    // Clear old data BEFORE starting a new detection
     detectedEmotions.value = [];
     progressNotifier.value = 0.0;
 
@@ -226,44 +233,53 @@ Future<void> _openGallery() async {
 }
 
 
-
-
   @override
   void initState() {
     super.initState();
-    albumManager.releaseCache(); // ✅ Clears cache on initialization
+    albumManager.releaseCache(); // Clears cache on initialization
     detectedEmotions.value = [];
   }
 
 @override
-  Widget build(BuildContext context) {
-    
-    return BaseScaffold(
-      appBar: Base.appBar(title: Text('Scanning for Emotion'), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+Widget build(BuildContext context) {
+  return BaseScaffold(
+      appBar: Base.appBar(
+        title: Text('Scanning for Emotion'), 
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        
+      ),
       body: SingleChildScrollView(
-    physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Center(
-        // based on gllery loading show this until this...
-        child: _isGalleryLoading ? const CircularProgressIndicator() 
-        : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            MaterialButton(
-              onPressed: _openGallery,
-              color: Colors.deepPurple,
-              child: const Text('Muliple Images or one'),
-            ),
-            const SizedBox(height: 20),
-    
-           Column(
-          children: [ showEmotionsFace() ],
-        )
-  
-          ],
+        physics: BouncingScrollPhysics(), 
+        child: Padding(
+          padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+          child: Center(
+            child: _isGalleryLoading 
+              ? const CircularProgressIndicator() 
+              : ValueListenableBuilder<bool>(
+                valueListenable: isPredictionModeNotifier,
+                builder: (context, isPredictionMode, child) {
+                  return AbsorbPointer(
+                    absorbing: isPredictionMode,  // Disable interaction during prediction
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        MaterialButton(
+                          onPressed: _openGallery,
+                          color: Colors.deepPurple,
+                          child: const Text('Multiple Images or One'),
+                        ),
+                        const SizedBox(height: 20),
+                        Column(
+                          children: [showEmotionsFace()],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              )
         ),
       ),
-    )));
-  } 
+  ));
+}
+
 }
