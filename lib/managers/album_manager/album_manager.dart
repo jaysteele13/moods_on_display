@@ -26,7 +26,8 @@ Future<Uint8List?> getImageByPointer(String assetId, bool lowRes) async {
 
   // getAlbumDetails
   // use photoManager to retrieve amount of assets and a list of assets stop (5)
-  
+
+
 
 
 

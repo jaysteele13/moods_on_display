@@ -5,6 +5,8 @@ import 'package:moods_on_display/utils/utils.dart';
 
 class WidgetUtils {
 
+  static const double defaultToolBarHeight = 56;
+
   static const double defaultPadding = 16.0;
   static const double titleFontSize = 24.0;
   static const double titleFontSize_75 = 20.0;

@@ -16,4 +16,5 @@ class DefaultColors {
 
   static const Color user_profile = Color(0xFFD9D9D9);
   static const Color background = Color(0xFFEFEEF3);
+  static const Color tickColor = Color(0xFF68C89B);
 }

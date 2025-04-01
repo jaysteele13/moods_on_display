@@ -324,7 +324,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
 
-  Future<AlbumData> fetchAlbumData(AssetPathEntity album) async {
+// Gallery Screen
+Future<AlbumData> fetchAlbumData(AssetPathEntity album) async {
   try {
     // Get the total number of images
     int imageCount = await album.assetCountAsync;
@@ -350,7 +351,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
     return AlbumData(images: [], amount: 0);
   }
 }
+     
+            
 
+
+// Gallery Screen
 Future<Widget> buildAlbum(String albumName, int idx) async {
   AlbumData albumData = await fetchAlbumData(albums[idx]);
 
@@ -395,6 +400,7 @@ Future<Widget> buildAlbum(String albumName, int idx) async {
                         fit: BoxFit.fill,
                         width: 60,
                         height: 80,
+                        clearMemoryCacheWhenDispose: true
                       ),
                     ),
                     SizedBox(width: 4), // Small spacing between big and small images
@@ -421,6 +427,7 @@ Future<Widget> buildAlbum(String albumName, int idx) async {
                                 fit: BoxFit.fill,
                                 width: 30,
                                 height: 40,
+                                clearMemoryCacheWhenDispose: true
                               ),
                             );
                           },
@@ -440,7 +447,31 @@ Future<Widget> buildAlbum(String albumName, int idx) async {
 }
 
 
-
+Widget selectedImageWidget(int amount) {
+  return // Moved outside ListView.builder
+          Container(
+            padding: EdgeInsets.all(WidgetUtils.defaultPadding),
+            
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: DefaultColors.blue,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Text(
+              "Selected Images: $amount",
+              style: TextStyle(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          );
+}
 
 
 
@@ -457,148 +488,198 @@ Future<Widget> buildAlbum(String albumName, int idx) async {
     return BaseScaffold(
       backgroundColor: DefaultColors.background,
       appBar: Base.appBar(
-        title:  WidgetUtils.buildTitle(selectedAlbum == null ? GALLERY_CONSTANTS.title : selectedAlbum!.name),
-        leading: WidgetUtils.buildBackButton(context, AddImageScreen()),
-        // actions: [
-        //   if (selectedAlbum != null)
-        //     IconButton(
-        //       icon: Icon(Icons.folder_open),
-        //       onPressed: resetAlbumSelection,
-        //     ),
-        //   if (selectedPointers.isNotEmpty)
-        //     IconButton(
-        //       icon: Icon(Icons.check),
-        //       onPressed: saveSelectedImages,
-        //     ),
-        // ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
-        child: Stack(
+  toolBarHeight: selectedAlbum == null ? 100 : WidgetUtils.defaultToolBarHeight,
+  title: selectedAlbum == null
+      ? Row(
           children: [
-            // White card
-            Container(
-              width: 350,
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
+            Expanded(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
-                  // Subtitle
+                  SizedBox(height: 16),
+                  WidgetUtils.buildTitle(GALLERY_CONSTANTS.title),
+                  SizedBox(height: 8),
                   WidgetUtils.buildParagraph(
-                    //selectedAlbum == null ? "Albums" : selectedAlbum!.name,
                     GALLERY_CONSTANTS.subTitle,
                     fontSize: WidgetUtils.titleFontSize_75,
-                  
                   ),
                   Divider(color: DefaultColors.grey),
-                  SizedBox(height: 16),
-                  
-                  
-                  Expanded(
-                    child: selectedAlbum == null
-                        ? ListView.builder(
-                            itemCount: albums.length,
-                            itemBuilder: (context, index) {
-                              return FutureBuilder(
-                                future: buildAlbum(albums[index].name, index), // Call the async function
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return Center(child: CircularProgressIndicator()); // Loading indicator
-                                  } else if (snapshot.hasError) {
-                                    return SizedBox(); // Don't show album if no images
-                                  } else {
-                                    return snapshot.data as Widget; // Render the album widget
-                                  }
-                                },
-                              );
-                            },
-                          )
-                        : NotificationListener<ScrollNotification>(
-                            onNotification: (ScrollNotification scrollInfo) {
-                              if (scrollInfo.metrics.pixels >=
-                                  scrollInfo.metrics.maxScrollExtent - 200) {
-                                loadMoreImages();
-                              }
-                              return false;
-                            },
-                            child: GridView.builder(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
-                              itemCount: images.length + (isLoading ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index == images.length) {
-                                  return Center(child: CircularProgressIndicator());
-                                }
-                                return FutureBuilder<Uint8List?>(
-                                  future: images[index].thumbnailDataWithSize(ThumbnailSize(200, 200)),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.done &&
-                                        snapshot.hasData) {
-                                      bool isSelected =
-                                          selectedPointers.contains(images[index].id);
-
-                                      return GestureDetector(
-                                        onTap: () => toggleSelection(images[index]),
-                                        child: Stack(
-                                          children: [
-                                            ExtendedImage.memory(
-                                              snapshot.data!,
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              clearMemoryCacheWhenDispose: true,
-                                            ),
-                                            if (isSelected)
-                                              Positioned(
-                                                top: 8,
-                                                right: 8,
-                                                child: Icon(
-                                                  Icons.check_circle,
-                                                  color: Colors.green,
-                                                  size: 30,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      );
-                                    }
-                                    return SizedBox.shrink();
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                  ),
-                  if (selectedPointers.isNotEmpty)
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      color: Colors.blue,
-                      width: double.infinity,
-                      child: Text(
-                        "Selected Images: ${selectedPointers.length}",
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
                 ],
               ),
             ),
           ],
+        )
+      : Center(child: WidgetUtils.buildTitle(selectedAlbum!.name)), // Centered title when album is selected
+  leading: selectedAlbum == null
+      ? WidgetUtils.buildBackButton(context, AddImageScreen())
+      : IconButton(
+          icon: Icon(Icons.folder_open),
+          onPressed: resetAlbumSelection,
         ),
+  actions: [
+    // Invisible icon to take up space when no check icon is needed
+    if (selectedPointers.isEmpty)
+      IconButton(
+        icon: Icon(Icons.check, color: Colors.transparent), // Invisible icon
+        onPressed: () {},
       ),
+    // Actual check icon when pointers are selected
+    if (selectedPointers.isNotEmpty)
+      IconButton(
+        icon: Icon(Icons.check),
+        onPressed: saveSelectedImages,
+      ),
+  ],
+),
+
+
+// BODY OF GALLERY SCREEN
+body: Stack(
+  children: [
+    Padding(
+      padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: selectedAlbum == null
+                ? Container(
+                    width: 350,
+                    padding: EdgeInsets.all(WidgetUtils.defaultPadding),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: ListView.builder(
+                      itemCount: albums.length,
+                      itemBuilder: (context, index) {
+                        return FutureBuilder(
+                          future: buildAlbum(albums[index].name, index),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return SizedBox();
+                            } else {
+                              return snapshot.data as Widget;
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  )
+                : Stack(
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: NotificationListener<ScrollNotification>(
+                              onNotification: (ScrollNotification scrollInfo) {
+                                if (scrollInfo.metrics.pixels >=
+                                    scrollInfo.metrics.maxScrollExtent - 200) {
+                                  loadMoreImages();
+                                }
+                                return false;
+                              },
+                              child: GridView.builder(
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3),
+                                itemCount: images.length + (isLoading ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == images.length) {
+                                    return Center(child: CircularProgressIndicator());
+                                  }
+                                  return FutureBuilder<Uint8List?>(
+                                    future: images[index].thumbnailDataWithSize(
+                                        ThumbnailSize(200, 200)),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.done &&
+                                          snapshot.hasData) {
+                                        bool isSelected = selectedPointers.contains(images[index].id);
+
+                                        return Padding(
+                                          padding: const EdgeInsets.all(
+                                              WidgetUtils.defaultPadding / 2),
+                                          child: GestureDetector(
+                                            onTap: () => toggleSelection(images[index]),
+                                            child: Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius: BorderRadius.circular(4),
+                                                  child: ExtendedImage.memory(
+                                                    snapshot.data!,
+                                                    fit: BoxFit.cover,
+                                                    width: double.infinity,
+                                                    height: double.infinity,
+                                                    clearMemoryCacheWhenDispose: true,
+                                                  ),
+                                                ),
+                                                if (isSelected)
+                                                  Positioned(
+                                                    top: 8,
+                                                    right: 8,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: DefaultColors.tickColor,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.check_circle_outline_rounded,
+                                                        color: Colors.white,
+                                                        size: 30,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      return SizedBox.shrink();
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    ),
+
+    // Overlay widget for selected images
+    if (selectedPointers.isNotEmpty)
+  Positioned(
+    bottom: 20, // Adjust this to position it at the bottom
+    left: 0,
+    right: 0,
+    child: Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12), // Adjust padding
+        constraints: BoxConstraints(
+          maxWidth: 250, // Adjust width as needed
+        ),
+        child: selectedImageWidget(selectedPointers.length),
+      ),
+    ),
+  ),
+
+  ],
+),
+
     );
   }
 }
