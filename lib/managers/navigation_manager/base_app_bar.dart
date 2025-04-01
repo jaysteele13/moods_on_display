@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moods_on_display/utils/utils.dart';
 
 
 class Base extends StatelessWidget {
@@ -8,7 +9,7 @@ class Base extends StatelessWidget {
   const Base({required this.title, this.backgroundColor, Key? key}) : super(key: key);
 
   // Static method to create and return an AppBar
-  static AppBar appBar({required Widget title, Color? backgroundColor, Widget? leading}) {
+  static AppBar appBar({required Widget title,  Widget? leading, Color? backgroundColor = DefaultColors.background}) {
     return AppBar(
       backgroundColor: backgroundColor,
       title: title,

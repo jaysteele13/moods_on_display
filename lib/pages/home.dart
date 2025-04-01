@@ -5,9 +5,7 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
-import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/alert.dart';
-import 'package:moods_on_display/pages/detect.dart';
 import 'package:moods_on_display/pages/documentation.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
