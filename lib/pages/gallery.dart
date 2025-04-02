@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_types.dart';
+import 'package:moods_on_display/managers/album_manager/selectedImagesManager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/pages/detect.dart';
@@ -87,6 +88,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
     if (mounted) {
       Navigator.pop(context, result);
     }
+  }
+
+  void resetImageSelection() {
+    setState(() {
+      selectedPointers.clear();
+    });
   }
 
   void resetAlbumSelection() {
@@ -434,21 +441,9 @@ body: Stack(
     ),
 
     // Overlay widget for selected images
-    if (selectedPointers.isNotEmpty)
-  Positioned(
-    bottom: 20, // Adjust this to position it at the bottom
-    left: 0,
-    right: 0,
-    child: Center(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12), // Adjust padding
-        constraints: BoxConstraints(
-          maxWidth: 250, // Adjust width as needed
-        ),
-        child: selectedImageWidget(selectedPointers.length),
-      ),
-    ),
-  ),
+ if (selectedPointers.isNotEmpty)
+    AnimatedSelectedImagesNotification(selectedCount: selectedPointers.length, onClearSelection: resetImageSelection,),
+
 
   ],
 ),
