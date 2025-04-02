@@ -1,7 +1,6 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:moods_on_display/utils/utils.dart';
 
 class AnimatedSelectedImagesNotification extends StatefulWidget {
@@ -20,7 +19,6 @@ class AnimatedSelectedImagesNotification extends StatefulWidget {
 
 class _AnimatedSelectedImagesNotificationState extends State<AnimatedSelectedImagesNotification> {
   bool _isVisible = false;
-  bool _isDismissed = false; // Tracks if user dismissed manually
 
   @override
   void didUpdateWidget(covariant AnimatedSelectedImagesNotification oldWidget) {
@@ -29,7 +27,6 @@ class _AnimatedSelectedImagesNotificationState extends State<AnimatedSelectedIma
     if (widget.selectedCount > 0) {
       setState(() {
         _isVisible = true;
-        _isDismissed = false; // Reset dismissal when a new image is selected
       });
     }
   }
@@ -37,7 +34,6 @@ class _AnimatedSelectedImagesNotificationState extends State<AnimatedSelectedIma
   void _dismiss() {
     setState(() {
       _isVisible = false;
-      _isDismissed = true; // Prevent auto-showing until a new image is selected
     });
   }
 
