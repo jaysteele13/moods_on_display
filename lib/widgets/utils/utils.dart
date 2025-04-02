@@ -5,6 +5,8 @@ import 'package:moods_on_display/utils/utils.dart';
 
 class WidgetUtils {
 
+  static const double defaultToolBarHeight = 56;
+
   static const double defaultPadding = 16.0;
   static const double titleFontSize = 24.0;
   static const double titleFontSize_75 = 20.0;
@@ -33,6 +35,7 @@ class WidgetUtils {
     'p': DefaultColors.purple,
     'r': DefaultColors.red,
     'g': DefaultColors.green,
+    'G': DefaultColors.grey,
     'b': DefaultColors.blue,
     'o': DefaultColors.orange,
     'y': DefaultColors.yellow,
@@ -82,8 +85,7 @@ class WidgetUtils {
   }
 
   return Container(
-    alignment: Alignment.center, // Center the content within the container
-    
+    alignment: isCentered ? Alignment.center: Alignment.centerLeft, // Center the content within the container
     child: RichText(
       textAlign: isCentered ? TextAlign.center : TextAlign.left,
       text: TextSpan(

@@ -24,6 +24,13 @@ Future<Uint8List?> getImageByPointer(String assetId, bool lowRes) async {
   return null; // Image not found
   }
 
+  // getAlbumDetails
+  // use photoManager to retrieve amount of assets and a list of assets stop (5)
+
+
+
+
+
   void triggerGC() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       PlatformDispatcher.instance.onBeginFrame; 
