@@ -13,15 +13,25 @@ class WidgetUtils {
   static const double paragraphFontSize = 16.0;
   static const double paragraphFontSize_75 = 12.0;
 
-
-  
-
-  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black, bool isUnderlined = false}) {
+  static const double containerWidth = 350.0;
+  static BoxDecoration containerDecoration = BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromARGB(26, 0, 0, 0),
+                          blurRadius: 10,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    );
+                   
+  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black, bool isUnderlined = false, bool isBold = true}) {
     return Text(
       title,
       style: TextStyle(
         fontSize: fontSize,
-        fontWeight: FontWeight.bold,
+        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
         color: color,
         decoration: isUnderlined ? TextDecoration.underline : TextDecoration.none,
         decorationColor: color,

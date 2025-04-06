@@ -13,6 +13,7 @@ import 'package:moods_on_display/utils/types.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:image/image.dart' as img;
 import 'package:moods_on_display/widgets/utils/utils.dart';
+import 'package:flutter/cupertino.dart';
 
 class SingleImageView extends StatefulWidget {
   final List<ImagePointer> images;
@@ -221,7 +222,7 @@ Future<void> _toggleBoundingBoxes(int index) async {
                   ),
                 ),
                 if (_isLoading)
-                  const Center(child: CircularProgressIndicator()),
+                  const Center(child: CupertinoActivityIndicator()),
               ],
             ),
           );

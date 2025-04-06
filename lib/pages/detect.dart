@@ -1,6 +1,8 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
@@ -15,6 +17,16 @@ import 'dart:io';
 
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:moods_on_display/widgets/detect/detect_constants.dart';
+import 'package:moods_on_display/widgets/utils/utils.dart';
+
+/// Define the states for the prediction process
+enum PredictionState {
+  prePrediction,
+  midPrediction,
+  postPrediction,
+  error
+}
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -30,11 +42,15 @@ class AddImageScreenState extends State<AddImageScreen> {
 
   bool _isGalleryLoading = false;
   List faceDetections = [];
- ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
+  ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
+
+  ValueNotifier<PredictionState> currentPredictionState = ValueNotifier<PredictionState>(PredictionState.prePrediction); // Set the initial state before hand
   
 
   List<String> selectedPointers = [];
   final AlbumManager albumManager = AlbumManager(assetEntityService: AssetEntityService(), photoManagerService: PhotoManagerService());
+
+  bool _hasProcessedImages = false; // Guard variable
 
   @override
   void dispose()  {
@@ -45,6 +61,48 @@ class AddImageScreenState extends State<AddImageScreen> {
     super.dispose();
   }
 
+
+  @override
+  void initState() {
+    super.initState();
+    albumManager.releaseCache(); // ✅ Clears cache on initialization
+    detectedEmotions.value = [];
+
+    _imageManager.selectedMultiplePathsNotifier.addListener(() {
+    final selected = _imageManager.selectedMultiplePathsNotifier.value;
+
+    // Start processing when new images are selected and not processed yet
+    if (selected != null && selected.isNotEmpty && !_hasProcessedImages) {
+      _hasProcessedImages = true;
+      currentPredictionState.value = PredictionState.midPrediction;
+      _processAndUpdateState(selected);
+    }
+  });
+  }
+
+  void _resetPredictionState() {
+  detectedEmotions.value = [];
+  progressNotifier.value = 0.0;
+  _hasProcessedImages = false;
+  currentPredictionState.value = PredictionState.prePrediction;
+
+  final selected = _imageManager.selectedMultiplePathsNotifier.value;
+  if (selected != null && selected.isNotEmpty) {
+    currentPredictionState.value = PredictionState.midPrediction;
+  }
+}
+
+
+  Future<void> _processAndUpdateState(List<FilePathPointer> selectedImages) async {
+  try {
+    if (detectedEmotions.value.isNotEmpty) {
+      currentPredictionState.value = PredictionState.postPrediction;
+    } 
+  } catch (e) {
+    // Handle processing error if needed
+    currentPredictionState.value = PredictionState.error;
+  }
+}
   Color getEmotionColor(String emotion) {
   switch (emotion) {
     case EMOTIONS.happy:
@@ -56,7 +114,7 @@ class AddImageScreenState extends State<AddImageScreen> {
     case EMOTIONS.fear:
       return DefaultColors.purple;
     case EMOTIONS.disgust:
-      return DefaultColors.green;
+      return DefaultColors.lightGreen;
     case EMOTIONS.neutral:
       return DefaultColors.neutral;
     case EMOTIONS.surprise:
@@ -66,58 +124,89 @@ class AddImageScreenState extends State<AddImageScreen> {
   }
 }
 
- Widget _buildEmotionWidget(EmotionImage emotion) {
-    if (emotion.emotions.isEmpty) {
-      return const Text('No emotions detected.');
-    }
+String _getEmojiByText(String text) {
+  switch (text) {
+    case EMOTIONS.happy:
+      return '😊';
+    case EMOTIONS.sad:
+      return '😪';
+    case EMOTIONS.angry:
+      return '🤬';
+    case EMOTIONS.fear:
+      return '😱';
+    case EMOTIONS.disgust:
+      return '🤢';
+    case EMOTIONS.neutral:
+      return '🫥';
+    case EMOTIONS.surprise:
+      return '😲';
+    default:
+      return '❓'; // Default emoji for unknown emotions
+  }
+}
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          FutureBuilder<Uint8List?>(
+Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
+  return GestureDetector(
+    onTap: () {},
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            FutureBuilder<Uint8List?>(
             // here the emotions pointer is being used -> we could use filePath to get temporary face
         future: _imageManager.getImageByPointer(
-          emotion.selectedFilePathPointer!.imagePointer,
+          emotionImage.selectedFilePathPointer!.imagePointer,
           true,
         ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator(); // Show a loader while waiting
+            return const CupertinoActivityIndicator(); // Show a loader while waiting
           } else if (snapshot.hasError) {
             return const Icon(Icons.error, color: Colors.red); // Handle errors
           } else if (!snapshot.hasData || snapshot.data == null) {
             return const SizedBox(); // Handle null image
           }
-          return ExtendedImage.file(
-            File(emotion.selectedFilePathPointer!.filePath),
-            fit: BoxFit.cover,
-            width: 75,
-            height: 75,
-            clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
-          );
-         
+          return ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: ExtendedImage.file(
+                  File(emotionImage.selectedFilePathPointer!.filePath),
+                  fit: BoxFit.cover,
+                  width: 70,
+                  height: 75,
+                  clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed
+                ),
+              );
         },
       ),
-         Icon(
-            Icons.mood,
-            color: getEmotionColor(emotion.mostCommonEmotion ?? ""),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            emotion.mostCommonEmotion ?? 'Unknown',
-            style: const TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
+      SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  WidgetUtils.buildTitle(_getEmojiByText(emotionImage.highestEmotion), fontSize: WidgetUtils.titleFontSize, ),
+                  SizedBox(height: 8),
+                  WidgetUtils.buildTitle(emotionImage.highestEmotion, fontSize: WidgetUtils.titleFontSize_75, color: getEmotionColor(emotionImage.highestEmotion)),
+                ],
+              ),
+            ),
+               
+          ],
+        ),
+        SizedBox(height: 8), // Add some space before the divider
+        Divider(thickness: 1, color: DefaultColors.grey), // Divider between albums
+        SizedBox(height: 8), // Add some space after the divider
+      ],
+    ),
+  );
+}
 
 
 
 Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   print('length of selcted images: ${selectedImages.length}---------------------');
+  
   detectedEmotions.value = []; // Clear previous results
   int totalImages = selectedImages.length;
 
@@ -139,53 +228,136 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   }
 
   // After processing all images, ensure progress is 1
+  currentPredictionState.value = PredictionState.postPrediction;
   progressNotifier.value = 1.0;
 }
 
+String _mapNoFacesText() {
+  // No faces detected in any of the 7 images you selected.
+  // No faces detected in the 1 image you selected.
+  if(_imageManager.selectedMultiplePathsNotifier.value!.length > 1) {
+    return 'No faces detected in any of the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} images you selected.';
+  }
+  else {
+    return 'No faces detected in the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} image you selected.';
+  }
+}
 
-
-  Widget showEmotionsFace() {
-  return ValueListenableBuilder<List<FilePathPointer>?>(
-    valueListenable: _imageManager.selectedMultiplePathsNotifier,
-    builder: (context, selectedImages, child) {
-      if (selectedImages == null || selectedImages.isEmpty) {
-        return const Text('No selected images');
-      }
-
-      return FutureBuilder<void>(
-        future: _processImages(selectedImages), // Process images automatically
-        builder: (context, snapshot) {
-          return Column(
-            children: [
-              if (snapshot.connectionState == ConnectionState.waiting)
-                // add text waiting to progress images
-                const CircularProgressIndicator(), // Show loader while processing
-                
-               ValueListenableBuilder<double>(
-                valueListenable: progressNotifier,
-                builder: (context, progress, child) {
-                  return Column(
-                    children: [
-                      LinearProgressIndicator(
-                        value: progress, // Dynamically control progress
-                      ),
-                      // Display processed emotions
-                      ...detectedEmotions.value.map(_buildEmotionWidget).toList(),
-                    ],
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
+Widget _buildNoFaceDetectedWidget() {
+  return Column(
+      children: [
+        const SizedBox(height: 8),
+        WidgetUtils.buildParagraph(_mapNoFacesText(), fontSize: WidgetUtils.titleFontSize_75,),
+        const SizedBox(height: 32),
+        // Have Meme Gif
+        ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Image.asset(
+        'assets/images/meme.gif', 
+        height: 200, 
+        width: 200,
+      ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
 }
 
 
 
+  Widget showEmotionsFaceV2(PredictionState state) {
+
+    // Check if images are selected
+    
+
+      switch (state) {
+        case PredictionState.prePrediction:
+          return const SizedBox(); // No images selected yet
+          // build pre prediction screen
+          // return buildPrePredictionScreen();
+
+        case PredictionState.midPrediction:
+          // Check if images are selected
+          if (_imageManager.selectedMultiplePathsNotifier.value == null ||
+              _imageManager.selectedMultiplePathsNotifier.value!.isEmpty) {
+            return const SizedBox(); // No images selected
+          }
+
+          return FutureBuilder<void>(
+            future: _processImages(_imageManager.selectedMultiplePathsNotifier.value!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Column(
+                  children: [
+                    const CupertinoActivityIndicator(radius: 24), // Show loader while processing
+                    const SizedBox(height: 16),
+                    ValueListenableBuilder<double>(
+                      valueListenable: progressNotifier,
+                      builder: (context, progress, child) {
+                        return Column(
+                          children: [
+                            // Declare processedItems outside the widget tree
+                            Builder(
+                              builder: (context) {
+                                int processedItems = (_imageManager.selectedMultiplePathsNotifier.value!.length * progress).toInt();
+                                
+                                return WidgetUtils.buildParagraph(
+                                  'Processing *$processedItems/${_imageManager.selectedMultiplePathsNotifier.value?.length ?? 0}* '
+                                  '{color->D,u}images{/color}',
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            LinearProgressIndicator(
+                              value: progress,
+                              color: DefaultColors.green,
+                              backgroundColor: DefaultColors.grey,
+                            ),
+                            const SizedBox(height: 8),
+                            
+                            
+                            
+                            ...detectedEmotions.value.map(_buildEmotionWidgetV2),
+                          ],
+
+                        );
+                      },
+                      
+                    ),
+                    
+                  ],
+                );
+              }
+              if (snapshot.connectionState == ConnectionState.done) {
+                return const SizedBox(); // Hide the loader when done
+
+              }
+              return const SizedBox(); // You can show an error state if needed
+            },
+          );
+
+        case PredictionState.postPrediction:
+          return Column(
+            // Show List of detected emotions
+
+            // if list is empty, show meme screen
+
+            children: [
+              detectedEmotions.value.isEmpty
+                  ? _buildNoFaceDetectedWidget()
+                  : Column(
+                      children: detectedEmotions.value.map(_buildEmotionWidgetV2).toList(),
+                    ),
+                  ],
+          );
+        case PredictionState.error:
+          return const Text('An error occurred during processing. Try Again.');
+      }
+    }
+
 Future<void> _openGallery() async {
+  // Clear images on Gallery Click
+
   List<String>? pointers = await Navigator.push(
       context,
       PageRouteBuilder(
@@ -203,6 +375,7 @@ Future<void> _openGallery() async {
             );
         },
         transitionDuration: Duration(milliseconds: 500), // Apply animation duration
+        
       ),
     );
 
@@ -212,9 +385,7 @@ Future<void> _openGallery() async {
       _isGalleryLoading = true; // Show loading state while processing new batch
     });
 
-    // ✅ Clear old data BEFORE starting a new detection
-    detectedEmotions.value = [];
-    progressNotifier.value = 0.0;
+    _resetPredictionState(); // Reinitialize the state to clear previous data
 
     // Convert pointers to FilePathPointer
     await _imageManager.setPointersToFilePathPointer(pointers);
@@ -226,44 +397,127 @@ Future<void> _openGallery() async {
 }
 
 
-
-
-  @override
-  void initState() {
-    super.initState();
-    albumManager.releaseCache(); // ✅ Clears cache on initialization
-    detectedEmotions.value = [];
-  }
-
-@override
-  Widget build(BuildContext context) {
-    
-    return BaseScaffold(
-      appBar: Base.appBar(title: Text('Scanning for Emotion'), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
-      body: SingleChildScrollView(
-    physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Center(
-        // based on gllery loading show this until this...
-        child: _isGalleryLoading ? const CircularProgressIndicator() 
-        : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            MaterialButton(
-              onPressed: _openGallery,
-              color: Colors.deepPurple,
-              child: const Text('Muliple Images or one'),
+AppBar _buildAppBar (String title, String subTitle) {
+  return Base.appBar(
+  toolBarHeight: 100,
+  backgroundColor: DefaultColors.background,
+  title: Center( // Centers the content horizontally
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Centers vertically
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 16),
+            WidgetUtils.buildTitle(title, isUnderlined: true),
+            const SizedBox(height: 8),
+            WidgetUtils.buildParagraph(
+              subTitle,
+              fontSize: WidgetUtils.titleFontSize_75,
             ),
-            const SizedBox(height: 20),
-    
-           Column(
-          children: [ showEmotionsFace() ],
-        )
-  
+            const Divider(color: DefaultColors.grey),
           ],
         ),
       ),
-    )));
-  } 
+  
+  actions: [
+    SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
+    // Add actual action icons here if needed
+  ],
+);
 }
+
+AppBar _appBar(PredictionState state) {
+  if(state == PredictionState.prePrediction) {
+    return _buildAppBar(DETECT_CONSTANTS.prePredTitle, DETECT_CONSTANTS.prePredSubTitle);
+  } else if(state == PredictionState.midPrediction) {
+    return _buildAppBar(DETECT_CONSTANTS.midPredPredTitle, DETECT_CONSTANTS.midPredPredSubTitle);
+  }
+  else {
+    return _buildAppBar(DETECT_CONSTANTS.postPredTitle, DETECT_CONSTANTS.postPredSubTitle);
+  }
+}
+
+Widget buildPrePredictionScreen() {
+  return const Center(
+    child: Text('pre screen'),
+  );
+
+}
+
+Widget buildMidPredictionScreen() {
+  return const Center(
+    child: Text('Predicting emotions...'),
+  );
+}
+
+Widget buildPostPredictionScreen() {
+  return const Center(
+    child: Text('Prediction complete!'),
+  );
+}
+
+Widget _buildAddImageMenu(PredictionState state) {
+  if (state == PredictionState.midPrediction) {
+    return const SizedBox(); // Hide the menu during prediction
+  }
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(onPressed: () {}, icon: Icon(Icons.camera_alt_outlined, size: 48, color: DefaultColors.black)),
+      SizedBox(width: 32),
+      Container(height: 40, width: 1, color: DefaultColors.grey),
+      SizedBox(width: 32),
+      IconButton(onPressed: _openGallery, icon: SvgPicture.asset('assets/icons/Plus_circle.svg', height: 48, width: 48)),
+      
+      
+  ],);
+}
+
+Widget _buildDivider(PredictionState state) {
+  if (state == PredictionState.midPrediction) {
+    return const SizedBox(); // Hide the divider during prediction
+  }
+  else if (state == PredictionState.postPrediction) {
+    return const LinearProgressIndicator(value: 1, color: DefaultColors.green, backgroundColor: DefaultColors.grey,);
+  }
+  return Divider(color: DefaultColors.grey);
+}
+
+@override
+Widget build(BuildContext context) {
+  return ValueListenableBuilder<PredictionState>(
+    valueListenable: currentPredictionState,
+    builder: (context, state, _) {
+      return BaseScaffold(
+        backgroundColor: DefaultColors.background,
+        appBar: _appBar(state),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+            child: Container(
+              width: WidgetUtils.containerWidth,
+              padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+              decoration: WidgetUtils.containerDecoration,
+              child: _isGalleryLoading
+                  ? const Center(child: CupertinoActivityIndicator(),)
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildAddImageMenu(state),
+                        _buildDivider(state),
+                        const SizedBox(height: 8),
+                        showEmotionsFaceV2(state),
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+}
+
+

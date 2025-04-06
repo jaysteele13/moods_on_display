@@ -13,6 +13,8 @@ class Base extends StatelessWidget {
   static AppBar appBar({required Widget title,  Widget? leading, Color? backgroundColor = DefaultColors.background, List<Widget>? actions,
   double? toolBarHeight}) {
     return AppBar(
+      automaticallyImplyLeading: false, 
+      centerTitle: true,
       toolbarHeight: toolBarHeight,
       backgroundColor: backgroundColor,
       title: title,

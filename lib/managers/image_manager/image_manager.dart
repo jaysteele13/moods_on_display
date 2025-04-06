@@ -21,7 +21,6 @@ class ImageManager {
   // file path object array
   final ValueNotifier<List<FilePathPointer>?> selectedMultiplePathsNotifier = ValueNotifier<List<FilePathPointer>?>(null);
   List<FilePathPointer>? get selectedPaths => selectedMultiplePathsNotifier.value;
-  
 
 
   set selectedImages(List<File>? newImages) {
@@ -54,7 +53,6 @@ class ImageManager {
       selectedMultiplePathsNotifier.value = null; // If null, clear the selected images
     }
   }
-
 Future<File> getFilefromPointer(String pointer) async {
   // sets fileImages based off of selected images for model detection
     AssetEntity? asset = await assetEntityService.fromId(pointer);
