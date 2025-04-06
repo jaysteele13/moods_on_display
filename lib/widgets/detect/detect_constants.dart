@@ -12,6 +12,10 @@ class DETECT_CONSTANTS {
 
 
   // No faces detected text
-  static const noFacesDetectedTitle = "No faces detected in images.";
+  static const infoTitle = "This page is to predict emotions";
+  static const infoParagraphs = [
+    "Take a picture for emotion prediction.",
+    "Add multiple images from your gallery."
+  ];
 }
 
