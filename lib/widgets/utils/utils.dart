@@ -13,9 +13,19 @@ class WidgetUtils {
   static const double paragraphFontSize = 16.0;
   static const double paragraphFontSize_75 = 12.0;
 
-
-  
-
+  static const double containerWidth = 350.0;
+  static BoxDecoration containerDecoration = BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromARGB(26, 0, 0, 0),
+                          blurRadius: 10,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    );
+                   
   static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black, bool isUnderlined = false}) {
     return Text(
       title,

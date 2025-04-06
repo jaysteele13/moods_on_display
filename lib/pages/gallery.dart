@@ -25,6 +25,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   bool isLoading = false;
   static const int pageSize = 50;
 
+
   @override
   void initState() {
     super.initState();
@@ -86,7 +87,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
     });
     PhotoManager.releaseCache();
     if (mounted) {
+
       Navigator.pop(context, result);
+
     }
   }
 
@@ -324,19 +327,9 @@ body: Stack(
           Expanded(
             child: selectedAlbum == null
                 ? Container(
-                    width: 350,
+                    width: WidgetUtils.containerWidth,
                     padding: EdgeInsets.all(WidgetUtils.defaultPadding),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
+                    decoration: WidgetUtils.containerDecoration,
                     child: ListView.builder(
                       itemCount: albums.length,
                       itemBuilder: (context, index) {
