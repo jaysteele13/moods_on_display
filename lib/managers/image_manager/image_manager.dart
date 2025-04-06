@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/services/services.dart';
-import 'package:moods_on_display/pages/detect.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
@@ -22,10 +21,6 @@ class ImageManager {
   // file path object array
   final ValueNotifier<List<FilePathPointer>?> selectedMultiplePathsNotifier = ValueNotifier<List<FilePathPointer>?>(null);
   List<FilePathPointer>? get selectedPaths => selectedMultiplePathsNotifier.value;
-
-  final ValueNotifier<PredictionState> predictionState = ValueNotifier<PredictionState>(PredictionState.prePrediction);
-  PredictionState get currentPredictionState => predictionState.value;
-  
 
 
   set selectedImages(List<File>? newImages) {
@@ -58,11 +53,6 @@ class ImageManager {
       selectedMultiplePathsNotifier.value = null; // If null, clear the selected images
     }
   }
-
-  set currentPredictionState(PredictionState newState) {
-    predictionState.value = newState;
-  }
-
 Future<File> getFilefromPointer(String pointer) async {
   // sets fileImages based off of selected images for model detection
     AssetEntity? asset = await assetEntityService.fromId(pointer);
