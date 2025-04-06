@@ -8,5 +8,10 @@ class DETECT_CONSTANTS {
 
   static const postPredTitle = "Emotions";
   static const postPredSubTitle = 'Prediction is {color->g,b}completed{/color}.';
+
+
+
+  // No faces detected text
+  static const noFacesDetectedTitle = "No faces detected in images.";
 }
 

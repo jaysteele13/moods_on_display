@@ -168,16 +168,15 @@ Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
             return const SizedBox(); // Handle null image
           }
           return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: ExtendedImage.file(
-            File(emotionImage.selectedFilePathPointer!.filePath),
-            fit: BoxFit.fill,
-            width: 70,
-            height: 75,
-            clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed
-          )
-          );
-         
+                borderRadius: BorderRadius.circular(8),
+                child: ExtendedImage.file(
+                  File(emotionImage.selectedFilePathPointer!.filePath),
+                  fit: BoxFit.fill,
+                  width: 70,
+                  height: 75,
+                  clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed
+                ),
+              );
         },
       ),
       SizedBox(width: 16),
@@ -231,6 +230,37 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
   // After processing all images, ensure progress is 1
   currentPredictionState.value = PredictionState.postPrediction;
   progressNotifier.value = 1.0;
+}
+
+String _mapNoFacesText() {
+  // No faces detected in any of the 7 images you selected.
+  // No faces detected in the 1 image you selected.
+  if(_imageManager.selectedMultiplePathsNotifier.value!.length > 1) {
+    return 'No faces detected in any of the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} images you selected.';
+  }
+  else {
+    return 'No faces detected in the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} image you selected.';
+  }
+}
+
+Widget _buildNoFaceDetectedWidget() {
+  return Column(
+      children: [
+        const SizedBox(height: 8),
+        WidgetUtils.buildParagraph(_mapNoFacesText(), fontSize: WidgetUtils.titleFontSize_75,),
+        const SizedBox(height: 32),
+        // Have Meme Gif
+        ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Image.asset(
+        'assets/images/meme.gif', 
+        height: 200, 
+        width: 200,
+      ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
 }
 
 
@@ -308,9 +338,17 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
 
         case PredictionState.postPrediction:
           return Column(
+            // Show List of detected emotions
+
+            // if list is empty, show meme screen
+
             children: [
-              ...detectedEmotions.value.map(_buildEmotionWidgetV2),
-            ],
+              detectedEmotions.value.isEmpty
+                  ? _buildNoFaceDetectedWidget()
+                  : Column(
+                      children: detectedEmotions.value.map(_buildEmotionWidgetV2).toList(),
+                    ),
+                  ],
           );
         case PredictionState.error:
           return const Text('An error occurred during processing. Try Again.');
