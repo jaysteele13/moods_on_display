@@ -55,14 +55,7 @@ Widget build(BuildContext context) {
                         ],
                         // Make the text wrap and truncate if necessary
                         Expanded(
-                          child: Text(
-                            text,
-                            softWrap: true,  // Allow text to wrap to the next line
-                            maxLines: null,
-                            
-                             // Truncate with ellipsis if text overflows
-                            style: TextStyle(fontSize: 16),  // Optional: Adjust the text style
-                          ),
+                          child: WidgetUtils.buildParagraph(text, isCentered: false, fontSize: WidgetUtils.titleFontSize_675),
                         ),
                       ],
                     ) ):

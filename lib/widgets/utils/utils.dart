@@ -10,6 +10,7 @@ class WidgetUtils {
   static const double defaultPadding = 16.0;
   static const double titleFontSize = 24.0;
   static const double titleFontSize_75 = 20.0;
+  static const double titleFontSize_675 = 18.0;
   static const double paragraphFontSize = 16.0;
   static const double paragraphFontSize_75 = 12.0;
 
@@ -61,9 +62,9 @@ class WidgetUtils {
       // Bold text using *text*
       spans.add(TextSpan(
         text: match[1]!.substring(1, match[1]!.length - 1),
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: paragraphFontSize,
+          fontSize: fontSize,
           color: DefaultColors.black,
         ),
       ));
@@ -77,7 +78,7 @@ class WidgetUtils {
         text: match[5],
         style: TextStyle(
           color: color,
-          fontSize: paragraphFontSize,
+          fontSize: fontSize,
           fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           decoration: isUnderlined ? TextDecoration.underline : TextDecoration.none,
         ),
@@ -86,8 +87,8 @@ class WidgetUtils {
       // Regular text
       spans.add(TextSpan(
         text: match[6],
-        style: const TextStyle(
-          fontSize: paragraphFontSize,
+        style: TextStyle(
+          fontSize: fontSize,
           color: DefaultColors.black,
         ),
       ));
@@ -97,6 +98,8 @@ class WidgetUtils {
   return Container(
     alignment: isCentered ? Alignment.center: Alignment.centerLeft, // Center the content within the container
     child: RichText(
+      softWrap: true,  // Allow text to wrap to the next line
+      maxLines: null,
       textAlign: isCentered ? TextAlign.center : TextAlign.left,
       text: TextSpan(
         style: const TextStyle(color: DefaultColors.black),

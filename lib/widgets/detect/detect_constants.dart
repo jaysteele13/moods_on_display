@@ -14,8 +14,8 @@ class DETECT_CONSTANTS {
   // No faces detected text
   static const infoTitle = "This page is to predict emotions";
   static const infoParagraphs = [
-    "Take a picture for emotion prediction.",
-    "Add multiple images from your gallery."
+    "Take a {color->g,b}picture{/color} for emotion prediction.",
+    "{color->b,b}Add multiple images{/color} from your gallery."
   ];
 }
 

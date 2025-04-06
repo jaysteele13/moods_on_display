@@ -429,7 +429,7 @@ AppBar _buildAppBar (String title, String subTitle, {showModal = true}) {
             const SizedBox(height: 8),
             WidgetUtils.buildParagraph(
               subTitle,
-              fontSize: WidgetUtils.titleFontSize_75,
+              fontSize: WidgetUtils.paragraphFontSize,
             ),
             const Divider(color: DefaultColors.grey),
           ],

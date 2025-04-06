@@ -285,7 +285,7 @@ Widget selectedImageWidget(int amount) {
                   SizedBox(height: 8),
                   WidgetUtils.buildParagraph(
                     GALLERY_CONSTANTS.subTitle,
-                    fontSize: WidgetUtils.titleFontSize_75,
+                    fontSize: WidgetUtils.paragraphFontSize,
                   ),
                   Divider(color: DefaultColors.grey),
                 ],
