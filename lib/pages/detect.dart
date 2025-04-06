@@ -15,6 +15,15 @@ import 'dart:io';
 
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:moods_on_display/widgets/detect/detect_constants.dart';
+import 'package:moods_on_display/widgets/utils/utils.dart';
+
+/// Define the states for the prediction process
+enum PredictionState {
+  prePrediction,
+  midPrediction,
+  postPrediction
+}
 
 class AddImageScreen extends StatefulWidget {
   const AddImageScreen({super.key});
@@ -30,7 +39,9 @@ class AddImageScreenState extends State<AddImageScreen> {
 
   bool _isGalleryLoading = false;
   List faceDetections = [];
- ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
+  ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
+
+  ValueNotifier<PredictionState> currentPredictionState = ValueNotifier<PredictionState>(PredictionState.prePrediction); // Set the initial state before hand
   
 
   List<String> selectedPointers = [];
@@ -140,18 +151,76 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
 
   // After processing all images, ensure progress is 1
   progressNotifier.value = 1.0;
+  currentPredictionState.value = PredictionState.postPrediction;
 }
 
 
+
+  Widget showEmotionsFaceV2() {
+  return ValueListenableBuilder<PredictionState>(
+    valueListenable: currentPredictionState,
+    builder: (context, state, _) {
+      switch (state) {
+        case PredictionState.prePrediction:
+          return const SizedBox(); // No images selected yet
+
+        case PredictionState.midPrediction:
+          return FutureBuilder<void>(
+            future: _processImages(_imageManager.selectedMultiplePathsNotifier.value!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Column(
+                  children: [
+                    const CircularProgressIndicator(), // Show loader while processing
+                    ValueListenableBuilder<double>(
+                      valueListenable: progressNotifier,
+                      builder: (context, progress, child) {
+                        return Column(
+                          children: [
+                            LinearProgressIndicator(value: progress),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                );
+              }
+              if (snapshot.connectionState == ConnectionState.done) {
+                return const SizedBox(); // Hide the loader when done
+              }
+              return const SizedBox(); // You can show an error state if needed
+            },
+          );
+
+        case PredictionState.postPrediction:
+          return Column(
+            children: [
+              const Text('Prediction Complete!'),
+              ...detectedEmotions.value.map(_buildEmotionWidget).toList(),
+            ],
+          );
+
+     
+      }
+    },
+  );
+}
 
   Widget showEmotionsFace() {
   return ValueListenableBuilder<List<FilePathPointer>?>(
     valueListenable: _imageManager.selectedMultiplePathsNotifier,
     builder: (context, selectedImages, child) {
-      if (selectedImages == null || selectedImages.isEmpty) {
-        return const Text('No selected images');
-      }
 
+      // What to do if no images are selected (e.g. no images in the gallery)
+
+      // For now this will return nothing until a state system is configured
+      if (selectedImages == null || selectedImages.isEmpty) {
+        return const SizedBox(); // No images selected
+      }
+      
+      currentPredictionState.value = PredictionState.midPrediction;
+     
+      
       return FutureBuilder<void>(
         future: _processImages(selectedImages), // Process images automatically
         builder: (context, snapshot) {
@@ -235,11 +304,80 @@ Future<void> _openGallery() async {
     detectedEmotions.value = [];
   }
 
+// Create an Enum where this page is in states
+
+// Enum PrePrediction MidPrediction PostPrediction
+
+// Post Prediction has two states one for images detected and one for no emotions detected
+AppBar _buildAppBar (String title, String subTitle) {
+  return Base.appBar(
+  toolBarHeight: 100,
+  backgroundColor: DefaultColors.background,
+  title: ValueListenableBuilder<PredictionState>(
+    valueListenable: currentPredictionState,
+    builder: (context, state, _) {
+      return Center( // Centers the content horizontally
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Centers vertically
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 16),
+            WidgetUtils.buildTitle(title, isUnderlined: true),
+            const SizedBox(height: 8),
+            WidgetUtils.buildParagraph(
+              subTitle,
+              fontSize: WidgetUtils.titleFontSize_75,
+            ),
+            const Divider(color: DefaultColors.grey),
+          ],
+        ),
+      );
+    },
+  ),
+  actions: [
+    SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
+    // Add actual action icons here if needed
+  ],
+);
+}
+
+AppBar _appBar(PredictionState state) {
+  if(state == PredictionState.prePrediction) {
+    return _buildAppBar(DETECT_CONSTANTS.prePredTitle, DETECT_CONSTANTS.prePredSubTitle);
+  } else if(state == PredictionState.midPrediction) {
+    return _buildAppBar(DETECT_CONSTANTS.midPredPredTitle, DETECT_CONSTANTS.midPredPredSubTitle);
+  }
+  else {
+    return _buildAppBar(DETECT_CONSTANTS.postPredTitle, DETECT_CONSTANTS.postPredSubTitle);
+  }
+}
+
+Widget buildPrePredictionScreen() {
+  return const Center(
+    child: Text('pre screen'),
+  );
+
+}
+
+Widget buildMidPredictionScreen() {
+  return const Center(
+    child: Text('Predicting emotions...'),
+  );
+}
+
+Widget buildPostPredictionScreen() {
+  return const Center(
+    child: Text('Prediction complete!'),
+  );
+}
+
 @override
   Widget build(BuildContext context) {
+
+    
     
     return BaseScaffold(
-      appBar: Base.appBar(title: Text('Scanning for Emotion'), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+      appBar: _appBar(currentPredictionState.value),
       body: SingleChildScrollView(
     physics: BouncingScrollPhysics(), // Optional: Makes scrolling smooth
     child: Padding(
@@ -258,7 +396,7 @@ Future<void> _openGallery() async {
             const SizedBox(height: 20),
     
            Column(
-          children: [ showEmotionsFace() ],
+          children: [ showEmotionsFaceV2() ],
         )
   
           ],
@@ -267,3 +405,5 @@ Future<void> _openGallery() async {
     )));
   } 
 }
+
+
