@@ -114,7 +114,7 @@ class AddImageScreenState extends State<AddImageScreen> {
     case EMOTIONS.fear:
       return DefaultColors.purple;
     case EMOTIONS.disgust:
-      return DefaultColors.green;
+      return DefaultColors.lightGreen;
     case EMOTIONS.neutral:
       return DefaultColors.neutral;
     case EMOTIONS.surprise:
@@ -171,7 +171,7 @@ Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
                 borderRadius: BorderRadius.circular(8),
                 child: ExtendedImage.file(
                   File(emotionImage.selectedFilePathPointer!.filePath),
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                   width: 70,
                   height: 75,
                   clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed

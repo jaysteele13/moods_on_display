@@ -6,7 +6,7 @@ class DefaultColors {
   static const Color red = Color(0xFFA41616);
   static const Color purple = Color(0xFF740F74);
   static const Color green = Color(0xFF1AC793);
-  static const Color lightGreen = Color(0xFF6AE568);
+  static const Color lightGreen = Color(0xFF85A600);
   static const Color darkGreen = Color(0xFF357C5B);
   static const Color grey = Color(0xFFCEC8C8);
   static const Color darkGrey = Color(0xFF848282);
