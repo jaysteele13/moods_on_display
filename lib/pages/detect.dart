@@ -1,6 +1,8 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
@@ -140,7 +142,7 @@ class AddImageScreenState extends State<AddImageScreen> {
         ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator(); // Show a loader while waiting
+            return const CupertinoActivityIndicator(); // Show a loader while waiting
           } else if (snapshot.hasError) {
             return const Icon(Icons.error, color: Colors.red); // Handle errors
           } else if (!snapshot.hasData || snapshot.data == null) {
@@ -226,15 +228,35 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Column(
                   children: [
-                    const CircularProgressIndicator(), // Show loader while processing
+                    const CupertinoActivityIndicator(radius: 24), // Show loader while processing
+                    const SizedBox(height: 16),
                     ValueListenableBuilder<double>(
                       valueListenable: progressNotifier,
                       builder: (context, progress, child) {
                         return Column(
                           children: [
-                            LinearProgressIndicator(value: progress),
+                            LinearProgressIndicator(
+                              value: progress,
+                              color: DefaultColors.green,
+                              backgroundColor: DefaultColors.grey,
+                            ),
+                            const SizedBox(height: 8),
+                            
+                            // Declare processedItems outside the widget tree
+                            Builder(
+                              builder: (context) {
+                                int processedItems = (_imageManager.selectedMultiplePathsNotifier.value!.length * progress).toInt();
+                                
+                                return WidgetUtils.buildParagraph(
+                                  'Processing *$processedItems/${_imageManager.selectedMultiplePathsNotifier.value?.length ?? 0}* '
+                                  '{color->D,u}images{/color}',
+                                );
+                              },
+                            ),
+                            
                             ...detectedEmotions.value.map(_buildEmotionWidget),
                           ],
+
                         );
                       },
                       
@@ -362,6 +384,33 @@ Widget buildPostPredictionScreen() {
   );
 }
 
+Widget _buildAddImageMenu(PredictionState state) {
+  if (state == PredictionState.midPrediction) {
+    return const SizedBox(); // Hide the menu during prediction
+  }
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(onPressed: () {}, icon: Icon(Icons.camera_alt_outlined, size: 48, color: DefaultColors.black)),
+      SizedBox(width: 32),
+      Container(height: 40, width: 1, color: DefaultColors.grey),
+      SizedBox(width: 32),
+      IconButton(onPressed: _openGallery, icon: SvgPicture.asset('assets/icons/Plus_circle.svg', height: 48, width: 48)),
+      
+      
+  ],);
+}
+
+Widget _buildDivider(PredictionState state) {
+  if (state == PredictionState.midPrediction) {
+    return const SizedBox(); // Hide the divider during prediction
+  }
+  else if (state == PredictionState.postPrediction) {
+    return const LinearProgressIndicator(value: 1, color: DefaultColors.green, backgroundColor: DefaultColors.grey,);
+  }
+  return Divider(color: DefaultColors.grey);
+}
+
 @override
 Widget build(BuildContext context) {
   return ValueListenableBuilder<PredictionState>(
@@ -379,17 +428,14 @@ Widget build(BuildContext context) {
               padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
               decoration: WidgetUtils.containerDecoration,
               child: _isGalleryLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: CupertinoActivityIndicator(),)
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        MaterialButton(
-                          onPressed: _openGallery,
-                          color: Colors.deepPurple,
-                          child: const Text('Multiple Images or one'),
-                        ),
-                        const SizedBox(height: 20),
+                        _buildAddImageMenu(state),
+                        _buildDivider(state),
+                        const SizedBox(height: 8),
                         showEmotionsFaceV2(state),
                       ],
                     ),

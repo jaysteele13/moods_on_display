@@ -10,6 +10,7 @@ import 'package:moods_on_display/widgets/utils/utils.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 
 class GalleryScreen extends StatefulWidget {
   @override
@@ -337,7 +338,7 @@ body: Stack(
                           future: buildAlbum(albums[index].name, index),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
+                              return Center(child: CupertinoActivityIndicator(),);
                             } else if (snapshot.hasError) {
                               return SizedBox();
                             } else {
@@ -369,7 +370,7 @@ body: Stack(
                                 itemCount: images.length + (isLoading ? 1 : 0),
                                 itemBuilder: (context, index) {
                                   if (index == images.length) {
-                                    return Center(child: CircularProgressIndicator());
+                                    return Center(child: CupertinoActivityIndicator());
                                   }
                                   return FutureBuilder<Uint8List?>(
                                     future: images[index].thumbnailDataWithSize(
