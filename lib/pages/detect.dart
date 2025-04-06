@@ -124,20 +124,39 @@ class AddImageScreenState extends State<AddImageScreen> {
   }
 }
 
- Widget _buildEmotionWidget(EmotionImage emotion) {
-    if (emotion.emotions.isEmpty) {
-      return const Text('No emotions detected.');
-    }
+String _getEmojiByText(String text) {
+  switch (text) {
+    case EMOTIONS.happy:
+      return '😊';
+    case EMOTIONS.sad:
+      return '😪';
+    case EMOTIONS.angry:
+      return '🤬';
+    case EMOTIONS.fear:
+      return '😱';
+    case EMOTIONS.disgust:
+      return '🤢';
+    case EMOTIONS.neutral:
+      return '🫥';
+    case EMOTIONS.surprise:
+      return '😲';
+    default:
+      return '❓'; // Default emoji for unknown emotions
+  }
+}
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          FutureBuilder<Uint8List?>(
+Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
+  return GestureDetector(
+    onTap: () {},
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            FutureBuilder<Uint8List?>(
             // here the emotions pointer is being used -> we could use filePath to get temporary face
         future: _imageManager.getImageByPointer(
-          emotion.selectedFilePathPointer!.imagePointer,
+          emotionImage.selectedFilePathPointer!.imagePointer,
           true,
         ),
         builder: (context, snapshot) {
@@ -148,29 +167,41 @@ class AddImageScreenState extends State<AddImageScreen> {
           } else if (!snapshot.hasData || snapshot.data == null) {
             return const SizedBox(); // Handle null image
           }
-          return ExtendedImage.file(
-            File(emotion.selectedFilePathPointer!.filePath),
-            fit: BoxFit.cover,
-            width: 75,
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ExtendedImage.file(
+            File(emotionImage.selectedFilePathPointer!.filePath),
+            fit: BoxFit.fill,
+            width: 70,
             height: 75,
-            clearMemoryCacheWhenDispose: true, // ✅ Clears memory when widget is removed
+            clearMemoryCacheWhenDispose: true, // Clears memory when widget is removed
+          )
           );
          
         },
       ),
-         Icon(
-            Icons.mood,
-            color: getEmotionColor(emotion.mostCommonEmotion ?? ""),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            emotion.mostCommonEmotion ?? 'Unknown',
-            style: const TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
+      SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  WidgetUtils.buildTitle(_getEmojiByText(emotionImage.highestEmotion), fontSize: WidgetUtils.titleFontSize, ),
+                  SizedBox(height: 8),
+                  WidgetUtils.buildTitle(emotionImage.highestEmotion, fontSize: WidgetUtils.titleFontSize_75, color: getEmotionColor(emotionImage.highestEmotion)),
+                ],
+              ),
+            ),
+               
+          ],
+        ),
+        SizedBox(height: 8), // Add some space before the divider
+        Divider(thickness: 1, color: DefaultColors.grey), // Divider between albums
+        SizedBox(height: 8), // Add some space after the divider
+      ],
+    ),
+  );
+}
 
 
 
@@ -235,13 +266,6 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
                       builder: (context, progress, child) {
                         return Column(
                           children: [
-                            LinearProgressIndicator(
-                              value: progress,
-                              color: DefaultColors.green,
-                              backgroundColor: DefaultColors.grey,
-                            ),
-                            const SizedBox(height: 8),
-                            
                             // Declare processedItems outside the widget tree
                             Builder(
                               builder: (context) {
@@ -253,8 +277,17 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
                                 );
                               },
                             ),
+                            const SizedBox(height: 16),
+                            LinearProgressIndicator(
+                              value: progress,
+                              color: DefaultColors.green,
+                              backgroundColor: DefaultColors.grey,
+                            ),
+                            const SizedBox(height: 8),
                             
-                            ...detectedEmotions.value.map(_buildEmotionWidget),
+                            
+                            
+                            ...detectedEmotions.value.map(_buildEmotionWidgetV2),
                           ],
 
                         );
@@ -276,7 +309,7 @@ Future<void> _processImages(List<FilePathPointer> selectedImages) async {
         case PredictionState.postPrediction:
           return Column(
             children: [
-              ...detectedEmotions.value.map(_buildEmotionWidget),
+              ...detectedEmotions.value.map(_buildEmotionWidgetV2),
             ],
           );
         case PredictionState.error:

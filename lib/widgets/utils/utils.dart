@@ -26,12 +26,12 @@ class WidgetUtils {
                       ],
                     );
                    
-  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black, bool isUnderlined = false}) {
+  static Widget buildTitle(String title, {double fontSize = titleFontSize, Color color = DefaultColors.black, bool isUnderlined = false, bool isBold = true}) {
     return Text(
       title,
       style: TextStyle(
         fontSize: fontSize,
-        fontWeight: FontWeight.bold,
+        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
         color: color,
         decoration: isUnderlined ? TextDecoration.underline : TextDecoration.none,
         decorationColor: color,
