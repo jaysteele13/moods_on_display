@@ -11,6 +11,7 @@ import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:io';
@@ -396,8 +397,14 @@ Future<void> _openGallery() async {
   }
 }
 
+ void _openInfo() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => AlertScreen(title: DETECT_CONSTANTS.infoTitle, paragraph: DETECT_CONSTANTS.infoParagraphs, icons: true,),
+    );
+  }
 
-AppBar _buildAppBar (String title, String subTitle) {
+AppBar _buildAppBar (String title, String subTitle, {showModal = true}) {
   return Base.appBar(
   toolBarHeight: 100,
   backgroundColor: DefaultColors.background,
@@ -407,11 +414,22 @@ AppBar _buildAppBar (String title, String subTitle) {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 16),
+            showModal ?
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              
+              children: [
+                WidgetUtils.buildTitle(title, isUnderlined: true),
+                IconButton(onPressed: _openInfo, icon: Icon(Icons.info_outline,), padding: EdgeInsets.zero,)
+                
+              ],
+            ) :
             WidgetUtils.buildTitle(title, isUnderlined: true),
             const SizedBox(height: 8),
             WidgetUtils.buildParagraph(
               subTitle,
-              fontSize: WidgetUtils.titleFontSize_75,
+              fontSize: WidgetUtils.paragraphFontSize,
             ),
             const Divider(color: DefaultColors.grey),
           ],
@@ -429,7 +447,7 @@ AppBar _appBar(PredictionState state) {
   if(state == PredictionState.prePrediction) {
     return _buildAppBar(DETECT_CONSTANTS.prePredTitle, DETECT_CONSTANTS.prePredSubTitle);
   } else if(state == PredictionState.midPrediction) {
-    return _buildAppBar(DETECT_CONSTANTS.midPredPredTitle, DETECT_CONSTANTS.midPredPredSubTitle);
+    return _buildAppBar(DETECT_CONSTANTS.midPredPredTitle, DETECT_CONSTANTS.midPredPredSubTitle, showModal: false);
   }
   else {
     return _buildAppBar(DETECT_CONSTANTS.postPredTitle, DETECT_CONSTANTS.postPredSubTitle);
