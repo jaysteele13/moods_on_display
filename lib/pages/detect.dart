@@ -16,7 +16,6 @@ import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:io';
 
-import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/detect/detect_constants.dart';
 import 'package:moods_on_display/widgets/utils/utils.dart';
@@ -104,47 +103,7 @@ class AddImageScreenState extends State<AddImageScreen> {
     currentPredictionState.value = PredictionState.error;
   }
 }
-  Color getEmotionColor(String emotion) {
-  switch (emotion) {
-    case EMOTIONS.happy:
-      return DefaultColors.yellow;
-    case EMOTIONS.sad:
-      return DefaultColors.blue;
-    case EMOTIONS.angry:
-      return DefaultColors.red;
-    case EMOTIONS.fear:
-      return DefaultColors.purple;
-    case EMOTIONS.disgust:
-      return DefaultColors.lightGreen;
-    case EMOTIONS.neutral:
-      return DefaultColors.neutral;
-    case EMOTIONS.surprise:
-      return DefaultColors.orange;
-    default:
-      return DefaultColors.black;
-  }
-}
 
-String _getEmojiByText(String text) {
-  switch (text) {
-    case EMOTIONS.happy:
-      return '😊';
-    case EMOTIONS.sad:
-      return '😪';
-    case EMOTIONS.angry:
-      return '🤬';
-    case EMOTIONS.fear:
-      return '😱';
-    case EMOTIONS.disgust:
-      return '🤢';
-    case EMOTIONS.neutral:
-      return '🫥';
-    case EMOTIONS.surprise:
-      return '😲';
-    default:
-      return '❓'; // Default emoji for unknown emotions
-  }
-}
 
 Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
   return GestureDetector(
@@ -186,9 +145,9 @@ Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  WidgetUtils.buildTitle(_getEmojiByText(emotionImage.highestEmotion), fontSize: WidgetUtils.titleFontSize, ),
+                  WidgetUtils.buildTitle(WidgetUtils.getEmojiByText(emotionImage.highestEmotion), fontSize: WidgetUtils.titleFontSize, ),
                   SizedBox(height: 8),
-                  WidgetUtils.buildTitle(emotionImage.highestEmotion, fontSize: WidgetUtils.titleFontSize_75, color: getEmotionColor(emotionImage.highestEmotion)),
+                  WidgetUtils.buildTitle(emotionImage.highestEmotion, fontSize: WidgetUtils.titleFontSize_75, color: WidgetUtils.getColorByEmotion(emotionImage.highestEmotion)),
                 ],
               ),
             ),

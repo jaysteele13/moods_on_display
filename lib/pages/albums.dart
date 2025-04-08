@@ -1,17 +1,12 @@
-import 'dart:typed_data';
-
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
-import 'package:moods_on_display/managers/album_manager/album_types.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/pages/images.dart';
 import 'package:moods_on_display/utils/constants.dart';
-import 'package:moods_on_display/utils/types.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/albums/albums_constant.dart';
 import 'package:moods_on_display/widgets/utils/utils.dart';
@@ -21,37 +16,8 @@ class AlbumScreen extends StatelessWidget {
   final AlbumManager albumManager = AlbumManager(assetEntityService: AssetEntityService(), photoManagerService: PhotoManagerService()); // Instance of AlbumManager
 
 
-  Future<AlbumData> _fetchAlbumData(String albumName) async {
-    // Grab first 1-5 images from database (image pointers)
-    List<EmotionPointer> emotionPointers = await DatabaseManager.instance.getXImagesByEmotion(albumName, 4);
-
-    // Map pointers to Uint8List
-    List<Uint8List> images = [];
-    for (EmotionPointer pointer in emotionPointers) {
-      Uint8List? image = await albumManager.getImageByPointer(pointer.pointer, false);
-
-      if (image == null) {
-        continue; // Skip if image is null
-      }
-      images.add(image);
-    }
-    // Create AlbumData object
-    AlbumData albumData = AlbumData(
-      amount: emotionPointers.length,
-      images: images,
-    );
-    // If the album has no images, return an empty AlbumData
-    if (albumData.amount == 0) {
-      return AlbumData(images: images, amount: 0);
-    }
-
-    // Return the album data
-    return albumData;
-  }
-
-
 Future<Widget> _buildAlbum(String albumName, BuildContext context) async {
-  AlbumData albumData = await _fetchAlbumData(albumName);
+  int amount = await DatabaseManager.instance.getAmountOfImagesByEmotion(albumName);
 
   return GestureDetector(
     onTap: () => Navigator.push(
@@ -77,7 +43,7 @@ Future<Widget> _buildAlbum(String albumName, BuildContext context) async {
                   ),
                   SizedBox(height: 8),
                   WidgetUtils.buildParagraph(
-                    "{color->G}${albumData.amount}{/color}",
+                    "{color->G}$amount{/color}",
                     fontSize: WidgetUtils.titleFontSize_75,
                     isCentered: false,
                   ),
@@ -91,49 +57,7 @@ Future<Widget> _buildAlbum(String albumName, BuildContext context) async {
               fontSize: WidgetUtils.titleFontSize * 2,
             ),
             SizedBox(width: 4),
-
-            // Right side: Only show images if available
-            if (albumData.images != null && albumData.images!.isNotEmpty)
-              SizedBox(
-                width: 80,
-                height: 70,
-                child: Row(
-                  children: [
                     
-
-                    // Grid of smaller images
-                    if (albumData.images!.isNotEmpty)
-                      SizedBox(
-                        width: 70,
-                        height: 80,
-                        child: GridView.builder(
-                          padding: EdgeInsets.zero,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 2,
-                            mainAxisSpacing: 2,
-                          ),
-                          itemCount: albumData.images!.length > 5
-                              ? 4
-                              : albumData.images!.length,
-                          itemBuilder: (context, index) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: ExtendedImage.memory(
-                                albumData.images![index],
-                                fit: BoxFit.fill,
-                                width: 30,
-                                height: 40,
-                                clearMemoryCacheWhenDispose: true,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ),
           ],
         ),
         SizedBox(height: 8),

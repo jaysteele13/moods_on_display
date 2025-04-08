@@ -206,8 +206,8 @@ Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
   return result.map((map) => EmotionPointer.fromMap(map)).toList();
 }
 
-Future<List<EmotionPointer>> getXImagesByEmotion(String emotion, int amount) async {
-  print('Attempting to get up to $amount images for emotion: $emotion');
+Future<int> getAmountOfImagesByEmotion(String emotion) async {
+  print('Getting image count for emotion: $emotion');
 
   final Database db = await instance.database;
 
@@ -216,20 +216,15 @@ Future<List<EmotionPointer>> getXImagesByEmotion(String emotion, int amount) asy
       'images',
       where: 'emotion = ?',
       whereArgs: [emotion],
-      limit: amount, // Limit to the requested amount (e.g., 4)
     );
 
-    if (result.isEmpty) {
-      print('No images found for emotion: $emotion');
-      return []; // Safe fallback for no results
-    }
-
-    return result.map((map) => EmotionPointer.fromMap(map)).toList();
+    return result.length;
   } catch (e) {
-    print('Error fetching images: $e');
-    return []; // Failsafe in case something goes wrong
+    print('Error fetching image count: $e');
+    return 0; // Safe fallback
   }
 }
+
 
 
 Future<List<EmotionBoundingBox>> getEmotionBoundingBoxesByPointer(String pointer) async {
