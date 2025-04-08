@@ -43,53 +43,71 @@ class AlbumScreen extends StatelessWidget {
   
 
   // Building individual album widget
+ void _onAlbumTap(String albumName, BuildContext context) {
+    print('Album tapped: $albumName');
+     Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImagesScreen(emotion: albumName),
+      ));
+    // Here, you can perform any action you need when an album is tapped.
+  }
+
+  // Building individual album widget with tap area detection
+ // Building individual album widget with tap area detection
   Widget _buildAlbum(String albumName, int amount, BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ImagesScreen(emotion: albumName),
+      onTap: () => _onAlbumTap(albumName, context),  // Handle tap event for the entire album container
+      child: Container(  // Wrap the entire album section in a Container that can be tapped
+        padding: EdgeInsets.all(WidgetUtils.defaultPadding / 2),  // Optional padding
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),  // Optional rounded corners
+          color: Colors.white,  // Background color for the album
         ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Album title and count
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    WidgetUtils.buildTitle(
-                      albumName,
-                      fontSize: WidgetUtils.titleFontSize_75,
-                      color: WidgetUtils.getColorByEmotion(albumName),
-                    ),
-                    SizedBox(height: 8),
-                    WidgetUtils.buildParagraph(
-                      "{color->G}$amount{/color}",
-                      fontSize: WidgetUtils.titleFontSize_75,
-                      isCentered: false,
-                    ),
-                  ],
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Album title and count
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WidgetUtils.buildTitle(
+                        albumName,
+                        fontSize: WidgetUtils.titleFontSize_75,
+                        color: WidgetUtils.getColorByEmotion(albumName),
+                      ),
+                      SizedBox(height: 8),
+                      WidgetUtils.buildParagraph(
+                        "{color->G}$amount{/color}",
+                        fontSize: WidgetUtils.titleFontSize_75,
+                        isCentered: false,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              // Emoji
-              WidgetUtils.buildTitle(
-                WidgetUtils.getEmojiByText(albumName),
-                fontSize: WidgetUtils.titleFontSize * 2,
-              ),
-              SizedBox(width: 4),
-            ],
-          ),
-          SizedBox(height: 8),
-          Divider(thickness: 1, color: DefaultColors.grey),
-          SizedBox(height: 8),
-        ],
+                // Emoji
+                GestureDetector(
+                  onTap: () => _onAlbumTap(albumName, context),  // Optional to add specific tap action for emoji
+                  child: WidgetUtils.buildTitle(
+                    WidgetUtils.getEmojiByText(albumName),
+                    fontSize: WidgetUtils.titleFontSize * 2,
+                  ),
+                ),
+                SizedBox(width: 4),
+              ],
+            ),
+            SizedBox(height: 8),
+            Divider(thickness: 1, color: DefaultColors.grey),
+            
+          ],
+        ),
       ),
     );
   }
+
 
   // AppBar for AlbumScreen
   AppBar _buildAppBar(String title) {
