@@ -326,6 +326,7 @@ body: Stack(
         mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
+            // ------------------ SHOW ALBUMS ------------------
             child: selectedAlbum == null
                 ? Container(
                     width: WidgetUtils.containerWidth,
@@ -349,6 +350,9 @@ body: Stack(
                       },
                     ),
                   )
+
+
+                  // Show IMAGES WITHIN ALBUM ---------------------
                 : Stack(
                     children: [
                       Column(

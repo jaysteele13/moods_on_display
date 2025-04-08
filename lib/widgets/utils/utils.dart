@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:moods_on_display/utils/constants.dart';
 
 
 class WidgetUtils {
@@ -109,7 +110,48 @@ class WidgetUtils {
   );
 }
 
+static String getEmojiByText(String text) {
+  switch (text) {
+    case EMOTIONS.happy:
+      return '😊';
+    case EMOTIONS.sad:
+      return '😪';
+    case EMOTIONS.angry:
+      return '🤬';
+    case EMOTIONS.fear:
+      return '😱';
+    case EMOTIONS.disgust:
+      return '🤢';
+    case EMOTIONS.neutral:
+      return '🫥';
+    case EMOTIONS.surprise:
+      return '😲';
+    default:
+      return '❓'; // Default emoji for unknown emotions
+  }
+}
 
+
+static Color getColorByEmotion(String emotion) {
+  switch (emotion) {
+    case EMOTIONS.happy:
+      return DefaultColors.yellow;
+    case EMOTIONS.sad:
+      return DefaultColors.blue;
+    case EMOTIONS.angry:
+      return DefaultColors.red;
+    case EMOTIONS.fear:
+      return DefaultColors.purple;
+    case EMOTIONS.disgust:
+      return DefaultColors.lightGreen;
+    case EMOTIONS.neutral:
+      return DefaultColors.neutral;
+    case EMOTIONS.surprise:
+      return DefaultColors.orange;
+    default:
+      return DefaultColors.black;
+  }
+}
 
   static Widget buildBackButton(BuildContext context, Widget path) {
   return IconButton(
