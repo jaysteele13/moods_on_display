@@ -482,12 +482,6 @@ Widget _buildDivider(PredictionState state) {
   return Divider(color: DefaultColors.grey);
 }
 
-// Detect Screen is built entirly around the State of currentPredictionState
-
-// For this reason, I should be able to Disabled the navigation bar
-
-
-
 @override
 Widget build(BuildContext context) {
   return ValueListenableBuilder<PredictionState>(

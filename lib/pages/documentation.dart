@@ -69,7 +69,7 @@ Widget build(BuildContext context) {
                   for (int i = 0; i < paragraph.length; i++) ...[
                     WidgetUtils.buildParagraph(
                       paragraph[i], 
-                      fontSize: WidgetUtils.titleFontSize_75,
+                      fontSize: WidgetUtils.paragraphFontSize,
                       isCentered: false,
                     ),
                     SizedBox(height: 16),
@@ -84,7 +84,7 @@ Widget build(BuildContext context) {
                   if (iconPaths != null && iconPaths!.isNotEmpty && i != paragraph.length-1)...[
                     WidgetUtils.buildParagraph(
                     paragraph[i], 
-                    fontSize: WidgetUtils.titleFontSize_75,
+                    fontSize: WidgetUtils.paragraphFontSize,
                     isCentered: false,
                   ),
                   ] else ...[
@@ -113,7 +113,7 @@ Widget build(BuildContext context) {
                     SizedBox(height: 8),
                        WidgetUtils.buildParagraph(
                     paragraph[i], 
-                    fontSize: WidgetUtils.titleFontSize_75,
+                    fontSize: WidgetUtils.paragraphFontSize,
                     isCentered: true,
                   ),
                   ],
