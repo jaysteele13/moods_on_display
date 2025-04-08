@@ -150,7 +150,14 @@ Future<Widget> buildAlbum(String albumName, int idx) async {
 
   return GestureDetector(
     onTap: () => fetchImages(albums[idx]),
-    child: Column(
+    // ----------  Wrap the entire album section in a Container that can be tapped ---
+    child: Container(  
+        padding: EdgeInsets.all(WidgetUtils.defaultPadding / 2),  // Optional padding
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),  // Optional rounded corners
+          color: Colors.white,  // Background color for the album
+        ),
+        child: Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -227,6 +234,7 @@ Future<Widget> buildAlbum(String albumName, int idx) async {
         SizedBox(height: 8), // Add some space after the divider
       ],
     ),
+  ),
   );
 }
 
@@ -326,6 +334,7 @@ body: Stack(
         mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
+            // ------------------ SHOW ALBUMS ------------------
             child: selectedAlbum == null
                 ? Container(
                     width: WidgetUtils.containerWidth,
@@ -349,6 +358,9 @@ body: Stack(
                       },
                     ),
                   )
+
+
+                  // Show IMAGES WITHIN ALBUM ---------------------
                 : Stack(
                     children: [
                       Column(

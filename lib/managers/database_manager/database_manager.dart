@@ -191,6 +191,7 @@ Future<int> insertBoundingBoxes(
     return await db.query('images');
   }
 
+
 Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
   print('attempt to get images');
   Database db = await instance.database;
@@ -204,6 +205,27 @@ Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
   // Map the result to List<FilePathPointer>
   return result.map((map) => EmotionPointer.fromMap(map)).toList();
 }
+
+Future<int> getAmountOfImagesByEmotion(String emotion) async {
+  print('Getting image count for emotion: $emotion');
+
+  final Database db = await instance.database;
+
+  try {
+    final result = await db.query(
+      'images',
+      where: 'emotion = ?',
+      whereArgs: [emotion],
+    );
+
+    return result.length;
+  } catch (e) {
+    print('Error fetching image count: $e');
+    return 0; // Safe fallback
+  }
+}
+
+
 
 Future<List<EmotionBoundingBox>> getEmotionBoundingBoxesByPointer(String pointer) async {
   print('attempt to get bounding boxes');

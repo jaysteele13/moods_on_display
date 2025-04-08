@@ -64,7 +64,7 @@ Widget build(BuildContext context) {
                 ) : SizedBox(),
                 SizedBox(height: 32),
 
-                // If Icon and image is true then:
+                // If Icon paths are false this indicates that Data will be used will be displayed!
                 if(iconPaths == null || iconPaths!.isEmpty && image != null && image!.isNotEmpty) ...[
                   for (int i = 0; i < paragraph.length; i++) ...[
                     WidgetUtils.buildParagraph(
