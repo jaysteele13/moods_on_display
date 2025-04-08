@@ -5,15 +5,16 @@ class BaseScaffold extends StatelessWidget {
   final Widget body;
   final AppBar? appBar;
   final Color? backgroundColor;
+  final bool disableNavBar;
 
-  const BaseScaffold({required this.body, this.appBar, this.backgroundColor, Key? key}) : super(key: key);
+  const BaseScaffold({required this.body, this.appBar, this.backgroundColor, this.disableNavBar=false, Key ? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar,
       body: body,
-      bottomNavigationBar: const NavigationMenu(),
+      bottomNavigationBar: NavigationMenu(disableNavBar: disableNavBar ),
       backgroundColor: backgroundColor,
     );
   }
