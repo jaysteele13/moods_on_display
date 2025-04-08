@@ -4,7 +4,9 @@ import 'package:moods_on_display/managers/navigation_manager/navigation_provider
 import 'package:provider/provider.dart';
 
 class NavigationMenu extends StatefulWidget {
-  const NavigationMenu({super.key});
+  final bool? disableNavBar;
+  const NavigationMenu( {super.key, this.disableNavBar,});
+
 
   @override
   _NavigationMenuState createState() => _NavigationMenuState();
@@ -15,44 +17,52 @@ class _NavigationMenuState extends State<NavigationMenu> {
   Widget build(BuildContext context) {
     return Consumer<NavigationProvider>(
       builder: (context, navigationProvider, child) {
-        return BottomNavigationBar(
-          currentIndex: navigationProvider.currentIndex,
-          onTap: (index) => navigationProvider.navigateTo(index, context),
-          fixedColor: Colors.black,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          unselectedItemColor: Colors.black,
-          unselectedFontSize: 10,
-          selectedLabelStyle: TextStyle(
-            overflow: TextOverflow.visible,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+        return IgnorePointer(
+          ignoring: widget.disableNavBar == true,
+          child: Opacity(
+            opacity: widget.disableNavBar == true ? 0.5 : 1.0,
+            child: BottomNavigationBar(
+              currentIndex: navigationProvider.currentIndex,
+              onTap: (index) => navigationProvider.navigateTo(index, context),
+              fixedColor: Colors.black,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              unselectedItemColor: Colors.black,
+              unselectedFontSize: 10,
+              selectedLabelStyle: TextStyle(
+                overflow: TextOverflow.visible,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: TextStyle(
+                overflow: TextOverflow.visible,
+                fontSize: 12,
+                color: Colors.black54,
+              ),
+              items: [
+                BottomNavigationBarItem(
+                  icon: _buildNavItem('assets/icons/Home1.svg', 0, navigationProvider),
+                  label: widget.disableNavBar == true ? 'Disabled' : '',
+                ),
+                BottomNavigationBarItem(
+                  key: const Key('add_images_screen_nav'),
+                  icon: _buildNavItem('assets/icons/Plus_circle.svg', 1, navigationProvider),
+                  label: widget.disableNavBar == true ? 'Disabled' : '',
+                ),
+                BottomNavigationBarItem(
+                  key: const Key('view_gallery_screen_nav'),
+                  icon: _buildNavItem('assets/icons/Folder.svg', 2, navigationProvider),
+                  label: widget.disableNavBar == true ? 'Disabled' : '',
+                ),
+              ],
+            ),
           ),
-          unselectedLabelStyle: TextStyle(
-            overflow: TextOverflow.visible,
-            fontSize: 12,
-            color: Colors.black54,
-          ),
-          items: [
-            BottomNavigationBarItem(
-              icon: _buildNavItem('assets/icons/Home1.svg', 0, navigationProvider),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              key: const Key('add_images_screen_nav'),
-              icon: _buildNavItem('assets/icons/Plus_circle.svg', 1, navigationProvider),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              key: const Key('view_gallery_screen_nav'),
-              icon: _buildNavItem('assets/icons/Folder.svg', 2, navigationProvider),
-              label: '',
-            ),
-          ],
         );
       },
     );
   }
+}
+
 
   Widget _buildNavItem(String iconPath, int index, NavigationProvider provider) {
     return Column(
@@ -68,4 +78,3 @@ class _NavigationMenuState extends State<NavigationMenu> {
       ],
     );
   }
-}

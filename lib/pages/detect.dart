@@ -454,24 +454,6 @@ AppBar _appBar(PredictionState state) {
   }
 }
 
-Widget buildPrePredictionScreen() {
-  return const Center(
-    child: Text('pre screen'),
-  );
-
-}
-
-Widget buildMidPredictionScreen() {
-  return const Center(
-    child: Text('Predicting emotions...'),
-  );
-}
-
-Widget buildPostPredictionScreen() {
-  return const Center(
-    child: Text('Prediction complete!'),
-  );
-}
 
 Widget _buildAddImageMenu(PredictionState state) {
   if (state == PredictionState.midPrediction) {
@@ -500,12 +482,19 @@ Widget _buildDivider(PredictionState state) {
   return Divider(color: DefaultColors.grey);
 }
 
+// Detect Screen is built entirly around the State of currentPredictionState
+
+// For this reason, I should be able to Disabled the navigation bar
+
+
+
 @override
 Widget build(BuildContext context) {
   return ValueListenableBuilder<PredictionState>(
     valueListenable: currentPredictionState,
     builder: (context, state, _) {
       return BaseScaffold(
+        disableNavBar: currentPredictionState.value == PredictionState.midPrediction ? true : false,
         backgroundColor: DefaultColors.background,
         appBar: _appBar(state),
         body: SingleChildScrollView(
