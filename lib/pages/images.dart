@@ -221,14 +221,14 @@ Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
 }
 
 // Works based around selection mode state
-Widget _buildSelectButton(bool isSelect) {
+Widget _buildSelectButton() {
   return  Padding (
     padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
   child: Container(
     padding: EdgeInsets.all(4),
     constraints: BoxConstraints(maxWidth: 55, maxHeight: 25),
     decoration: BoxDecoration(
-      color: isSelect ? DefaultColors.selectButtonColor : DefaultColors.red,
+      color: !isSelectionMode ? DefaultColors.selectButtonColor : DefaultColors.red,
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -239,8 +239,8 @@ Widget _buildSelectButton(bool isSelect) {
       ],
     ),
     child: GestureDetector(
-            onTap: isSelect ? toggleSelectionMode : cancelSelection, // clear selection and go back to select
-            child: WidgetUtils.buildParagraph(isSelect ? IMAGE_CONSTANTS.select : IMAGE_CONSTANTS.cancel,
+            onTap: !isSelectionMode ? toggleSelectionMode : cancelSelection, // clear selection and go back to select
+            child: WidgetUtils.buildParagraph(!isSelectionMode ? IMAGE_CONSTANTS.select : IMAGE_CONSTANTS.cancel,
             fontSize: WidgetUtils.paragraphFontSize_875,
             isCentered: true,)
           )
@@ -267,11 +267,7 @@ AppBar _buildAppBar(BuildContext context) {
       actions: [
         //SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
         // Add actual action icons here if needed
-        if(pointersToDelete.isEmpty || !isSelectionMode)
-          _buildSelectButton(true)
-
-        else
-          _buildSelectButton(false)
+         _buildSelectButton()
       ],
       leading: WidgetUtils.buildBackButton(context, AlbumScreen())
     );
@@ -326,15 +322,16 @@ Widget build(BuildContext context) {
                           ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: DatabaseManager.instance.deleteDatabaseFile,
-                child: const Text("Delete Database"),
-              ),
+              // ElevatedButton(
+              //   onPressed: DatabaseManager.instance.deleteDatabaseFile,
+              //   child: const Text("Delete Database"),
+              // ),
             ],
           ),
         ),
         if (pointersToDelete.isNotEmpty)
           AnimatedSelectedImagesNotification(
+            isVisible: pointersToDelete.isNotEmpty,
             selectedCount: pointersToDelete.length,
             onFunctionButtonText: IMAGE_CONSTANTS.delete,
             onDelete: () async => await deleteSelectedImages(_loadedImages),
