@@ -11,13 +11,13 @@ import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/page_text/detect/detect_constants.dart';
 import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:io';
 
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/detect/detect_constants.dart';
 
 /// Define the states for the prediction process
 enum PredictionState {
@@ -302,6 +302,7 @@ Widget _buildNoFaceDetectedWidget() {
             // if list is empty, show meme screen
 
             children: [
+             
               detectedEmotions.value.isEmpty
                   ? _buildNoFaceDetectedWidget()
                   : Column(
@@ -464,6 +465,13 @@ Widget build(BuildContext context) {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         _buildAddImageMenu(state),
+
+                        // Show this only in postPrediction state
+                        if (state == PredictionState.postPrediction)
+                          WidgetUtils.buildParagraph('{color->D,b,u}${detectedEmotions.value.length}{/color} faces detected in '
+                        '{color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} images.'),
+                        
+                        const SizedBox(height: 8),
                         _buildDivider(state),
                         const SizedBox(height: 8),
                         showEmotionsFaceV2(state),

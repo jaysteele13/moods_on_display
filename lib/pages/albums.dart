@@ -5,10 +5,11 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/page_text/albums/albums_constant.dart';
 import 'package:moods_on_display/pages/images.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/albums/albums_constant.dart';
+
 
 class AlbumEmotionAmount {
   final String emotion;
