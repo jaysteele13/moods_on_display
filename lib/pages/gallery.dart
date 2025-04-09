@@ -3,10 +3,9 @@ import 'package:moods_on_display/managers/album_manager/album_types.dart';
 import 'package:moods_on_display/managers/album_manager/selectedImagesManager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/page_text/gallery/gallery_constants.dart';
 import 'package:moods_on_display/pages/detect.dart';
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/gallery/gallery_constants.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:typed_data';
@@ -448,7 +447,8 @@ body: Stack(
 
     // Overlay widget for selected images
  if (selectedPointers.isNotEmpty)
-    AnimatedSelectedImagesNotification(selectedCount: selectedPointers.length, onClearSelection: resetImageSelection,),
+    AnimatedSelectedImagesNotification(isVisible: selectedPointers.isNotEmpty, selectedCount: selectedPointers.length, 
+    onFunctionButtonText: GALLERY_CONSTANTS.buttonText, onClearSelection: resetImageSelection,),
 
 
   ],

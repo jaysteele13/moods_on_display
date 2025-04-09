@@ -207,7 +207,6 @@ Future<List<EmotionPointer>> getImagesByEmotion(String emotion) async {
 }
 
 Future<int> getAmountOfImagesByEmotion(String emotion) async {
-  print('Getting image count for emotion: $emotion');
 
   final Database db = await instance.database;
 

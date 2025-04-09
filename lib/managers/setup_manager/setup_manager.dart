@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 
 import 'dart:math';
 

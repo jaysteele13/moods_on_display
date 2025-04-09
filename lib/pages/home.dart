@@ -5,12 +5,11 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
+import 'package:moods_on_display/page_text/home/home_constants.dart';
 import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/pages/documentation.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/home/home_constants.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 

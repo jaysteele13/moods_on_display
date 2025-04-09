@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
+
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
@@ -12,7 +12,7 @@ import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/types.dart';
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:image/image.dart' as img;
-import 'package:moods_on_display/widgets/utils/utils.dart';
+import 'package:moods_on_display/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class SingleImageView extends StatefulWidget {
