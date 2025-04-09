@@ -447,7 +447,8 @@ body: Stack(
 
     // Overlay widget for selected images
  if (selectedPointers.isNotEmpty)
-    AnimatedSelectedImagesNotification(selectedCount: selectedPointers.length, onClearSelection: resetImageSelection,),
+    AnimatedSelectedImagesNotification(selectedCount: selectedPointers.length, 
+    onFunctionButtonText: GALLERY_CONSTANTS.buttonText, onClearSelection: resetImageSelection,),
 
 
   ],

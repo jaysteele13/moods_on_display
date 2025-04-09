@@ -5,12 +5,16 @@ import 'package:moods_on_display/utils/utils.dart';
 
 class AnimatedSelectedImagesNotification extends StatefulWidget {
   final int selectedCount;
-  final VoidCallback onClearSelection; // Callback to clear selected images
+  final VoidCallback? onClearSelection; // Callback to clear selected images
+  final Future<void> Function()? onDelete;
+  final String onFunctionButtonText;
 
   const AnimatedSelectedImagesNotification({
     Key? key,
     required this.selectedCount,
-    required this.onClearSelection,
+    required this.onFunctionButtonText,
+    this.onClearSelection,
+    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -54,7 +58,11 @@ Widget buildDismissableButton(Color color, String text, bool selectedImages) {
     ),
     child: !selectedImages
         ? GestureDetector(
-            onTap: widget.onClearSelection, // Action when tapped
+            onTap: widget.onDelete != null
+                ? () async {
+                    widget.onDelete!();
+                  }
+                : widget.onClearSelection!, // Action when tapped
             child: Text(
               text,
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
@@ -97,7 +105,7 @@ Widget buildDismissableButton(Color color, String text, bool selectedImages) {
               if (widget.selectedCount > 0)
                 buildDismissableButton(DefaultColors.blue, 'Selected Images: ${widget.selectedCount}', true),
                 SizedBox(width: 10), // Space between buttons
-                buildDismissableButton(DefaultColors.red, 'Clear all', false),
+                buildDismissableButton(DefaultColors.red, widget.onFunctionButtonText, false),
             ],
           ),
         ),
