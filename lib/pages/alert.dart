@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class AlertScreen extends StatelessWidget {
   final String title;

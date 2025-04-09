@@ -6,7 +6,6 @@ import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart'
 import 'package:moods_on_display/pages/detect.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/gallery/gallery_constants.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:typed_data';

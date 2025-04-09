@@ -9,7 +9,6 @@ import 'package:moods_on_display/pages/images.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/albums/albums_constant.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class AlbumEmotionAmount {
   final String emotion;
@@ -121,7 +120,7 @@ class AlbumScreen extends StatelessWidget {
           children: [
             SizedBox(height: 16),
             WidgetUtils.buildTitle(ALBUMS_CONSTANTS.title, fontSize: WidgetUtils.titleFontSize_75),
-            SizedBox(height: 8),
+            
             Divider(color: DefaultColors.grey),
           ],
         ),

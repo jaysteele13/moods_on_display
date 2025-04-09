@@ -18,7 +18,6 @@ import 'dart:io';
 
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/detect/detect_constants.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 
 /// Define the states for the prediction process
 enum PredictionState {

@@ -4,7 +4,6 @@ import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/utils/utils.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 
 class DocumentationScreen extends StatelessWidget {
   final String title;

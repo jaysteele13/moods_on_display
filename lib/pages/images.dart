@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
@@ -6,10 +7,11 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/page_text/images/images_constants.dart';
 import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/single_images.dart';
 import 'package:moods_on_display/utils/types.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
+import 'package:moods_on_display/utils/utils.dart';
 
 class ImagesScreen extends StatefulWidget {
   final String emotion;
@@ -46,21 +48,19 @@ class _ImagesScreenState extends State<ImagesScreen> {
 Map<String, Uint8List?> imageCache = {}; // Cache images
 
 Widget _buildImageItem(EmotionPointer pointer) {
-  return FutureBuilder<Uint8List?>(
+  return Padding(
+    padding: const EdgeInsets.all(5),
+      child: FutureBuilder<Uint8List?>(
     future: _getCachedImage(pointer.pointer),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting && !imageCache.containsKey(pointer.pointer)) {
-        return const SizedBox(
-          width: 70,
-          height: 70,
-          child: Center(child: Text("Loading...")),
-        );
+        return CupertinoActivityIndicator();
       }
       if (snapshot.hasError) {
         return const SizedBox(
           width: 70,
           height: 70,
-          child: Center(child: Icon(Icons.error, color: Colors.red)),
+          child: Center(child: Icon(Icons.error, color: DefaultColors.red)),
         );
       }
       if (snapshot.hasData && snapshot.data != null) {
@@ -70,12 +70,15 @@ Widget _buildImageItem(EmotionPointer pointer) {
           onLongPress: () => _onImageLongPress(pointer.pointer),
           child: Stack(
             children: [
-              ExtendedImage.memory(
-                snapshot.data!,
-                fit: BoxFit.cover,
-                width: 70,
-                height: 70,
-                clearMemoryCacheWhenDispose: true,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: ExtendedImage.memory(
+                  snapshot.data!,
+                  fit: BoxFit.cover,
+                  width: 58,
+                  height: 80,
+                  clearMemoryCacheWhenDispose: true,
+                ),
               ),
               if (pointersToDelete.contains(pointer.pointer))
                 const Positioned(
@@ -93,6 +96,7 @@ Widget _buildImageItem(EmotionPointer pointer) {
         child: Center(child: Text('No Image')),
       );
     },
+  ),
   );
 }
 
@@ -173,6 +177,13 @@ Future<void> deleteSelectedImages( List<EmotionPointer> selectedPointers) async 
   
 }
 
+void toggleSelectionMode() {
+  setState(() {
+    pointersToDelete.clear();
+    isSelectionMode = true;
+  });
+}
+
 // Function to cancel selection mode
 void cancelSelection() {
   setState(() {
@@ -202,12 +213,74 @@ Widget buildSelectionActions(List<EmotionPointer> selectedPointers) {
       : Container();
 }
 
+// Works based around selection mode state
+Widget _buildSelectButton(bool isSelect) {
+  return  Padding (
+    padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+  child: Container(
+    padding: EdgeInsets.all(4),
+    constraints: BoxConstraints(maxWidth: 55, maxHeight: 25),
+    decoration: BoxDecoration(
+      color: isSelect ? DefaultColors.selectButtonColor : DefaultColors.red,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 10,
+          spreadRadius: 5,
+        ),
+      ],
+    ),
+    child: GestureDetector(
+            onTap: isSelect ? toggleSelectionMode : cancelSelection, // clear selection and go back to select
+            child: WidgetUtils.buildParagraph(isSelect ? IMAGE_CONSTANTS.select : IMAGE_CONSTANTS.cancel,
+            fontSize: WidgetUtils.paragraphFontSize_875,
+            isCentered: true,)
+          )
+  ),
+  );
+}
+
+AppBar _buildAppBar(BuildContext context) {
+    return Base.appBar(
+      toolBarHeight: WidgetUtils.defaultToolBarHeight,
+      backgroundColor: DefaultColors.background,
+      title: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+       
+            WidgetUtils.buildTitle(widget.emotion, fontSize: WidgetUtils.titleFontSize_75),
+            
+            
+          ],
+        ),
+      ),
+      actions: [
+        //SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
+        // Add actual action icons here if needed
+        if(pointersToDelete.isEmpty || !isSelectionMode)
+          _buildSelectButton(true)
+
+        else
+          _buildSelectButton(false)
+      ],
+      leading: WidgetUtils.buildBackButton(context, AlbumScreen())
+    );
+  }
+
 @override
 Widget build(BuildContext context) {
   return BaseScaffold(
+    backgroundColor: DefaultColors.background,
     // Grab title of image baed off of context.
-    appBar: Base.appBar(title: Text(widget.emotion), leading: WidgetUtils.buildBackButton(context, AlbumScreen())),
-    body: Column(
+    appBar: _buildAppBar(context),
+    body: Padding (
+      padding: const EdgeInsets.fromLTRB(WidgetUtils.defaultPadding, 0, WidgetUtils.defaultPadding, 0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
   child: _isLoading
@@ -215,18 +288,21 @@ Widget build(BuildContext context) {
       : _loadedImages.isEmpty
           ? const Center(child: Text("No images found for this emotion"))
           : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Divider(color: DefaultColors.grey),
+                SizedBox(height: 16), // Adds spacing before the images
                 Expanded(
                   child: ListView.builder(
-                    itemCount: (_loadedImages.length / 4).ceil(),
+                    itemCount: (_loadedImages.length / 5).ceil(),
                     itemBuilder: (context, rowIndex) {
-                      int startIndex = rowIndex * 4;
-                      int endIndex = (startIndex + 4 > _loadedImages.length)
+                      int startIndex = rowIndex * 5;
+                      int endIndex = (startIndex + 5 > _loadedImages.length)
                           ? _loadedImages.length
-                          : startIndex + 4;
+                          : startIndex + 5;
 
                       return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: _loadedImages.sublist(startIndex, endIndex).map((pointer) {
                           return _buildImageItem(pointer);
                         }).toList(),
@@ -238,16 +314,15 @@ Widget build(BuildContext context) {
                 buildSelectionActions(_loadedImages),
               ],
             ),
-), SizedBox(height: 20), // Adds spacing before the button
-  ElevatedButton(
-    onPressed: DatabaseManager.instance.deleteDatabaseFile,
-    child: const Text("Delete Database"),
-  ),
-
-  
+            ), SizedBox(height: 20), // Adds spacing before the button
+              ElevatedButton(
+                onPressed: DatabaseManager.instance.deleteDatabaseFile,
+                child: const Text("Delete Database"),
+              ),          
       ],
       
     ),
+  ),
   );
 }
 }

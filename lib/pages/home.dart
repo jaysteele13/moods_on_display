@@ -10,7 +10,6 @@ import 'package:moods_on_display/pages/documentation.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:moods_on_display/widgets/home/home_constants.dart';
-import 'package:moods_on_display/widgets/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 
