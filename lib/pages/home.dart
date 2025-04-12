@@ -27,6 +27,9 @@ class _HomePageState extends State<HomePage> {
   bool isProfileSetUp = false;
   String username = ''; 
 
+  int amountOfPhotos = 0;
+  String mainEmotion = '';
+
   void _openAlert() {
     showModalBottomSheet(
       context: context,
@@ -62,6 +65,19 @@ void initState() {
       await DatabaseManager.instance.getDefaultUser().then((user) {
         setState(() {
           username = user;
+        });
+      });
+
+      // Grab amount of photos and main emotion
+      await DatabaseManager.instance.getAmountOfAllImages().then((photos) {
+        setState(() {
+          amountOfPhotos = photos;
+        });
+      });
+
+      await DatabaseManager.instance.getHighestEmotion().then((emotion) {
+        setState(() {
+          mainEmotion = emotion;
         });
       });
       
@@ -161,7 +177,7 @@ void _showNameModal(BuildContext context) async {
             ),
           ),
           actions: [
-            _buildInfoButton('Submit', DefaultColors.darkGreen, () async {
+            _buildInfoButton('Submit', DefaultColors.green, () async {
               if (_formKey.currentState!.validate()) {
                 // If the form is valid, display the entered name
                  // update DB
@@ -213,7 +229,6 @@ Widget _drawUserProfile() {
             ],
           );
 }
-
 Widget _buildUserStats(String primary, String secondary, bool inverted) {
   return Column(
     mainAxisSize: MainAxisSize.min,
@@ -455,6 +470,18 @@ Widget _buildImage(String filePath) {
     );
   }
 
+String _mapEmotionToBetterGrammar(String emotion) {
+  switch (emotion) {
+    case EMOTIONS.surprise:
+      return 'Surprised';
+    case EMOTIONS.disgust:
+      return 'Disgusted';
+    case EMOTIONS.fear:
+      return 'Scared';
+    default:
+      return emotion;
+  }
+}
 
 @override
 Widget build(BuildContext context) {
@@ -464,7 +491,7 @@ Widget build(BuildContext context) {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          buildUserDetails(username, 2, EMOTIONS.happy),
+          buildUserDetails(username, amountOfPhotos, _mapEmotionToBetterGrammar(mainEmotion)),
           Divider(color: DefaultColors.grey, thickness: 1),
           buildUserAccessibility(),
           Divider(color: DefaultColors.grey, thickness: 1),

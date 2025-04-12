@@ -6,6 +6,7 @@ import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/page_text/albums/albums_constant.dart';
+import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/pages/images.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/utils.dart';
@@ -18,7 +19,13 @@ class AlbumEmotionAmount {
   AlbumEmotionAmount(this.emotion, this.amount);
 }
 
-class AlbumScreen extends StatelessWidget {
+class AlbumScreen extends StatefulWidget {
+  @override
+  _AlbumScreenState createState() => _AlbumScreenState();
+}
+
+
+class _AlbumScreenState extends State<AlbumScreen> {
   final List<String> emotions = EMOTIONS.albumList; // Define emotions list for albums
   final AlbumManager albumManager = AlbumManager(
     assetEntityService: AssetEntityService(),
@@ -108,21 +115,26 @@ class AlbumScreen extends StatelessWidget {
     );
   }
 
+   void _openInfo() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => AlertScreen(title: ALBUMS_CONSTANTS.infoTitle, paragraph: ALBUMS_CONSTANTS.infoParagraphs, icons: false,),
+    );
+  }
 
   // AppBar for AlbumScreen
   AppBar _buildAppBar(String title) {
     return Base.appBar(
-      toolBarHeight: 70,
+      toolBarHeight: WidgetUtils.defaultToolBarHeight,
       backgroundColor: DefaultColors.background,
       title: Center(
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 16),
             WidgetUtils.buildTitle(ALBUMS_CONSTANTS.title, fontSize: WidgetUtils.titleFontSize_75),
-            
-            Divider(color: DefaultColors.grey),
+            IconButton(onPressed: _openInfo, icon: Icon(Icons.info_outline,), padding: EdgeInsets.zero,),
           ],
         ),
       ),
