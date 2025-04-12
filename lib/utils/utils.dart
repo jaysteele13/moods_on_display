@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/utils/constants.dart';
 
+import 'package:image/image.dart' as img;  // Import the package for img.ColorRgb8
+
 class DefaultColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color yellow = Color(0xFFEBB40E);
+  static const Color yellow_rect = Color(0xFFfcfd95);
   static const Color blue = Color(0xFF7494EA);
   static const Color red = Color(0xFFA41616);
   static const Color purple = Color(0xFF740F74);
@@ -13,7 +16,7 @@ class DefaultColors {
   static const Color darkGreen = Color(0xFF357C5B);
   static const Color grey = Color(0xFFCEC8C8);
   static const Color darkGrey = Color(0xFF848282);
-  static const Color orange = Color(0xFFFFA500);
+  static const Color orange = Color(0xFFdd7141);
   static const Color neutral = Color(0xFF5E7E70);
   static const Color black = Color(0xFF000000);
 
@@ -21,6 +24,23 @@ class DefaultColors {
   static const Color background = Color(0xFFEFEEF3);
   static const Color tickColor = Color(0xFF68C89B);
   static const Color selectButtonColor = Color(0xFF393636);
+
+
+  // img.ColorRgb8 for Drawing
+  static img.ColorRgb8 rgbBlue = img.ColorRgb8(116, 148, 234);
+  static img.ColorRgb8 rgbYellow = img.ColorRgb8(235, 180, 14);
+  static img.ColorRgb8 rgbRed = img.ColorRgb8(164, 22, 22);
+  static img.ColorRgb8 rgbPurple = img.ColorRgb8(116, 15, 116);
+  static img.ColorRgb8 rgbGreen = img.ColorRgb8(133, 160, 0);
+  static img.ColorRgb8 rgbNeutral = img.ColorRgb8(94, 126, 112);
+  static img.ColorRgb8 rgbOrange = img.ColorRgb8(255, 165, 0);
+
+ 
+
+ 
+
+
+  // You can add more methods to convert other colors similarly
 }
 
 

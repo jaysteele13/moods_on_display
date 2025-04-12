@@ -21,24 +21,28 @@ class _StaggeredContainerState extends State<StaggeredContainer> {
 
     // Stagger the visibility of each element after a delay
     Future.delayed(Duration(milliseconds: 0), () {
+      if(!mounted) return;
       setState(() {
         _isFirstParagraphVisible = true;
       });
     });
 
     Future.delayed(Duration(milliseconds: 500), () {
+      if(!mounted) return;
       setState(() {
         _isSecondParagraphVisible = true;
       });
     });
 
     Future.delayed(Duration(milliseconds: 750), () {
+      if(!mounted) return;
       setState(() {
         _isThirdParagraphVisible = true;
       });
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
+      if(!mounted) return;
       setState(() {
         _isActivityIndicatorVisible = true;
       });
