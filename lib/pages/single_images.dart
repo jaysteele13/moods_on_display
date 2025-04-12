@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:extended_image/extended_image.dart';
+import 'package:extended_image/extended_image.dart';import 'package:flutter/material.dart';
 
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
+import 'package:moods_on_display/managers/image_manager/staggered_container.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/page_text/single_image/single_image_constant.dart';
 import 'package:moods_on_display/pages/images.dart';
 import 'package:moods_on_display/utils/constants.dart';
 import 'package:moods_on_display/utils/types.dart';
@@ -14,6 +16,13 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:image/image.dart' as img;
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
+
+enum EmotionState {
+  preReveal,
+  midDraw,
+  postDraw,
+}
+
 
 class SingleImageView extends StatefulWidget {
   final List<ImagePointer> images;
@@ -34,46 +43,29 @@ class SingleImageView extends StatefulWidget {
 class _SingleImageViewState extends State<SingleImageView> {
   final ImageManager _imageManager = ImageManager(assetEntityService: AssetEntityService());
   List<EmotionBoundingBox> _emotionBoundingBoxes = [];
-  bool _isLoading = false;
-  bool _showBoundingBoxes = false; // Toggle state
+
+  int _currentPageIndex = 0;
   PageController controller = PageController();
+  late List<EmotionState> _emotionStates;
+
 
   @override
   void initState() {
     super.initState();
     controller = PageController(initialPage: widget.initialIndex);
+
+    // Set all widgets to preReveal state
+     _emotionStates = List.filled(widget.images.length, EmotionState.preReveal);
+    _currentPageIndex = widget.initialIndex;
   }
 
 
    @override
   void dispose()  {
     // call function to delete all images based on
-    _imageManager.releaseCache(); // ✅ Ensures cache is cleared when screen is disposed 
+    _imageManager.releaseCache(); // Ensures cache is cleared when screen is disposed 
     _imageManager.listAndDeleteFiles();
     super.dispose();
-  }
-
-  
-
-  String getEmojiByEmotion(String emotion) {
-    switch (emotion) {
-      case EMOTIONS.angry:
-        return '😡';
-      case EMOTIONS.disgust:
-        return '🤢';
-      case EMOTIONS.fear:
-        return '😱';
-      case EMOTIONS.happy:
-        return '😊';
-      case EMOTIONS.neutral:
-        return '😐';
-      case EMOTIONS.sad:
-        return '😢';
-      case EMOTIONS.surprise:
-        return '😮';
-      default:
-        return '❓';
-    }
   }
 
 img.Color getEmotionColor(String emotion) {
@@ -143,7 +135,6 @@ Future<Uint8List> drawRectangleOnImage(
   }
 
   // Encode the modified image back to Uint8List
-  // Encode the modified image back to Uint8List
   Uint8List modifiedImageBytes = Uint8List.fromList(img.encodeJpg(image));
 
   // After processing, delete the original file if it's no longer needed
@@ -157,10 +148,6 @@ Future<Uint8List> drawRectangleOnImage(
 
 
   Future<void> _fetchEmotionBoundingBox(String pointer) async {
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       
   
@@ -168,19 +155,18 @@ Future<Uint8List> drawRectangleOnImage(
           await DatabaseManager.instance.getEmotionBoundingBoxesByPointer(pointer);
       setState(() {
         _emotionBoundingBoxes = ebbx;
-        _showBoundingBoxes = true; // Show bounding boxes after loading
       });
     } catch (e) {
       print("Error fetching bounding boxes: $e");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
 Future<void> _toggleBoundingBoxes(int index) async {
-    if (!_showBoundingBoxes) {
+    if (_emotionStates[index] == EmotionState.preReveal) {
+      setState(() {
+        _emotionStates[index] = EmotionState.midDraw;
+      });
+      // Fetch bounding boxes and draw them on the image
       await _fetchEmotionBoundingBox(widget.images[index].pointer);
       Uint8List updatedImage = await drawRectangleOnImage(
         widget.images[index].pointer,
@@ -188,48 +174,197 @@ Future<void> _toggleBoundingBoxes(int index) async {
       );
       setState(() {
          widget.images[index].image = updatedImage;
-        _showBoundingBoxes = true;
+        _emotionStates[index] = EmotionState.postDraw;
       });
     } else {
       setState(() {
-        _showBoundingBoxes = false;
+        _emotionStates[index] = EmotionState.preReveal;
+      });
+      // Optionally, you can revert the image to its original state here
+      // For example, by reloading the original image from the pointer
+      File originalImage = await _imageManager.getFilefromPointer(widget.images[index].pointer);
+      Uint8List originalImageBytes = await originalImage.readAsBytes();
+      ;
+      setState(() {
+        widget.images[index].image = originalImageBytes;
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
 
-    return BaseScaffold(
-      appBar: Base.appBar(title: Text(getEmojiByEmotion(widget.emotion)), leading: WidgetUtils.buildBackButton(context, ImagesScreen(emotion: widget.emotion))),
-      body: PageView.builder(
-        controller: controller,
-        itemCount: widget.images.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onLongPress: () => _toggleBoundingBoxes(index),
-            child: Stack(
-              children: [
-                Center(
-                  child: ExtendedImage.memory(
-                    _showBoundingBoxes
-                        ? widget.images[index].image
-                        : widget.images[index].image,
-                    fit: BoxFit.contain,
-                    key: Key('single_image_view'),
-                    width: 800,
-                    height: 500,
-                  ),
-                ),
-                if (_isLoading)
-                  const Center(child: CupertinoActivityIndicator()),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+String _textForStateButton(int index) {
+  switch (_emotionStates[index]) {
+    case EmotionState.preReveal:
+      return SINGLE_IMAGE_CONSTANTS.reveal;
+    case EmotionState.midDraw:
+      return SINGLE_IMAGE_CONSTANTS.drawing;
+    case EmotionState.postDraw:
+      return SINGLE_IMAGE_CONSTANTS.hide;
   }
 }
 
- 
+
+Widget _buildRevealEmotionsButton(int index) {
+  return ElevatedButton(
+    onPressed: () => _toggleBoundingBoxes(index),
+    style: ElevatedButton.styleFrom(
+      padding: EdgeInsets.zero, // remove default padding so gradient fills full area
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 4,
+      backgroundColor: Colors.transparent, // important: let gradient show through
+      shadowColor: Colors.black.withOpacity(0.2),
+    ),
+    child: Ink(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            DefaultColors.green,
+            DefaultColors.blue,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        alignment: Alignment.center,
+        child: WidgetUtils.buildParagraph(
+          _textForStateButton(index),
+          fontSize: WidgetUtils.titleFontSize,
+        ),
+      ),
+    ),
+  );
+}
+
+
+  AppBar _buildAppBar() {
+    return Base.appBar(
+      toolBarHeight: WidgetUtils.defaultToolBarHeight,
+      backgroundColor: DefaultColors.background,
+      title: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            WidgetUtils.buildTitle(WidgetUtils.getEmojiByText(widget.emotion), fontSize: WidgetUtils.titleFontSize),
+          ],
+        ),
+      ),
+      actions: [
+        SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
+        // Add actual action icons here if needed
+      ],
+      leading: WidgetUtils.buildBackButton(context, ImagesScreen(emotion: widget.emotion))
+    );
+  }
+
+
+Widget _buildImage(int index) {
+
+  return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: ExtendedImage.memory(
+                      _emotionStates[index] == EmotionState.midDraw
+                          ? widget.images[index].image
+                          : widget.images[index].image,
+                      fit: BoxFit.cover,
+                      key: const Key('single_image_view'),
+                      width: 800,
+                      height: 450,
+                    ),
+                  ),
+                ],)));
+}
+
+
+
+@override
+Widget build(BuildContext context) {
+  return BaseScaffold(
+    backgroundColor: DefaultColors.background,
+    appBar: _buildAppBar(),
+    body: Stack(
+  children: [
+    Padding(
+      padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Image Viewer (swipable)
+          Expanded(
+            child: PageView.builder(
+              controller: controller,
+              itemCount: widget.images.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPageIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final state = _emotionStates[index];
+
+                Widget content;
+
+                switch (state) {
+                  case EmotionState.preReveal:
+                    content = _buildImage(index); // default image
+                    break;
+                  case EmotionState.midDraw:
+                    content = StaggeredContainer(); //_loadingBoundingBoxes(index);
+                    break;
+                  case EmotionState.postDraw:
+                    content = _buildImage(index);  // image with drawn emotions
+                    break;
+                }
+
+                return Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: content,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Fixed Row below the image viewer
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildRevealEmotionsButton(_currentPageIndex),
+              Container(height: 50, width: 1, color: DefaultColors.grey),
+              IconButton(
+                icon: const Icon(Icons.ios_share_rounded),
+                iconSize: 48,
+                onPressed: () {
+                  // share logic here
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ],
+),
+  );
+}
+}
