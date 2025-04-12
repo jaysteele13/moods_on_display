@@ -34,14 +34,14 @@ class _StaggeredContainerState extends State<StaggeredContainer> {
       });
     });
 
-    Future.delayed(Duration(milliseconds: 750), () {
+    Future.delayed(Duration(milliseconds: 1000), () {
       if(!mounted) return;
       setState(() {
         _isThirdParagraphVisible = true;
       });
     });
 
-    Future.delayed(Duration(milliseconds: 1000), () {
+    Future.delayed(Duration(milliseconds: 1500), () {
       if(!mounted) return;
       setState(() {
         _isActivityIndicatorVisible = true;

@@ -412,7 +412,7 @@ Widget _buildRevealEmotionsButton(int index) {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            WidgetUtils.buildTitle(WidgetUtils.getEmojiByText(widget.emotion), fontSize: WidgetUtils.titleFontSize),
+            WidgetUtils.buildTitle(WidgetUtils.getEmojiByText(widget.emotion), fontSize: WidgetUtils.titleFontSize*2),
           ],
         ),
       ),
