@@ -291,7 +291,7 @@ Widget build(BuildContext context) {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _loadedImages.isEmpty
-                        ? const Center(child: Text("No images found for this emotion"))
+                        ? Center(child: WidgetUtils.buildParagraph("{color->D,b,u}No images{/color} found for this emotion"))
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

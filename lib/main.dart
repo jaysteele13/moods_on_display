@@ -5,6 +5,7 @@ import 'package:moods_on_display/managers/database_manager/database_manager.dart
 import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/home.dart';
 import 'package:moods_on_display/pages/detect.dart';
+import 'package:moods_on_display/pages/splash.dart';
 import 'package:moods_on_display/utils/utils.dart';
 import 'package:provider/provider.dart';
 
@@ -59,7 +60,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       
       
-      home: const HomePage()
+      home: const SplashScreen()
     );
   }
 }
