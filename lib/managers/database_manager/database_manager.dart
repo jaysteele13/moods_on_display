@@ -224,6 +224,45 @@ Future<int> getAmountOfImagesByEmotion(String emotion) async {
   }
 }
 
+Future<int> getAmountOfAllImages() async {
+  final Database db = await instance.database;
+
+  try {
+    final result = await db.query(
+      'images',
+    );
+    
+    return result.length;  // The number of rows returned from the query
+  } catch (e) {
+    print('Error fetching image count: $e');
+    return 0; // Safe fallback in case of error
+  }
+}
+
+Future<String> getHighestEmotion() async {
+  final Database db = await instance.database;
+
+  try {
+    // Query to get the emotion with the highest count
+    final result = await db.rawQuery(
+      'SELECT emotion, COUNT(*) as count FROM images GROUP BY emotion ORDER BY count DESC LIMIT 1'
+    );
+
+    // Check if result is not empty
+    if (result.isNotEmpty) {
+      // Return the emotion with the highest count
+      return result.first['emotion'] as String;
+    } else {
+      return '';  // In case no emotions are found (empty table)
+    }
+  } catch (e) {
+    print('Error fetching highest emotion: $e');
+    return '';  // Return empty string in case of error
+  }
+}
+
+
+
 
 
 Future<List<EmotionBoundingBox>> getEmotionBoundingBoxesByPointer(String pointer) async {
