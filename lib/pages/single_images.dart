@@ -201,65 +201,6 @@ Future<Uint8List> drawRectangleOnImage(
   return pngBytes;
 }
 
-// Future<Uint8List> drawRectangleOnImage(
-//     String pointer, List<EmotionBoundingBox> boundingBoxes,) async {
-
-
-//   // db call
-  
-//   // Get the image file from the pointer
-//   File emotionFile = await _imageManager.getFilefromPointer(pointer);
-  
-//   // Read the file as bytes
-//   Uint8List imageBytes = await emotionFile.readAsBytes();
-  
-//   // Decode the image
-//   img.Image? image = img.decodeImage(imageBytes);
-//   if (image == null) {
-//     throw Exception("Could not decode image");
-//   }
-
-
-//   // Original image and current image dimensions
-//   double originalImageWidth = image.width.toDouble();
-//   double originalImageHeight = image.height.toDouble();
-
-//   // Draw all bounding boxes with adjusted scaling
-//   for (EmotionBoundingBox bbox in boundingBoxes) {
-//     // Original bounding box coordinates
-
-//   img.Color rectangleColor = getEmotionColor(bbox.emotion);
-
-//   double boundingBoxLeft = bbox.boundingBox.x.toDouble();
-//   double boundingBoxTop = bbox.boundingBox.y.toDouble();
-//   double boundingBoxWidth = bbox.boundingBox.width.toDouble();
-//   double boundingBoxHeight = bbox.boundingBox.height.toDouble();
-
-//   int x = boundingBoxLeft.clamp(0.0, originalImageWidth).toInt();
-//   int y = boundingBoxTop.clamp(0.0, originalImageHeight).toInt();
-//   int width = boundingBoxWidth.clamp(0.0, originalImageWidth - x.toDouble()).toInt();
-//   int height = boundingBoxHeight.clamp(0.0, originalImageHeight - y.toDouble()).toInt();
-
-//   print('bbox: x: $x, y: $y, height: $height, width: $width');
-
-//   int thickness = _generateBoxThickness(originalImageWidth, originalImageHeight);
-
-//   img.drawRect(image, x1: x, y1: y, x2: x + width,y2: y + height, color: rectangleColor, thickness: thickness); 
-//   img.drawString(image, bbox.emotion, font: img.arial48, x: x, y: y-100, color: rectangleColor);
-//   }
-
-//   // Encode the modified image back to Uint8List
-//   Uint8List modifiedImageBytes = Uint8List.fromList(img.encodeJpg(image));
-
-//   // After processing, delete the original file if it's no longer needed
-//   await emotionFile.delete(); // This will delete the image file from disk
-
-//   // Return the modified image bytes
-//   return modifiedImageBytes;
-// }
-
-
-
   Future<void> _fetchEmotionBoundingBox(String pointer) async {
     try {
       
@@ -479,12 +420,14 @@ Widget build(BuildContext context) {
               IconButton(
                 icon: const Icon(Icons.ios_share_rounded),
                 iconSize: 48,
-                onPressed: () {
-                  // share logic here
+                onPressed: () async {
+                  await _imageManager.shareImage(
+                    widget.images[_currentPageIndex].image,
+                  );
                 },
               ),
             ],
-          ),
+          ),    
         ],
       ),
     ),
