@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
 
 
@@ -156,6 +157,18 @@ Future<bool> pickImageFromCamera() async {
   return false;
 }
 
+
+Future<void> shareImage(Uint8List imageBytes) async {
+  try {
+    final tempDir = await getTemporaryDirectory();
+    final file = await File('${tempDir.path}/shared_image.png').create();
+    await file.writeAsBytes(imageBytes);
+
+    await Share.shareXFiles([XFile(file.path)], text: 'Wow, you soo emotional!');
+  } catch (e) {
+    print("Error sharing image: $e");
+  }
+}
 
  
 
