@@ -5,6 +5,7 @@ import 'package:moods_on_display/managers/services/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 
 
@@ -105,6 +106,56 @@ Future<void> setPointersToFilePathPointer(List<String> pointers) async {
 
     return null; // Image not found
   }
+
+
+
+Future<bool> pickImageFromCamera() async {
+
+  try {
+  selectedPaths = []; // clear cache
+
+  final pickedImage = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 100);// Max quality);
+
+
+  if (pickedImage == null) return false;
+
+  final file = File(pickedImage.path);
+
+  final filePath = file.path;
+
+  // Save to gallery/media store so PhotoManager can find it
+  AssetEntity? asset = await PhotoManager.editor.saveImageWithPath(filePath);
+
+    // Retrieve the file from the asset
+  File? assetFile = await asset.file;
+
+  // Grab file path
+  String? assetFilePath = assetFile?.path;
+
+
+  if (await asset.exists && assetFile!.path.isNotEmpty) {
+    final assetId = asset.id;
+
+    selectedMultiplePathsNotifier.value = [
+      FilePathPointer(
+        filePath: assetFilePath!,
+        imagePointer: assetId,
+      )
+    ];
+
+    print("Saved Asset ID: $assetId");
+    return true;
+  } else {
+    print("Failed to save image to gallery");
+    return false;
+  }
+  }
+  catch (e) {
+    print('error $e');
+  }
+  return false;
+}
+
 
  
 

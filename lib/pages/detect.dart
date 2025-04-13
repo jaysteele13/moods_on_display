@@ -79,14 +79,32 @@ class AddImageScreenState extends State<AddImageScreen> {
   });
   }
 
+  void _pickImageFromCamera() async {
+    setState(() {
+      _isGalleryLoading = true; // Show loading state while processing new batch
+    });
+    
+    bool hasPicked = await _imageManager.pickImageFromCamera(); // sets value
+
+    if(hasPicked) {
+      _resetPredictionState(); // Reinitialize the state to clear previous data
+    }
+    setState(() {
+      _isGalleryLoading = false; // Show loading state while processing new batch
+    });
+    
+    
+  }
+
   void _resetPredictionState() {
   detectedEmotions.value = [];
   progressNotifier.value = 0.0;
   _hasProcessedImages = false;
   currentPredictionState.value = PredictionState.prePrediction;
 
-  final selected = _imageManager.selectedMultiplePathsNotifier.value;
-  if (selected != null && selected.isNotEmpty) {
+  final List<FilePathPointer>? selected = _imageManager.selectedMultiplePathsNotifier.value;
+  print('here is selected ${selected![0].imagePointer}');
+  if (selected.isNotEmpty) {
     currentPredictionState.value = PredictionState.midPrediction;
   }
 }
@@ -195,10 +213,10 @@ String _mapNoFacesText() {
   // No faces detected in any of the 7 images you selected.
   // No faces detected in the 1 image you selected.
   if(_imageManager.selectedMultiplePathsNotifier.value!.length > 1) {
-    return 'No faces detected in any of the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} images you selected.';
+    return 'No faces could be detected in any of the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} images you selected.';
   }
   else {
-    return 'No faces detected in the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} image you selected.';
+    return 'No faces could be detected in the {color->D,b,u}${_imageManager.selectedMultiplePathsNotifier.value!.length}{/color} image you selected.';
   }
 }
 
@@ -421,7 +439,7 @@ Widget _buildAddImageMenu(PredictionState state) {
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      IconButton(onPressed: () {}, icon: Icon(Icons.camera_alt_outlined, size: 48, color: DefaultColors.black)),
+      IconButton(onPressed: _pickImageFromCamera, icon: Icon(Icons.camera_alt_outlined, size: 48, color: DefaultColors.black)),
       SizedBox(width: 32),
       Container(height: 40, width: 1, color: DefaultColors.grey),
       SizedBox(width: 32),
