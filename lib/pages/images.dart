@@ -29,7 +29,7 @@ class _ImagesScreenState extends State<ImagesScreen> {
   final AlbumManager albumManager = AlbumManager(assetEntityService: AssetEntityService(), photoManagerService: PhotoManagerService());
   late List<String> pointersToDelete = [];
   bool isSelectionMode = false;
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   void _fetchImages() async {
   List<EmotionPointer> images = await DatabaseManager.instance.getImagesByEmotion(widget.emotion);
@@ -299,7 +299,8 @@ Widget build(BuildContext context) {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _loadedImages.isEmpty
-                        ? Center(child: WidgetUtils.buildParagraph("{color->D,b,u}No images{/color} found for this emotion"))
+                    // Change this based on if a user has navigated from Predictions or not
+                        ? Center(child: WidgetUtils.buildParagraph(widget.allowHistory != null && widget.allowHistory == true ? IMAGE_CONSTANTS.removed_images : IMAGE_CONSTANTS.no_images))
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

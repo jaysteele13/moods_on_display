@@ -151,7 +151,13 @@ Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
     
     
   } : null,
-    child: Column(
+    child: Container(  // Wrap the entire album section in a Container that can be tapped
+        padding: EdgeInsets.all(WidgetUtils.defaultPadding / 2),  // Optional padding
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),  // Optional rounded corners
+          color: Colors.white,  // Background color for the album
+        ),
+        child: Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -202,7 +208,7 @@ Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
         SizedBox(height: 8), // Add some space after the divider
       ],
     ),
-  );
+  ));
 }
 
 
