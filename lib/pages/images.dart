@@ -16,8 +16,9 @@ import 'package:moods_on_display/utils/utils.dart';
 
 class ImagesScreen extends StatefulWidget {
   final String emotion;
+  final bool? allowHistory;
 
-  const ImagesScreen({Key? key, required this.emotion}) : super(key: key);
+  const ImagesScreen({Key? key, required this.emotion, this.allowHistory} ) : super(key: key);
 
   @override
   _ImagesScreenState createState() => _ImagesScreenState();
@@ -267,7 +268,14 @@ AppBar _buildAppBar(BuildContext context) {
       actions: [
         //SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
         // Add actual action icons here if needed
-         _buildSelectButton()
+         _buildSelectButton(),
+         if (widget.allowHistory != null && widget.allowHistory == true)
+            IconButton(
+              icon: Icon(Icons.folder_copy_outlined),
+              onPressed: () {
+                Navigator.pop(context); // Go back to the previous screen
+              },
+            ),
       ],
       leading: WidgetUtils.buildBackButton(context, AlbumScreen())
     );
