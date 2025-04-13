@@ -112,59 +112,18 @@ Color _getEmotionColor(String emotion) {
 }
 
 double _generateBoxThickness(double imgWidth, double imgHeight) {
-
-  // Calculate the thickness based on the image dimensions
-  double total = imgWidth + imgHeight;
-  
-  if (total < 1000) {
-    return 1; // Default thickness
-  }
-  else if (total < 2000) {
-    return 5; // Medium thickness
-  }
-  else if (total < 3000) {
-    return 10; // Thick
-  }
-  else if (total < 4000) {
-    return 15; // Thicker
-  }
-  else if (total < 5000) {
-    return 20; // Thickest
-  }
-  else if (total < 6000) {
-    return 25; // Thickest
-  }
-  else if (total < 7000) {
-    return 30; // Thickest
-  }
-  else if (total < 8000) {
-    return 35; // Thickest
-  }
-  else if (total < 9000) {
-    return 40; // Thickest
-  }
-  else if (total < 10000) {
-    return 45; // Thickest
-  }
-  else {
-    return 50; // Thickest
-  }
+  final total = imgWidth + imgHeight;
+  return (total / 50).clamp(2.0, 24.0); 
 }
 
 double _generateFontSize(double thickness) {
-  // Calculate the font size based on the thickness
-  if (thickness < 5) {
-    return 60; // Small font size
-  } else if (thickness < 10) {
-    return 80; // Medium font size
-  } else if (thickness < 15) {
-    return 100; // Large font size
-  } else if (thickness < 20) {
-    return 120; // Larger font size
-  } else {
-    return 150; // Largest font size
-  }
+  return (thickness * 8).clamp(20.0, 120.0); // Scales with thickness, capped
 }
+
+double _generateOffset(double thickness) {
+  return (thickness * 8).clamp(20.0, 200.0); // Good vertical spacing
+}
+
 
 Future<Uint8List> drawRectangleOnImage(
     String pointer, List<EmotionBoundingBox> boundingBoxes) async {
@@ -186,11 +145,15 @@ Future<Uint8List> drawRectangleOnImage(
   // Draw original image as base
   canvas.drawImage(originalImage, Offset.zero, Paint());
 
-  double thickness = _generateBoxThickness(width.toDouble(), height.toDouble());
-  double fontSize = _generateFontSize(thickness);
+  
 
   // Draw rectangles and emotion text
   for (EmotionBoundingBox bbox in boundingBoxes) {
+    double thickness = _generateBoxThickness(bbox.boundingBox.width.toDouble(), bbox.boundingBox.height.toDouble());
+    double fontSize = _generateFontSize(thickness);
+    double offset = _generateOffset(thickness);
+
+
     final paint = Paint()
       ..color = _getEmotionColor(bbox.emotion)
       ..style = PaintingStyle.stroke
@@ -222,7 +185,7 @@ Future<Uint8List> drawRectangleOnImage(
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
-    textPainter.paint(canvas, Offset(rect.left + 20, rect.top - 250)); // draw text above box
+    textPainter.paint(canvas, Offset(rect.left, rect.top - (offset))); // draw text above box
   }
 
   // Finalize
