@@ -89,7 +89,7 @@ class AddImageScreenState extends State<AddImageScreen> {
       _isGalleryLoading = true; // Show loading state while processing new batch
     });
     
-    bool hasPicked = await _imageManager.pickImageFromCamera(); // sets value
+    bool hasPicked = await _imageManager.pickImageFromCamera(context); // sets value
 
     if(hasPicked) {
       _resetPredictionState(); // Reinitialize the state to clear previous data
