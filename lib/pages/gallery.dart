@@ -29,18 +29,23 @@ class _GalleryScreenState extends State<GalleryScreen> {
   @override
   void initState() {
     super.initState();
-    fetchAlbums();
+    fetchAlbums(context);
   }
 
-  Future<void> fetchAlbums() async {
-    final PermissionState result = await PhotoManager.requestPermissionExtend();
-    if (result.isAuth) {
-      List<AssetPathEntity> fetchedAlbums = await PhotoManager.getAssetPathList(type: RequestType.image);
-      setState(() => albums = fetchedAlbums);
-    } else {
-      PhotoManager.openSetting();
-    }
+ Future<void> fetchAlbums(BuildContext context) async {
+  final PermissionState result = await PhotoManager.requestPermissionExtend();
+
+  if (result.isAuth) {
+    List<AssetPathEntity> fetchedAlbums = await PhotoManager.getAssetPathList(type: RequestType.image);
+    setState(() => albums = fetchedAlbums);
+  } else {
+    // Show alert prompting user to enable Full Photo Access
+     if (context.mounted) {
+      await WidgetUtils.showPermissionDialog(context: context, title: GALLERY_CONSTANTS.settingsTitle, message: GALLERY_CONSTANTS.settingsDescription);
+     }
   }
+}
+
 
   Future<void> fetchImages(AssetPathEntity album, {bool isNewAlbum = true}) async {
     if (isLoading) return;

@@ -59,13 +59,13 @@
 			</dict>
 		</array>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>For AI</string>
+		<string>We need access to your photo library to allow you to select images for emotion analysis using our AI model. Your data stays on your device and is not shared.</string>
 		<key>NSCameraUsageDescription</key>
-		<string>For AI</string>
+		<string>We need camera access so you can take a new photo to analyze emotions using our AI model. The image is processed on-device and never stored or uploaded.</string>
 		<key>NSMicrophoneUsageDescription</key>
-		<string>For AI</string>
+		<string>We request microphone access only if you'd like to record voice-based emotion input. All data is processed locally on your device.</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>We need access to save images.</string>
+		<string>We need permission to save processed images back to your photo library if you choose to save results from the emotion analysis.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
 import 'package:moods_on_display/utils/constants.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:image/image.dart' as img;  // Import the package for img.ColorRgb8
 
@@ -209,4 +210,37 @@ static Color getColorByEmotion(String emotion) {
   );
 }
 
+static Future<void> showPermissionDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+}) async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext ctx) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              openAppSettings(); // Opens the app's settings
+            },
+            child: Text("Open Settings", style: TextStyle(color: DefaultColors.green,)),
+          ),
+        ],
+      );
+    },
+  );
+ }
 }

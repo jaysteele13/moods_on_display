@@ -2,11 +2,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/services/services.dart';
+import 'package:moods_on_display/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 
@@ -110,49 +112,65 @@ Future<void> setPointersToFilePathPointer(List<String> pointers) async {
 
 
 
-Future<bool> pickImageFromCamera() async {
-
+Future<bool> pickImageFromCamera(BuildContext context) async {
   try {
-  selectedPaths = []; // clear cache
+    // Request camera permission
+    PermissionStatus status = await Permission.camera.status;
 
-  final pickedImage = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 100);// Max quality);
+    if (status.isDenied || status.isPermanentlyDenied || status.isRestricted) {
+      // Ask for permission
+      status = await Permission.camera.request();
+    }
 
+    if (!status.isGranted) {
+      // Show alert to guide user to settings
+      if (context.mounted) {
+        await WidgetUtils.showPermissionDialog(context: context, title: "Enable Camera Access", message: "To take a photo, please allow camera access in your settings.");
+      }
 
-  if (pickedImage == null) return false;
+      return false;
+    }
 
-  final file = File(pickedImage.path);
+    // Continue with image picking
+    selectedPaths = []; // Clear cache
 
-  final filePath = file.path;
+    final pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 100, // Max quality
+    );
 
-  // Save to gallery/media store so PhotoManager can find it
-  AssetEntity? asset = await PhotoManager.editor.saveImageWithPath(filePath);
+    if (pickedImage == null) return false;
 
-    // Retrieve the file from the asset
-  File? assetFile = await asset.file;
+    final file = File(pickedImage.path);
+    final filePath = file.path;
 
-  // Grab file path
-  String? assetFilePath = assetFile?.path;
+    // Save to gallery so PhotoManager can find it
+    AssetEntity? asset = await PhotoManager.editor.saveImageWithPath(filePath);
 
+    // if (asset == null) return false;
 
-  if (await asset.exists && assetFile!.path.isNotEmpty) {
-    final assetId = asset.id;
+    // Retrieve file from asset
+    File? assetFile = await asset.file;
+    String? assetFilePath = assetFile?.path;
 
-    selectedMultiplePathsNotifier.value = [
-      FilePathPointer(
-        filePath: assetFilePath!,
-        imagePointer: assetId,
-      )
-    ];
+    if (await asset.exists && assetFilePath?.isNotEmpty == true) {
+      final assetId = asset.id;
 
-    print("Saved Asset ID: $assetId");
-    return true;
-  } else {
-    print("Failed to save image to gallery");
-    return false;
-  }
-  }
-  catch (e) {
-    print('error $e');
+      selectedMultiplePathsNotifier.value = [
+        FilePathPointer(
+          filePath: assetFilePath!,
+          imagePointer: assetId,
+        )
+      ];
+
+      print("Saved Asset ID: $assetId");
+      return true;
+    } else {
+      print("Failed to save image to gallery");
+      return false;
+    }
+  } catch (e) {
+    print('Error picking image from camera: $e');
   }
   return false;
 }
