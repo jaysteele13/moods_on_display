@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:moods_on_display/managers/animation_manager/anim_manager.dart';
+import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/image_manager/filePointer.dart';
 import 'package:moods_on_display/managers/image_manager/image_manager.dart';
 import 'package:moods_on_display/managers/model_manager/emotion_image.dart';
@@ -10,14 +12,17 @@ import 'package:moods_on_display/managers/model_manager/model_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
 import 'package:moods_on_display/managers/album_manager/album_manager.dart';
+import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/page_text/detect/detect_constants.dart';
 import 'package:moods_on_display/pages/alert.dart';
 import 'package:moods_on_display/pages/gallery.dart';
 import 'package:extended_image/extended_image.dart';
+import 'package:moods_on_display/pages/images.dart';
 import 'dart:io';
 
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 /// Define the states for the prediction process
 enum PredictionState {
@@ -96,18 +101,22 @@ class AddImageScreenState extends State<AddImageScreen> {
     
   }
 
-  void _resetPredictionState() {
+void _resetPredictionState() {
+  // Reset state values
   detectedEmotions.value = [];
   progressNotifier.value = 0.0;
   _hasProcessedImages = false;
   currentPredictionState.value = PredictionState.prePrediction;
 
-  final List<FilePathPointer>? selected = _imageManager.selectedMultiplePathsNotifier.value;
-  print('here is selected ${selected![0].imagePointer}');
-  if (selected.isNotEmpty) {
+  // Get the selected paths safely
+  final selected = _imageManager.selectedMultiplePathsNotifier.value;
+
+  // Check if selected is null or empty, then update state accordingly
+  if (selected != null && selected.isNotEmpty) {
     currentPredictionState.value = PredictionState.midPrediction;
   }
 }
+
 
 
   Future<void> _processAndUpdateState(List<FilePathPointer> selectedImages) async {
@@ -121,11 +130,34 @@ class AddImageScreenState extends State<AddImageScreen> {
   }
 }
 
+// Based on emotionImage highest emotion -> send user to emotion page
 
 Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
   return GestureDetector(
-    onTap: () {},
-    child: Column(
+    onTap: currentPredictionState.value == PredictionState.postPrediction ? () async {
+    // Await imagePointer -> look in DB for emotion relevant to this pointer
+    String emotion = await DatabaseManager.instance.getHighestEmotionByPointer(
+      emotionImage.selectedFilePathPointer!.imagePointer,
+    );
+
+    if (!mounted) return; // Check if the widget is still mounted
+
+    // Navigate to the next screen
+    Navigator.push(
+      context,
+      NoAnimRouter(child: ImagesScreen(emotion: emotion, allowHistory: true,)),
+    );
+    Provider.of<NavigationProvider>(context, listen: false).setIndex(2);
+    
+    
+  } : null,
+    child: Container(  // Wrap the entire album section in a Container that can be tapped
+        padding: EdgeInsets.all(WidgetUtils.defaultPadding / 2),  // Optional padding
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),  // Optional rounded corners
+          color: Colors.white,  // Background color for the album
+        ),
+        child: Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -176,7 +208,7 @@ Widget _buildEmotionWidgetV2(EmotionImage emotionImage) {
         SizedBox(height: 8), // Add some space after the divider
       ],
     ),
-  );
+  ));
 }
 
 

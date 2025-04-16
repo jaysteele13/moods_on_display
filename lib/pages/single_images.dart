@@ -343,9 +343,9 @@ Widget _buildImage(int index) {
                       _emotionStates[index] == EmotionState.midDraw
                           ? widget.images[index].image
                           : widget.images[index].image,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fitWidth,
                       key: const Key('single_image_view'),
-                      width: 800,
+                      width: 400,
                       height: 450,
                     ),
                   ),

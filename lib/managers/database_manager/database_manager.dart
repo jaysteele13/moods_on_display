@@ -262,6 +262,31 @@ Future<String> getHighestEmotion() async {
 }
 
 
+Future<String> getHighestEmotionByPointer(String pointer) async {
+  final Database db = await instance.database;
+
+  try {
+    // Query to get the emotion with the highest count
+    final result = await db.query(
+    'images',
+    where: 'id = ?',
+    whereArgs: [pointer],
+  );
+
+    // Check if result is not empty
+    if (result.isNotEmpty) {
+      // Return the emotion with the highest count
+      return result.first['emotion'] as String;
+    } else {
+      return '';  // In case no emotions are found (empty table)
+    }
+  } catch (e) {
+    print('Error fetching highest emotion: $e');
+    return '';  // Return empty string in case of error
+  }
+}
+
+
 
 
 

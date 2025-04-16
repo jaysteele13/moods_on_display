@@ -16,8 +16,9 @@ import 'package:moods_on_display/utils/utils.dart';
 
 class ImagesScreen extends StatefulWidget {
   final String emotion;
+  final bool? allowHistory;
 
-  const ImagesScreen({Key? key, required this.emotion}) : super(key: key);
+  const ImagesScreen({Key? key, required this.emotion, this.allowHistory} ) : super(key: key);
 
   @override
   _ImagesScreenState createState() => _ImagesScreenState();
@@ -28,7 +29,7 @@ class _ImagesScreenState extends State<ImagesScreen> {
   final AlbumManager albumManager = AlbumManager(assetEntityService: AssetEntityService(), photoManagerService: PhotoManagerService());
   late List<String> pointersToDelete = [];
   bool isSelectionMode = false;
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   void _fetchImages() async {
   List<EmotionPointer> images = await DatabaseManager.instance.getImagesByEmotion(widget.emotion);
@@ -267,7 +268,14 @@ AppBar _buildAppBar(BuildContext context) {
       actions: [
         //SizedBox(width: WidgetUtils.defaultToolBarHeight), // Invisible icon to take up space
         // Add actual action icons here if needed
-         _buildSelectButton()
+         _buildSelectButton(),
+         if (widget.allowHistory != null && widget.allowHistory == true)
+            IconButton(
+              icon: Icon(Icons.folder_copy_outlined),
+              onPressed: () {
+                Navigator.pop(context); // Go back to the previous screen
+              },
+            ),
       ],
       leading: WidgetUtils.buildBackButton(context, AlbumScreen())
     );
@@ -291,7 +299,8 @@ Widget build(BuildContext context) {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _loadedImages.isEmpty
-                        ? Center(child: WidgetUtils.buildParagraph("{color->D,b,u}No images{/color} found for this emotion"))
+                    // Change this based on if a user has navigated from Predictions or not
+                        ? Center(child: WidgetUtils.buildParagraph(widget.allowHistory != null && widget.allowHistory == true ? IMAGE_CONSTANTS.removed_images : IMAGE_CONSTANTS.no_images))
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
