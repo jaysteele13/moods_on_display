@@ -330,7 +330,9 @@ Widget selectedImageWidget(int amount) {
 
 
 // BODY OF GALLERY SCREEN
-body: Stack(
+body: 
+Stack(
+  key: const Key('gallery_body'),
   children: [
     Padding(
       padding: const EdgeInsets.all(WidgetUtils.defaultPadding),
@@ -341,10 +343,12 @@ body: Stack(
             // ------------------ SHOW ALBUMS ------------------
             child: selectedAlbum == null
                 ? Container(
+                    
                     width: WidgetUtils.containerWidth,
                     padding: EdgeInsets.all(WidgetUtils.defaultPadding),
                     decoration: WidgetUtils.containerDecoration,
                     child: ListView.builder(
+                      key: const Key('album_list_view'),
                       itemCount: albums.length,
                       itemBuilder: (context, index) {
                         return FutureBuilder(

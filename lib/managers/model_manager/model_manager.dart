@@ -82,7 +82,7 @@ class ModelManager {
   Future<void> _loadModel() async {
     if (isModelLoaded) return; // Prevent reloading
     modelManagerUtils = ModelManagerUtils();
-    interpreter = await Interpreter.fromAsset('assets/models/model_facerec_m1_ft.tflite');
+    interpreter = await Interpreter.fromAsset('assets/models/model_facerec_m12.tflite');
     faceDetector = FaceDetector(
       options: FaceDetectorOptions(
         performanceMode: FaceDetectorMode.accurate,

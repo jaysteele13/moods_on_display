@@ -39,21 +39,28 @@ Future<void> verifyGalleryScreenDisplayed(WidgetTester tester) async {
 
 // Helper Function 3: Scroll to the album and select it
 Future<void> scrollToAndSelectAlbum(WidgetTester tester, String albumName) async {
-  print("Attempting to scroll to album...");
-  await tester.scrollUntilVisible(
-    find.text(albumName),
-    500.0, // Adjust scroll distance
-    scrollable: find.byType(Scrollable),
-  );
-  await tester.pump();
-  print("✅ Scrolled ListView to find album");
+  final albumFinder = find.text(albumName);
 
-  expect(find.text(albumName), findsOneWidget, reason: "Album should be visible.");
+  if (albumFinder.evaluate().isEmpty) {
+    print("Album not visible yet — attempting to drag to it...");
+
+    await tester.dragUntilVisible(
+      albumFinder,
+      find.byKey(Key('album_list_view')), // The ListView
+      Offset(0, -200) // drag up by 200 pixels
+    );
+
+    await tester.pumpAndSettle();
+  }
+
+  expect(albumFinder, findsOneWidget, reason: "Album should now be visible.");
+  print("✅ Album is visible: $albumName");
   
   // Tap on the album
-  await tester.tap(find.widgetWithText(ListTile, albumName));
+  await tester.tap(find.text(albumName));
   await tester.pumpAndSettle();
   print("✅ Tapped on album: $albumName");
+  await tester.pumpAndSettle();
   
   // Ensure the album is selected in the AppBar
   expect(find.widgetWithText(AppBar, albumName), findsOneWidget, reason: "AppBar should display the selected album name.");

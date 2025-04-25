@@ -299,7 +299,7 @@ Widget buildUserDetails(String username, int photos, String emotion) {
                     SizedBox(width: 16),
                     Container(height: 50, width: 1, color: DefaultColors.grey),
                     SizedBox(width: 16),
-                    _buildUserStats(emotion, 'Mostly', true),
+                    _buildUserStats(emotion.isEmpty ? 'Emotionless' : emotion, 'Mostly', true),
                   ],
                 )
               ],

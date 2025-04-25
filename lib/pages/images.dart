@@ -7,12 +7,14 @@ import 'package:moods_on_display/managers/album_manager/selectedImagesManager.da
 import 'package:moods_on_display/managers/database_manager/database_manager.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_app_bar.dart';
 import 'package:moods_on_display/managers/navigation_manager/base_scaffold.dart';
+import 'package:moods_on_display/managers/navigation_manager/navigation_provider.dart';
 import 'package:moods_on_display/managers/services/services.dart';
 import 'package:moods_on_display/page_text/images/images_constants.dart';
 import 'package:moods_on_display/pages/albums.dart';
 import 'package:moods_on_display/pages/single_images.dart';
 import 'package:moods_on_display/utils/types.dart';
 import 'package:moods_on_display/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class ImagesScreen extends StatefulWidget {
   final String emotion;
@@ -273,6 +275,7 @@ AppBar _buildAppBar(BuildContext context) {
             IconButton(
               icon: Icon(Icons.folder_copy_outlined),
               onPressed: () {
+                Provider.of<NavigationProvider>(context, listen: false).setIndex(1);
                 Navigator.pop(context); // Go back to the previous screen
               },
             ),
