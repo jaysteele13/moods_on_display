@@ -171,8 +171,4 @@ void main() {
     });
 
   });
-
-
-  // Add E2E to Test Happy album and using Emotion detection bounding box feature
-  
 }

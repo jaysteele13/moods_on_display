@@ -104,7 +104,7 @@ Future<void> tapAllImagesInGrid(WidgetTester tester) async {
 Future<double> runEmotionPrediction(WidgetTester tester, Model_Benchmark benchmark) async {
 
 
-  print("✅ Running Prediction on test_album");
+  print("✅ Running Prediction on ${benchmark.albumName}");
 
   final int angryCount = await tester.countStrings(EMOTIONS.angry);
   final int disgustCount = await tester.countStrings(EMOTIONS.disgust);
