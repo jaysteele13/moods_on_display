@@ -134,6 +134,7 @@ void main() {
 
       expect(result, PermissionState.authorized);
     });
+    // Personal Wild Images
     testWidgets("Test Model Prediction Benchmark 1", (WidgetTester tester) async {
       await runModelPredictionTest(
         tester, 
@@ -146,6 +147,7 @@ void main() {
       );
     });
 
+    //  Wild Images and Correographed
     testWidgets("Test Model Prediction Benchmark 2", (WidgetTester tester) async {
       await runModelPredictionTest(
         tester, 
@@ -158,6 +160,7 @@ void main() {
       );
     });
 
+    // Personal Correographed Images
     testWidgets("Test Model Prediction Benchmark 3", (WidgetTester tester) async {
       await runModelPredictionTest(
         tester, 

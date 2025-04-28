@@ -23,15 +23,15 @@ class DETECTION_TEST {
 );
 
 static Model_Benchmark benchmark2 = Model_Benchmark(
-  // 16 faces
+  // 37 faces
   albumName: emotion_test_album2,
-  anger: 0,
+  anger: 3,
   disgust: 2,
-  fear: 1,
-  happy: 6,
-  neutral: 5,
-  sad: 1,
-  surprise: 1,
+  fear: 9,
+  happy: 14,
+  neutral: 4,
+  sad: 2,
+  surprise: 3,
 );
 
 static Model_Benchmark benchmark3 = Model_Benchmark(
