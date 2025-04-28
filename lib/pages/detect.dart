@@ -475,7 +475,7 @@ Widget _buildAddImageMenu(PredictionState state) {
       SizedBox(width: 32),
       Container(height: 40, width: 1, color: DefaultColors.grey),
       SizedBox(width: 32),
-      IconButton(onPressed: _openGallery, icon: SvgPicture.asset('assets/icons/Plus_circle.svg', height: 48, width: 48)),
+      IconButton(onPressed: _openGallery, icon: SvgPicture.asset('assets/icons/Plus_circle.svg', height: 48, width: 48), key: const Key('go_to_gallery'),),
       
       
   ],);

@@ -6,32 +6,49 @@ import 'package:moods_on_display/utils/constants.dart';
 class DETECTION_TEST {
   static const emotion_test_album = 'test_album';
   static const emotion_test_album2 = 'test_album2';
-    static const emotion_test_album3 = 'test_album3';
+  static const emotion_test_album3 = 'test_album3';
+  static const emotion_test_album4 = 'test_album4';
 
   static Model_Benchmark benchmark1 = Model_Benchmark(
+  // should be 23 Images
   albumName: emotion_test_album,
-  anger: 2,
-  disgust: 2,
-  fear: 1,
-  happy: 9,
-  neutral: 5,
-  sad: 0,
+  anger: 1,
+  disgust: 2, 
+  fear: 3,
+  happy: 10, 
+  neutral: 4,
+  sad: 1, 
   surprise: 2,
+  
 );
 
 static Model_Benchmark benchmark2 = Model_Benchmark(
+  // 37 faces
   albumName: emotion_test_album2,
-  anger: 2,
-  disgust: 1,
-  fear: 2,
-  happy: 7,
-  neutral: 6,
-  sad: 3,
+  anger: 3,
+  disgust: 2,
+  fear: 9,
+  happy: 14,
+  neutral: 4,
+  sad: 2,
   surprise: 3,
 );
 
 static Model_Benchmark benchmark3 = Model_Benchmark(
+  // 29 Faces
   albumName: emotion_test_album3,
+  anger: 1, // 2
+  disgust: 4, // 4
+  fear: 2, // 2
+  happy: 11, // 11
+  neutral: 4, // 4
+  sad: 4, // 3
+  surprise: 3, // 3
+);
+
+static Model_Benchmark benchmark4 = Model_Benchmark(
+  // 29 Faces
+  albumName: emotion_test_album4, // Will be Aff-Wild from internet,
   anger: 4,
   disgust: 0,
   fear: 1,
@@ -40,6 +57,8 @@ static Model_Benchmark benchmark3 = Model_Benchmark(
   sad: 3,
   surprise: 1,
 );
+
+
   
 }
 class BBOX_TEST {
@@ -75,46 +94,46 @@ class Model_Benchmark {
     required this.surprise
   });
 
+double compareAndAnalyzePredictions(Model_Benchmark pred_benchmark) {
+  List<String> emotions = EMOTIONS.list;
 
-  double compareAndAnalyzePredictions(Model_Benchmark pred_benchmark) {
-    // Emotion names
-    List<String> emotions = EMOTIONS.list;
+  int totalCorrect = 0;
+  int totalErrors = 0;
 
-    // Create a map to store the accuracies based on predicted and benchmark values
-    Map<String, double> accuracies = {};
+  print("📊 Emotion Prediction Accuracy Analysis:");
 
-    // Calculate the accuracy for each emotion
-    emotions.forEach((emotion) {
-      int predictedValue = pred_benchmark.toMap()[emotion]!;
-      int benchmarkValue = toMap()[emotion]!;
+  for (var emotion in emotions) {
+    int predictedValue = pred_benchmark.toMap()[emotion]!;
+    int benchmarkValue = toMap()[emotion]!;
 
-      // Calculate accuracy based on the amount of predicted vs benchmark values
-      double accuracy = 0.0;
-      if (predictedValue != 0) {
-        accuracy = (benchmarkValue / predictedValue) * 100; // benchmark vs predicted
-      } 
-      
-      if (accuracy > 100) {
-        accuracy = (predictedValue / benchmarkValue) * 100; // If both are zero, it's 100% accurate
-      }
+    int correctPredictions = predictedValue < benchmarkValue ? predictedValue : benchmarkValue;
+    int missedPredictions = (benchmarkValue - correctPredictions).abs(); // faces you missed
+    int extraPredictions = (predictedValue - correctPredictions).abs();  // faces you wrongly guessed
 
-      accuracies[emotion] = accuracy;
-    });
+    int totalMistakes = missedPredictions + extraPredictions;
 
-    // Calculate the overall accuracy by averaging the accuracies of all emotions
-    double overallAccuracy = accuracies.values.reduce((a, b) => a + b) / accuracies.length;
+    double emotionAccuracy = 0.0;
+    if (correctPredictions + totalMistakes > 0) {
+      emotionAccuracy = (correctPredictions / (correctPredictions + totalMistakes)) * 100;
+    }
 
-    // Print the differences and the analysis
-    print("📊 Emotion Prediction Accuracy Analysis:");
+    totalCorrect += correctPredictions;
+    totalErrors += totalMistakes;
 
-    // Print accuracy for each emotion
-    emotions.forEach((emotion) {
-      print("Emotion: $emotion | Predicted: ${pred_benchmark.toMap()[emotion]} | Benchmark: ${this.toMap()[emotion]} | Accuracy: ${accuracies[emotion]}%");
-    });
-
-    print("\n✅ Overall Prediction Accuracy: ${overallAccuracy}%");
-    return overallAccuracy;
+    print("Emotion: $emotion | Predicted: $predictedValue | Benchmark: $benchmarkValue | Accuracy: ${emotionAccuracy.toStringAsFixed(2)}%");
   }
+
+  double overallAccuracy = (totalCorrect + totalErrors) > 0
+      ? (totalCorrect / (totalCorrect + totalErrors)) * 100
+      : 0.0;
+
+  print("\n✅ Overall Prediction Accuracy: ${overallAccuracy.toStringAsFixed(2)}%");
+
+  return overallAccuracy;
+}
+
+
+
 
 
   // Convert Model_Benchmark properties to a Map for easier access

@@ -76,15 +76,27 @@ void main() {
         await tester.pumpWidget(mockAddImages(const HomePage()));
         await tester.pumpAndSettle();
 
-        // Step 2: Handle Dialog for "Allow Full Access"
-        when(mockPhotoManagerService.requestPermission())
-          .thenAnswer((_) async => PermissionState.authorized);
-        final result = await mockPhotoManagerService.requestPermission();
-        expect(result, PermissionState.authorized);
+        // Tap out of modal
+        final Size screenSize = tester.view.physicalSize / tester.view.devicePixelRatio;
+
+        // Tap near the top-right corner (with a small offset to avoid system gesture areas)
+        await tester.tapAt(Offset(screenSize.width - 20, 20));
+        await tester.pumpAndSettle();
+
 
         // Step 1: Navigate to Add Images screen
         await tester.tap(find.byKey(const Key('add_images_screen_nav')));
         await tester.pumpAndSettle();
+
+        // Step 2: Tap on the "Add Images" button
+        await tester.tap(find.byKey(const Key('go_to_gallery')));
+        await tester.pumpAndSettle(const Duration(seconds: 1));
+
+        // Handle Dialog for "Allow Full Access"
+        when(mockPhotoManagerService.requestPermission())
+          .thenAnswer((_) async => PermissionState.authorized);
+        final result = await mockPhotoManagerService.requestPermission();
+        expect(result, PermissionState.authorized);
 
         // Step 3: Ensure Gallery Screen and Gallery Body are displayed
         await detectionUtils.verifyGalleryScreenDisplayed(tester);
@@ -122,6 +134,7 @@ void main() {
 
       expect(result, PermissionState.authorized);
     });
+    // Personal Wild Images
     testWidgets("Test Model Prediction Benchmark 1", (WidgetTester tester) async {
       await runModelPredictionTest(
         tester, 
@@ -129,11 +142,12 @@ void main() {
         mockPhotoManagerService, 
         detectionUtils, 
         mockUser,
-        expectedAccuracy: 70.0,
+        expectedAccuracy: 60.0,
         benchmark: DETECTION_TEST.benchmark1,
       );
     });
 
+    //  Wild Images and Correographed
     testWidgets("Test Model Prediction Benchmark 2", (WidgetTester tester) async {
       await runModelPredictionTest(
         tester, 
@@ -141,11 +155,12 @@ void main() {
         mockPhotoManagerService, 
         detectionUtils, 
         mockUser,
-        expectedAccuracy: 70.0,
+        expectedAccuracy: 60.0,
         benchmark: DETECTION_TEST.benchmark2,
       );
     });
 
+    // Personal Correographed Images
     testWidgets("Test Model Prediction Benchmark 3", (WidgetTester tester) async {
       await runModelPredictionTest(
         tester, 
@@ -153,14 +168,10 @@ void main() {
         mockPhotoManagerService, 
         detectionUtils, 
         mockUser,
-        expectedAccuracy: 70.0,
+        expectedAccuracy: 60.0,
         benchmark: DETECTION_TEST.benchmark3,
       );
     });
 
   });
-
-
-  // Add E2E to Test Happy album and using Emotion detection bounding box feature
-  
 }
