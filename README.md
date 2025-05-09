@@ -8,8 +8,11 @@ Moods on Display sorts users images into emotionally categorised albums with an 
 
 ## Feature Video of Application
 
-https://youtu.be/-jPA9cJOHbU
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/-jPA9cJOHbU/0.jpg)](http://www.youtube.com/watch?v=-jPA9cJOHbU "Demo for Moods on Display")
+
 
 ## Some Screenshots
+
+
 
 
