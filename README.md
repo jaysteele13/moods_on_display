@@ -1,18 +1,15 @@
-# moods_on_display
+# Moods on Display
 
-An innovative solution to help with the photo hoarding crisis.
+This is a neat application which uses the chosen AI model based on MobileNet in-app. Everything within this app is used locally on the device downloaded.
 
-## Showcase
-
-<img width="330" alt="Screenshot 2025-01-24 at 18 56 33" src="https://github.com/user-attachments/assets/aaccff2d-6019-4bb2-a005-27e26e86784a" />
-
-## Firebase Authentication
-
-Go to this link to acces page:
-https://console.firebase.google.com/u/0/
-
-Link to add google sign in, I believe there is security issues now with native sign in.
-https://medium.com/@dev.lens/flutter-google-sign-in-using-firebase-authentication-step-by-step-ef2ddfb84a2c 
+Moods on Display sorts users images into emotionally categorised albums with an attempt to allow those who take to many photos an easier time to reflect on the photos sorted for them effortlessly.  
 
 
-## Need to install
+
+## Feature Video of Application
+
+https://youtu.be/-jPA9cJOHbU
+
+## Some Screenshots
+
+
