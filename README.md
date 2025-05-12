@@ -4,6 +4,8 @@ This is a neat application which uses the chosen AI model based on MobileNet in-
 
 Moods on Display sorts users images into emotionally categorised albums with an attempt to allow those who take to many photos an easier time to reflect on the photos sorted for them effortlessly.  
 
+**Here is my progress report and implementation in relation to the CNN model tuned and used within this application: https://github.com/jaysteele13/emotion_detection_model_mbnv1/tree/main**
+
 
 
 ## Feature Video of Application
